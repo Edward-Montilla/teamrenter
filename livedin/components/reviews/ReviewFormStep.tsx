@@ -29,6 +29,7 @@ type ReviewFormStepProps = {
   property: MockPropertyForReview;
   onSubmit: (data: ReviewCreateInput) => void | Promise<void>;
   onBack?: () => void;
+  submitError?: string | null;
 };
 
 function formatAddress(p: MockPropertyForReview): string {
@@ -40,6 +41,7 @@ export function ReviewFormStep({
   property,
   onSubmit,
   onBack,
+  submitError,
 }: ReviewFormStepProps) {
   const [metrics, setMetrics] = useState<Record<(typeof METRIC_KEYS)[number], number | "">>({
     management_responsiveness: "",
@@ -124,6 +126,14 @@ export function ReviewFormStep({
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
+        {submitError && (
+          <div
+            className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800 dark:border-red-800 dark:bg-red-950/40 dark:text-red-200"
+            role="alert"
+          >
+            {submitError}
+          </div>
+        )}
         <div>
           <p className="mb-3 text-sm font-medium text-foreground">
             Rate the following (0–5, required)

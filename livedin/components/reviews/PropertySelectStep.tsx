@@ -55,7 +55,7 @@ export function PropertySelectStep({
 
   return (
     <div className="space-y-6">
-      <h2 className="text-xl font-semibold text-foreground">Review — Address</h2>
+      <h2 className="text-xl font-semibold text-foreground">Review Address</h2>
       <p className="text-sm text-zinc-600 dark:text-zinc-400">
         Select the property you want to review.
       </p>

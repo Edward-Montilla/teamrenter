@@ -39,11 +39,13 @@ Frontend-first (mock data) -> DB (Supabase) -> Integration (wire-up)
 9. `09` Admin: moderation + audit
 10. `10` Distilled insights pipeline + screening/approval flow
 11. `11` Optional: photos via R2 + metadata
+12. `12` Authentication (sign-in/sign-up + Google OAuth)
 
 ## Phase Grouping
 - Frontend-first: `01-03`
 - DB/security foundation: `04-05`
 - Integration/admin/optional: `06-11`
+- Auth: `12` (can follow `05`; replaces mock auth in `03`/`07`)
 
 ## Dependency Chain
 - `01` -> `02` -> `03` (UI-first vertical slices with mock contracts)
@@ -51,6 +53,7 @@ Frontend-first (mock data) -> DB (Supabase) -> Integration (wire-up)
 - `04` -> `05` (RLS policies applied on finalized entities/functions)
 - `01-05` -> `06` (replace public mocks with Supabase reads)
 - `03-05` -> `07` (wire verified review submit with DB enforcement)
+- `05` -> `12` (auth uses profiles + RLS; real session replaces mocks in `03`/`07`)
 - `05` -> `08` + `09` (admin flows require role/RLS)
 - `07` + `09` -> `10` (insight recompute and moderation workflow)
 - `08` + `05` -> `11` (optional R2 uploads and safe public display)

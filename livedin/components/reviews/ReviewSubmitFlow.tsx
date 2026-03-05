@@ -9,6 +9,7 @@ import { ReviewFormStep } from "@/components/reviews/ReviewFormStep";
 import { ReviewSubmittedScreen } from "@/components/reviews/ReviewSubmittedScreen";
 import type { MockPropertyForReview } from "@/lib/mocks/properties";
 import { storeReview } from "@/lib/mocks/reviews";
+import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
 
 const GATE_STATES: ReviewGateState[] = [
   "unauthenticated",
@@ -25,8 +26,10 @@ function resolveGateState(
     limit_reached: boolean;
     already_reviewed: boolean;
   },
-  override: ReviewGateState | null
+  override: ReviewGateState | null,
+  apiGateState: ReviewGateState | null
 ): ReviewGateState {
+  if (apiGateState && GATE_STATES.includes(apiGateState)) return apiGateState;
   if (override && GATE_STATES.includes(override)) return override;
   if (!toggles.authenticated) return "unauthenticated";
   if (!toggles.email_verified) return "unverified";
@@ -53,21 +56,77 @@ export function ReviewSubmitFlow({
   const [submittedReviewId, setSubmittedReviewId] = useState<string | null>(
     null
   );
+  const [apiGateState, setApiGateState] = useState<ReviewGateState | null>(null);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const gateState = useMemo(
-    () => resolveGateState(toggles, gateOverride),
-    [toggles, gateOverride]
+    () => resolveGateState(toggles, gateOverride, apiGateState),
+    [toggles, gateOverride, apiGateState]
   );
 
-  const handleMockSignIn = () => setAuthenticated(true);
-  const handleMockVerifyEmail = () => setEmailVerified(true);
+  const handleMockSignIn = () => {
+    setApiGateState(null);
+    setSubmitError(null);
+    setAuthenticated(true);
+  };
+  const handleMockVerifyEmail = () => {
+    setApiGateState(null);
+    setSubmitError(null);
+    setEmailVerified(true);
+  };
 
   const handleContinueFromStep1 = (property: MockPropertyForReview) => {
     setSelectedProperty(property);
     setStep(2);
+    setSubmitError(null);
   };
 
   const handleSubmitReview = async (data: ReviewCreateInput) => {
+    setSubmitError(null);
+    setApiGateState(null);
+
+    const supabase = getSupabaseBrowserClient();
+    const session = supabase ? (await supabase.auth.getSession()).data?.session : null;
+
+    if (session?.access_token) {
+      const res = await fetch(`/api/properties/${data.property_id}/reviews`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify(data),
+      });
+      const json = await res.json().catch(() => ({}));
+      const message = typeof json?.message === "string" ? json.message : "Something went wrong.";
+
+      if (res.status === 201 && json.review_id) {
+        setSubmittedReviewId(json.review_id);
+        setStep("done");
+        return;
+      }
+      if (res.status === 401) {
+        setApiGateState("unauthenticated");
+        setSubmitError(message);
+        return;
+      }
+      if (res.status === 403) {
+        setApiGateState("unverified");
+        setSubmitError(message);
+        return;
+      }
+      if (res.status === 409) {
+        setSubmitError(message);
+        return;
+      }
+      if (res.status === 429) {
+        setSubmitError(message);
+        return;
+      }
+      setSubmitError(message || "Failed to save review. Please try again.");
+      return;
+    }
+
     await new Promise((r) => setTimeout(r, MOCK_SUBMIT_DELAY_MS));
     const review_id = crypto.randomUUID();
     storeReview({ ...data, review_id });
@@ -116,6 +175,7 @@ export function ReviewSubmitFlow({
           property={selectedProperty}
           onSubmit={handleSubmitReview}
           onBack={() => setStep(1)}
+          submitError={submitError}
         />
       </div>
     );
