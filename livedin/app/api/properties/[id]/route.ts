@@ -30,8 +30,8 @@ type InsightRow = {
   last_generated_at: string;
 };
 
-export async function GET(_req: NextRequest, context: { params: { id: string } }) {
-  const { id } = context.params;
+export async function GET(_req: NextRequest, context: { params: Promise<{ id: string }> }) {
+  const { id } = await context.params;
   const supabase = getSupabaseServerClient();
 
   const { data: property, error: propertyError } = await supabase
