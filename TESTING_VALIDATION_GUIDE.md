@@ -605,6 +605,132 @@ Verify that verified users can submit reviews, constraints are enforced, and agg
 5. Verified user submits 3 more reviews → all succeed
 6. Verified user attempts 4th review → 429 error
 
+### Testing on Vercel + Supabase
+
+Use this when your app is deployed on Vercel and the database is on Supabase (hosted).
+
+#### 1. Environment variables on Vercel
+
+In the Vercel project → **Settings → Environment Variables**, ensure:
+
+| Variable | Where used | Notes |
+|----------|------------|--------|
+| `SUPABASE_URL` | API routes (server) | Your Supabase project URL |
+| `SUPABASE_ANON_KEY` | API routes (server) | Project anon/public key |
+| `NEXT_PUBLIC_SUPABASE_URL` | Browser (submit flow) | Same as `SUPABASE_URL` |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Browser (submit flow) | Same as `SUPABASE_ANON_KEY` |
+
+Without the `NEXT_PUBLIC_` vars, the in-browser submit flow cannot get a session and will fall back to mock (localStorage). To test real submission from the UI, set all four and use a real sign-in (Slice 12) or the JWT method below in the browser (e.g. via DevTools).
+
+#### 2. Ensure DB is ready
+
+- Run all Supabase migrations on your hosted project (Dashboard → SQL Editor, or `supabase db push` if using CLI).
+- Run `seed.sql` only if your project allows it (hosted Supabase often does **not** allow inserting into `auth.users`). If you cannot seed `auth.users`, create test users via **Authentication → Users → Add user** (or invite), then ensure they have a profile with `email_verified = true` (see step 3).
+
+#### 3. Create a verified test user (hosted Supabase)
+
+1. **Supabase Dashboard → Authentication → Users → Add user** (or use “Invite”).
+2. Create a user (e.g. `verified-test@example.com` / password).
+3. Copy the user’s **UUID** (e.g. from the user row).
+4. **SQL Editor** → run:
+
+```sql
+INSERT INTO public.profiles (user_id, role, email_verified, created_at, updated_at)
+VALUES ('<PASTE_USER_UUID>', 'verified', true, now(), now())
+ON CONFLICT (user_id) DO UPDATE SET email_verified = true, role = 'verified';
+```
+
+Replace `<PASTE_USER_UUID>` with the UUID from step 3. You now have a verified user who can submit reviews.
+
+#### 4. Get a JWT for API tests
+
+You need an access token for that user. Options:
+
+**Option A – Script (recommended)**  
+From the repo root (or from `livedin` if your `.env.local` has Supabase vars):
+
+```bash
+REVIEW_TEST_EMAIL=verified-test@example.com REVIEW_TEST_PASSWORD=yourpassword \
+  npx tsx scripts/get-review-test-jwt.ts
+```
+
+Requires env: `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `REVIEW_TEST_EMAIL`, `REVIEW_TEST_PASSWORD`. The script prints the access token; use it as `Authorization: Bearer <token>` in curl or in the browser.
+
+**Option B – Supabase Auth REST API**
+
+```bash
+curl -s -X POST 'https://<YOUR_PROJECT_REF>.supabase.co/auth/v1/token?grant_type=password' \
+  -H 'apikey: <SUPABASE_ANON_KEY>' \
+  -H 'Content-Type: application/json' \
+  -d '{"email":"verified-test@example.com","password":"YOUR_PASSWORD"}' \
+  | jq -r '.access_token'
+```
+
+Use your Supabase project URL and anon key. Copy the printed `access_token`.
+
+**Option C – Browser**  
+If you have sign-in UI (Slice 12): sign in as the verified user, open DevTools → Application → Local Storage (or Session Storage), find the Supabase key and copy `access_token` from the stored session JSON.
+
+#### 5. Test the review API with curl
+
+Set:
+
+- `BASE_URL` = your Vercel app URL (e.g. `https://your-app.vercel.app`)
+- `PROPERTY_ID` = an active property ID (e.g. from seed: `a0000001-0001-4000-8000-000000000001`)
+- `JWT` = the access token from step 4
+
+**Success (201)**
+
+```bash
+curl -s -w "\nHTTP %{http_code}\n" -X POST "$BASE_URL/api/properties/$PROPERTY_ID/reviews" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $JWT" \
+  -d '{
+    "property_id": "'"$PROPERTY_ID"'",
+    "management_responsiveness": 4,
+    "maintenance_timeliness": 5,
+    "listing_accuracy": 4,
+    "fee_transparency": 3,
+    "lease_clarity": 5,
+    "text_input": "Optional private notes.",
+    "tenancy_start": "2023-01-01",
+    "tenancy_end": "2023-12-31"
+  }'
+```
+
+Expect `HTTP 201` and `{"review_id":"..."}`.
+
+**401 Unauthorized** – omit the `Authorization` header or use an invalid token:
+
+```bash
+curl -s -w "\nHTTP %{http_code}\n" -X POST "$BASE_URL/api/properties/$PROPERTY_ID/reviews" \
+  -H "Content-Type: application/json" \
+  -d '{"property_id":"'"$PROPERTY_ID"'","management_responsiveness":4,"maintenance_timeliness":5,"listing_accuracy":4,"fee_transparency":3,"lease_clarity":5}'
+```
+
+Expect `HTTP 401`.
+
+**403 Forbidden** – use a user whose profile has `email_verified = false`. Create another user, do **not** set `email_verified = true`, get that user’s JWT and send the same POST as in the 201 example. Expect `HTTP 403`.
+
+**409 Conflict** – send the same successful POST body again (same user, same property). Expect `HTTP 409` and a message like “already reviewed”.
+
+**429 Rate limit** – submit 3 successful reviews for 3 different properties (use 3 different `PROPERTY_ID` values), then submit a 4th for any property. Expect `HTTP 429` on the 4th.
+
+#### 6. Test in the browser (if sign-in is available)
+
+1. Open `BASE_URL/submit-review/<PROPERTY_ID>` (e.g. `/submit-review/a0000001-0001-4000-8000-000000000001`).
+2. Sign in as the verified test user (Slice 12 or temporary sign-in).
+3. Fill the form and submit. You should see the confirmation screen and “View property listing” / “Return to search”.
+4. Submit again for the same property → you should see the “already reviewed” error (409).
+5. Without signing in (or in an incognito window), open the submit page → you should see the sign-in prompt (401/403 handled by the gate).
+
+#### 7. Test aggregate refresh (after Slice 09)
+
+1. Submit a review as a verified user (status `pending`).
+2. In Supabase **Table Editor → reviews**, find the row and set `status` to `approved` (or use the admin moderation UI from Slice 09).
+3. Open the property detail page: `BASE_URL/properties/<PROPERTY_ID>`.
+4. Confirm the displayed review count and 0–6 scores updated (aggregates recomputed by the DB trigger).
+
 ---
 
 ## Slice 08 — Admin UI: Property CRUD

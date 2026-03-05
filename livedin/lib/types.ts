@@ -83,3 +83,41 @@ export type ReviewGateState =
 export type ReviewSubmitResult =
   | { ok: true; review_id: string }
   | { ok: false; code: 401 | 403 | 409 | 429; message: string };
+
+// --- Slice 08: Admin property CRUD ---
+
+export type AdminPropertyListItem = {
+  id: string;
+  display_name: string;
+  address_line1: string;
+  address_line2: string | null;
+  city: string;
+  province: string;
+  postal_code: string;
+  management_company: string | null;
+  status: "active" | "inactive";
+  created_at: string;
+  updated_at: string;
+};
+
+export type AdminPropertyCreateInput = {
+  display_name: string;
+  address_line1: string;
+  address_line2?: string | null;
+  city: string;
+  province: string;
+  postal_code: string;
+  management_company?: string | null;
+  status?: "active" | "inactive";
+};
+
+export type AdminPropertyUpdateInput = {
+  display_name?: string;
+  address_line1?: string;
+  address_line2?: string | null;
+  city?: string;
+  province?: string;
+  postal_code?: string;
+  management_company?: string | null;
+  status?: "active" | "inactive";
+};
