@@ -58,3 +58,28 @@ export type PropertyDetailPublic = {
   aggregates: PropertyAggregatePublic;
   insights: DistilledInsightPublic | null;
 };
+
+// --- Slice 03: Review submission (mocked; no Supabase yet) ---
+
+export type ReviewCreateInput = {
+  property_id: string;
+  management_responsiveness: 0 | 1 | 2 | 3 | 4 | 5;
+  maintenance_timeliness: 0 | 1 | 2 | 3 | 4 | 5;
+  listing_accuracy: 0 | 1 | 2 | 3 | 4 | 5;
+  fee_transparency: 0 | 1 | 2 | 3 | 4 | 5;
+  lease_clarity: 0 | 1 | 2 | 3 | 4 | 5;
+  text_input: string | null; // max 500 chars, private
+  tenancy_start: string | null; // ISO date
+  tenancy_end: string | null; // ISO date, >= tenancy_start
+};
+
+export type ReviewGateState =
+  | "unauthenticated"
+  | "unverified"
+  | "limit_reached"
+  | "already_reviewed"
+  | "allowed";
+
+export type ReviewSubmitResult =
+  | { ok: true; review_id: string }
+  | { ok: false; code: 401 | 403 | 409 | 429; message: string };
