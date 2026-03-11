@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { SearchBar } from "@/components/SearchBar";
 import { PropertyCard } from "@/components/PropertyCard";
+import { PublicSiteHeader } from "@/components/auth/PublicSiteHeader";
 import { searchProperties } from "@/lib/property-search";
 import type { PropertyListItem, PropertySearchResponse, UiListState } from "@/lib/types";
 
@@ -113,6 +114,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
+      <PublicSiteHeader />
       <header className="border-b border-zinc-200 bg-white px-4 py-6 dark:border-zinc-800 dark:bg-zinc-950 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-4xl">
           <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">

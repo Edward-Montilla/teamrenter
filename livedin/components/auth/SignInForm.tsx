@@ -24,6 +24,7 @@ export function SignInForm({ redirectTo, verified }: SignInFormProps) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [oauthSubmitting, setOauthSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(
     verified ? "Email confirmed. Sign in to continue." : null,
@@ -111,6 +112,40 @@ export function SignInForm({ redirectTo, verified }: SignInFormProps) {
     }
   };
 
+  const handleGoogleSignIn = async () => {
+    setOauthSubmitting(true);
+    setError(null);
+    setMessage(null);
+
+    const supabase = getSupabaseBrowserClient();
+    if (!supabase) {
+      setOauthSubmitting(false);
+      setError("Supabase browser auth is not configured.");
+      return;
+    }
+
+    try {
+      const callbackUrl = new URL("/sign-in", window.location.origin);
+      callbackUrl.searchParams.set("redirect", safeRedirect);
+
+      const { error: oauthError } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: callbackUrl.toString(),
+        },
+      });
+
+      if (oauthError) {
+        throw oauthError;
+      }
+    } catch (err) {
+      setOauthSubmitting(false);
+      setError(
+        err instanceof Error ? err.message : "Google sign-in could not be started.",
+      );
+    }
+  };
+
   const heading =
     mode === "sign-in" ? "Sign in to Livedin" : "Create your Livedin account";
   const submitLabel =
@@ -148,6 +183,29 @@ export function SignInForm({ redirectTo, verified }: SignInFormProps) {
         >
           Create account
         </button>
+      </div>
+
+      <div className="mt-6 space-y-3">
+        <button
+          type="button"
+          onClick={() => void handleGoogleSignIn()}
+          disabled={submitting || oauthSubmitting}
+          className="flex w-full items-center justify-center rounded-lg border border-zinc-300 bg-white px-4 py-2 text-sm font-medium text-foreground hover:bg-zinc-50 disabled:pointer-events-none disabled:opacity-50 dark:border-zinc-600 dark:bg-zinc-900 dark:hover:bg-zinc-800"
+        >
+          {oauthSubmitting ? "Redirecting to Google…" : "Continue with Google"}
+        </button>
+        <p className="text-xs text-zinc-500 dark:text-zinc-400">
+          Google sign-in uses your verified Google account, so review gating can
+          recognize you immediately after authentication.
+        </p>
+      </div>
+
+      <div className="mt-6 flex items-center gap-3">
+        <div className="h-px flex-1 bg-zinc-200 dark:bg-zinc-700" />
+        <span className="text-xs uppercase tracking-[0.2em] text-zinc-400">
+          Or use email
+        </span>
+        <div className="h-px flex-1 bg-zinc-200 dark:bg-zinc-700" />
       </div>
 
       <form onSubmit={handleSubmit} className="mt-6 space-y-4">
@@ -203,7 +261,7 @@ export function SignInForm({ redirectTo, verified }: SignInFormProps) {
 
         <button
           type="submit"
-          disabled={submitting}
+          disabled={submitting || oauthSubmitting}
           className="w-full rounded-lg bg-foreground px-4 py-2 text-sm font-medium text-background hover:opacity-90 disabled:pointer-events-none disabled:opacity-50"
         >
           {submitting ? "Working…" : submitLabel}

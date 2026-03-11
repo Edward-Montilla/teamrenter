@@ -130,3 +130,61 @@ export type AdminPropertyUpdateInput = {
   management_company?: string | null;
   status?: "active" | "inactive";
 };
+
+// --- Slice 09: Admin moderation + audit ---
+
+export type ReviewStatus = "pending" | "approved" | "rejected" | "removed";
+
+export type DistilledInsightStatus =
+  | "pending"
+  | "approved"
+  | "rejected"
+  | "hidden";
+
+export type AdminReviewModerationItem = {
+  id: string;
+  property_id: string;
+  property_display_name: string;
+  user_id: string;
+  status: ReviewStatus;
+  management_responsiveness: 0 | 1 | 2 | 3 | 4 | 5;
+  maintenance_timeliness: 0 | 1 | 2 | 3 | 4 | 5;
+  listing_accuracy: 0 | 1 | 2 | 3 | 4 | 5;
+  fee_transparency: 0 | 1 | 2 | 3 | 4 | 5;
+  lease_clarity: 0 | 1 | 2 | 3 | 4 | 5;
+  text_input: string | null;
+  tenancy_start: string | null;
+  tenancy_end: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type AdminReviewStatusUpdateInput = {
+  status: ReviewStatus;
+};
+
+export type AdminInsightModerationItem = {
+  property_id: string;
+  property_display_name: string;
+  insights_text: string;
+  status: DistilledInsightStatus;
+  screened: boolean;
+  screening_flags: Record<string, unknown> | null;
+  last_generated_at: string;
+  screened_at: string | null;
+  updated_at: string;
+};
+
+export type AdminInsightStatusUpdateInput = {
+  status: DistilledInsightStatus;
+};
+
+export type AdminAuditLogItem = {
+  id: string;
+  admin_user_id: string;
+  action_type: string;
+  target_type: string;
+  target_id: string;
+  details: Record<string, unknown> | null;
+  created_at: string;
+};

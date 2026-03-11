@@ -112,6 +112,18 @@ export default function AdminLayout({
               Properties
             </Link>
             <Link
+              href="/admin/reviews"
+              className="text-sm font-medium text-zinc-600 hover:text-foreground dark:text-zinc-400 dark:hover:text-foreground"
+            >
+              Reviews
+            </Link>
+            <Link
+              href="/admin/insights"
+              className="text-sm font-medium text-zinc-600 hover:text-foreground dark:text-zinc-400 dark:hover:text-foreground"
+            >
+              Insights
+            </Link>
+            <Link
               href="/"
               className="text-sm font-medium text-zinc-600 hover:text-foreground dark:text-zinc-400 dark:hover:text-foreground"
             >

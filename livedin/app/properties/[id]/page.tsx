@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { PublicSiteHeader } from "@/components/auth/PublicSiteHeader";
 import { getPropertyDetail } from "@/lib/property-detail";
 import type { PropertyDetailPublic } from "@/lib/types";
 
@@ -125,6 +126,7 @@ export default async function PropertyDetailPage({ params }: Props) {
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-950 dark:bg-slate-950 dark:text-slate-50">
+      <PublicSiteHeader />
       <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
         <div className="mb-8 flex flex-wrap items-center gap-3">
           <Link
