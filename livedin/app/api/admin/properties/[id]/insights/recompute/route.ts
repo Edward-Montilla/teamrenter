@@ -4,7 +4,7 @@ import { recomputeDistilledInsightForProperty } from "@/lib/distilled-insights";
 
 export async function POST(
   req: NextRequest,
-  context: { params: Promise<{ propertyId: string }> }
+  context: { params: Promise<{ id: string }> }
 ) {
   const admin = await getAdminFromRequest(req);
   if (!admin) {
@@ -14,13 +14,13 @@ export async function POST(
     );
   }
 
-  const { propertyId } = await context.params;
-  if (!propertyId) {
+  const { id } = await context.params;
+  if (!id) {
     return NextResponse.json({ message: "Property ID required." }, { status: 400 });
   }
 
   try {
-    const result = await recomputeDistilledInsightForProperty(admin.supabase, propertyId);
+    const result = await recomputeDistilledInsightForProperty(admin.supabase, id);
 
     if (!result.ok) {
       const status = result.code === "property_not_found" ? 404 : 422;
@@ -31,9 +31,9 @@ export async function POST(
       admin_user_id: admin.user.id,
       action_type: "insight_recompute",
       target_type: "insight",
-      target_id: propertyId,
+      target_id: id,
       details: {
-        property_id: propertyId,
+        property_id: id,
         source_review_count: result.source_review_count,
         status: result.insight.status,
       },
