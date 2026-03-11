@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createClient } from "@supabase/supabase-js";
-import type { ReviewCreateInput } from "@/lib/types";
+import type { ReviewCreateInput, ReviewScore } from "@/lib/types";
+import { isValidReviewScore } from "@/lib/validation/review";
 
 function getEnv(name: string): string {
   const value = process.env[name];
@@ -36,11 +37,15 @@ function validateReviewBody(body: unknown): { ok: true; data: ReviewCreateInput 
     "fee_transparency",
     "lease_clarity",
   ] as const;
-  const metrics: Record<string, number> = {};
+  const metrics: Record<string, ReviewScore> = {};
   for (const key of metricKeys) {
     const v = b[key];
-    if (typeof v !== "number" || !Number.isInteger(v) || v < 0 || v > 5) {
-      return { ok: false, status: 400, message: `${key} must be an integer 0–5.` };
+    if (!isValidReviewScore(v)) {
+      return {
+        ok: false,
+        status: 400,
+        message: `${key} must be between 0 and 5 in 0.5 increments.`,
+      };
     }
     metrics[key] = v;
   }
@@ -73,11 +78,11 @@ function validateReviewBody(body: unknown): { ok: true; data: ReviewCreateInput 
 
   const data: ReviewCreateInput = {
     property_id,
-    management_responsiveness: metrics.management_responsiveness as 0 | 1 | 2 | 3 | 4 | 5,
-    maintenance_timeliness: metrics.maintenance_timeliness as 0 | 1 | 2 | 3 | 4 | 5,
-    listing_accuracy: metrics.listing_accuracy as 0 | 1 | 2 | 3 | 4 | 5,
-    fee_transparency: metrics.fee_transparency as 0 | 1 | 2 | 3 | 4 | 5,
-    lease_clarity: metrics.lease_clarity as 0 | 1 | 2 | 3 | 4 | 5,
+    management_responsiveness: metrics.management_responsiveness,
+    maintenance_timeliness: metrics.maintenance_timeliness,
+    listing_accuracy: metrics.listing_accuracy,
+    fee_transparency: metrics.fee_transparency,
+    lease_clarity: metrics.lease_clarity,
     text_input,
     tenancy_start,
     tenancy_end,

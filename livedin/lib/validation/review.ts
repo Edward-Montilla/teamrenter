@@ -3,7 +3,7 @@
  * Pure functions; no external deps.
  */
 
-import type { ReviewCreateInput } from "@/lib/types";
+import type { ReviewCreateInput, ReviewScore } from "@/lib/types";
 
 const METRIC_KEYS = [
   "management_responsiveness",
@@ -25,6 +25,16 @@ const TEXT_INPUT_MAX = 500;
 
 export type ReviewValidationErrors = Partial<Record<keyof ReviewCreateInput, string>>;
 
+export function isValidReviewScore(value: unknown): value is ReviewScore {
+  return (
+    typeof value === "number" &&
+    Number.isFinite(value) &&
+    value >= 0 &&
+    value <= 5 &&
+    Number.isInteger(value * 2)
+  );
+}
+
 export function validateReviewCreateInput(
   input: Partial<ReviewCreateInput>
 ): { valid: boolean; errors: ReviewValidationErrors } {
@@ -37,14 +47,9 @@ export function validateReviewCreateInput(
   for (const key of METRIC_KEYS) {
     const value = input[key];
     if (value === undefined || value === null) {
-      errors[key] = `Please rate ${METRIC_LABELS[key].toLowerCase()} (0–5).`;
-    } else if (
-      typeof value !== "number" ||
-      !Number.isInteger(value) ||
-      value < 0 ||
-      value > 5
-    ) {
-      errors[key] = `${METRIC_LABELS[key]} must be a number between 0 and 5.`;
+      errors[key] = `Please rate ${METRIC_LABELS[key].toLowerCase()} (0-5 in 0.5 increments).`;
+    } else if (!isValidReviewScore(value)) {
+      errors[key] = `${METRIC_LABELS[key]} must be between 0 and 5 in 0.5 increments.`;
     }
   }
 

@@ -2,7 +2,12 @@
 
 import { useState } from "react";
 import { FeedbackPanel } from "@/components/ui/FeedbackPanel";
-import type { ReviewCreateInput, ReviewableProperty } from "@/lib/types";
+import { StarRatingInput } from "@/components/reviews/StarRatingInput";
+import type {
+  ReviewCreateInput,
+  ReviewScore,
+  ReviewableProperty,
+} from "@/lib/types";
 import {
   inputClass,
   primaryButtonClass,
@@ -49,7 +54,7 @@ export function ReviewFormStep({
   onBack,
   submitError,
 }: ReviewFormStepProps) {
-  const [metrics, setMetrics] = useState<Record<(typeof METRIC_KEYS)[number], number | "">>({
+  const [metrics, setMetrics] = useState<Record<(typeof METRIC_KEYS)[number], ReviewScore | "">>({
     management_responsiveness: "",
     maintenance_timeliness: "",
     listing_accuracy: "",
@@ -62,11 +67,11 @@ export function ReviewFormStep({
   const [errors, setErrors] = useState<ReviewValidationErrors>({});
   const [submitting, setSubmitting] = useState(false);
 
-  const handleMetricChange = (key: (typeof METRIC_KEYS)[number], value: string) => {
-    const num = value === "" ? "" : parseInt(value, 10);
-    if (num === "" || (Number.isInteger(num) && num >= 0 && num <= 5)) {
-      setMetrics((prev) => ({ ...prev, [key]: num }));
-    }
+  const handleMetricChange = (
+    key: (typeof METRIC_KEYS)[number],
+    value: ReviewScore | "",
+  ) => {
+    setMetrics((prev) => ({ ...prev, [key]: value }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -76,23 +81,23 @@ export function ReviewFormStep({
       management_responsiveness:
         metrics.management_responsiveness === ""
           ? undefined
-          : (metrics.management_responsiveness as 0 | 1 | 2 | 3 | 4 | 5),
+          : metrics.management_responsiveness,
       maintenance_timeliness:
         metrics.maintenance_timeliness === ""
           ? undefined
-          : (metrics.maintenance_timeliness as 0 | 1 | 2 | 3 | 4 | 5),
+          : metrics.maintenance_timeliness,
       listing_accuracy:
         metrics.listing_accuracy === ""
           ? undefined
-          : (metrics.listing_accuracy as 0 | 1 | 2 | 3 | 4 | 5),
+          : metrics.listing_accuracy,
       fee_transparency:
         metrics.fee_transparency === ""
           ? undefined
-          : (metrics.fee_transparency as 0 | 1 | 2 | 3 | 4 | 5),
+          : metrics.fee_transparency,
       lease_clarity:
         metrics.lease_clarity === ""
           ? undefined
-          : (metrics.lease_clarity as 0 | 1 | 2 | 3 | 4 | 5),
+          : metrics.lease_clarity,
       text_input: textInput.trim() || null,
       tenancy_start: tenancyStart.trim() || null,
       tenancy_end: tenancyEnd.trim() || null,
@@ -106,11 +111,11 @@ export function ReviewFormStep({
     try {
       const fullPayload: ReviewCreateInput = {
         property_id: property.id,
-        management_responsiveness: (payload.management_responsiveness ?? 0) as 0 | 1 | 2 | 3 | 4 | 5,
-        maintenance_timeliness: (payload.maintenance_timeliness ?? 0) as 0 | 1 | 2 | 3 | 4 | 5,
-        listing_accuracy: (payload.listing_accuracy ?? 0) as 0 | 1 | 2 | 3 | 4 | 5,
-        fee_transparency: (payload.fee_transparency ?? 0) as 0 | 1 | 2 | 3 | 4 | 5,
-        lease_clarity: (payload.lease_clarity ?? 0) as 0 | 1 | 2 | 3 | 4 | 5,
+        management_responsiveness: payload.management_responsiveness ?? 0,
+        maintenance_timeliness: payload.maintenance_timeliness ?? 0,
+        listing_accuracy: payload.listing_accuracy ?? 0,
+        fee_transparency: payload.fee_transparency ?? 0,
+        lease_clarity: payload.lease_clarity ?? 0,
         text_input: payload.text_input ?? null,
         tenancy_start: payload.tenancy_start ?? null,
         tenancy_end: payload.tenancy_end ?? null,
@@ -165,40 +170,20 @@ export function ReviewFormStep({
               Ratings
             </h3>
             <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-              Score each category from 0 to 5. Enter whole numbers only.
+              Click the stars to rate each category from 0 to 5. Half-star steps are supported.
             </p>
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
             {METRIC_KEYS.map((key) => (
-              <div key={key} className="rounded-2xl border border-zinc-200 p-4 dark:border-zinc-800">
-                <label
-                  htmlFor={`metric-${key}`}
-                  className="block text-sm font-medium text-zinc-700 dark:text-zinc-300"
-                >
-                  {METRIC_LABELS[key]}
-                </label>
-                <input
-                  id={`metric-${key}`}
-                  type="number"
-                  min={0}
-                  max={5}
-                  step={1}
-                  value={metrics[key] === "" ? "" : metrics[key]}
-                  onChange={(e) => handleMetricChange(key, e.target.value)}
-                  className={`${inputClass} mt-3 w-24`}
-                  aria-invalid={Boolean(errors[key])}
-                  aria-describedby={errors[key] ? `error-${key}` : undefined}
-                />
-                {errors[key] && (
-                  <p
-                    id={`error-${key}`}
-                    className="mt-1 text-sm text-red-600 dark:text-red-400"
-                    role="alert"
-                  >
-                    {errors[key]}
-                  </p>
-                )}
-              </div>
+              <StarRatingInput
+                key={key}
+                id={`metric-${key}`}
+                label={METRIC_LABELS[key]}
+                value={metrics[key]}
+                onChange={(value) => handleMetricChange(key, value)}
+                error={errors[key]}
+                helperText="Use the left or right side of each star for half-star precision."
+              />
             ))}
           </div>
         </section>

@@ -82,13 +82,26 @@ export type PropertyDetailPublic = {
 
 // --- Slice 03: Review submission ---
 
+export type ReviewScore =
+  | 0
+  | 0.5
+  | 1
+  | 1.5
+  | 2
+  | 2.5
+  | 3
+  | 3.5
+  | 4
+  | 4.5
+  | 5;
+
 export type ReviewCreateInput = {
   property_id: string;
-  management_responsiveness: 0 | 1 | 2 | 3 | 4 | 5;
-  maintenance_timeliness: 0 | 1 | 2 | 3 | 4 | 5;
-  listing_accuracy: 0 | 1 | 2 | 3 | 4 | 5;
-  fee_transparency: 0 | 1 | 2 | 3 | 4 | 5;
-  lease_clarity: 0 | 1 | 2 | 3 | 4 | 5;
+  management_responsiveness: ReviewScore;
+  maintenance_timeliness: ReviewScore;
+  listing_accuracy: ReviewScore;
+  fee_transparency: ReviewScore;
+  lease_clarity: ReviewScore;
   text_input: string | null; // max 500 chars, private
   tenancy_start: string | null; // ISO date
   tenancy_end: string | null; // ISO date, >= tenancy_start
@@ -159,11 +172,11 @@ export type AdminReviewModerationItem = {
   property_display_name: string;
   user_id: string;
   status: ReviewStatus;
-  management_responsiveness: 0 | 1 | 2 | 3 | 4 | 5;
-  maintenance_timeliness: 0 | 1 | 2 | 3 | 4 | 5;
-  listing_accuracy: 0 | 1 | 2 | 3 | 4 | 5;
-  fee_transparency: 0 | 1 | 2 | 3 | 4 | 5;
-  lease_clarity: 0 | 1 | 2 | 3 | 4 | 5;
+  management_responsiveness: ReviewScore;
+  maintenance_timeliness: ReviewScore;
+  listing_accuracy: ReviewScore;
+  fee_transparency: ReviewScore;
+  lease_clarity: ReviewScore;
   text_input: string | null;
   tenancy_start: string | null;
   tenancy_end: string | null;

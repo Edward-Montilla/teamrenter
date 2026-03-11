@@ -1,17 +1,17 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { getAdminFromRequest } from "@/lib/admin-auth";
-import type { AdminReviewModerationItem, ReviewStatus } from "@/lib/types";
+import type { AdminReviewModerationItem, ReviewScore, ReviewStatus } from "@/lib/types";
 
 type ReviewRow = {
   id: string;
   property_id: string;
   user_id: string;
   status: ReviewStatus;
-  management_responsiveness: 0 | 1 | 2 | 3 | 4 | 5;
-  maintenance_timeliness: 0 | 1 | 2 | 3 | 4 | 5;
-  listing_accuracy: 0 | 1 | 2 | 3 | 4 | 5;
-  fee_transparency: 0 | 1 | 2 | 3 | 4 | 5;
-  lease_clarity: 0 | 1 | 2 | 3 | 4 | 5;
+  management_responsiveness: ReviewScore;
+  maintenance_timeliness: ReviewScore;
+  listing_accuracy: ReviewScore;
+  fee_transparency: ReviewScore;
+  lease_clarity: ReviewScore;
   text_input: string | null;
   tenancy_start: string | null;
   tenancy_end: string | null;
