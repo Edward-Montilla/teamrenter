@@ -1,9 +1,11 @@
 # Vertical Slice Plan (MVP)
 
 ## Ordering Rule
+
 Frontend-first (mock data) -> DB (Supabase) -> Integration (wire-up)
 
 ## Source of Truth
+
 - Product docs:
   - `proj_docs/PRD - Team Renter.docx.pdf`
   - `proj_docs/Software Requirements.pdf`
@@ -18,6 +20,7 @@ Frontend-first (mock data) -> DB (Supabase) -> Integration (wire-up)
   - `proj_docs/UI Mockup/Rental Review Platform UI Mockups-5.png` (Frame 6: Review Done)
 
 ## Cross-Slice Decisions (Frozen)
+
 - Routes: `/`, `/properties/[id]`, `/submit-review/[propertyId]`, `/admin/*`
 - Rating display mapping:
   - `display_0_6 = round((avg_0_5 / 5.0) * 6.0)`
@@ -28,6 +31,7 @@ Frontend-first (mock data) -> DB (Supabase) -> Integration (wire-up)
   - New distilled insights start as `pending`
 
 ## Ordered Slices
+
 1. `01` Public browse/search
 2. `02` Property detail
 3. `03` Review form (gated states)
@@ -41,15 +45,19 @@ Frontend-first (mock data) -> DB (Supabase) -> Integration (wire-up)
 11. `11` Optional: photos via R2 + metadata
 12. `12` Authentication (sign-in/sign-up + Google OAuth)
 13. `13` Site-wide UI/UX polish + accessibility
+14. `14` Admin access request path
 
 ## Phase Grouping
+
 - Frontend-first: `01-03`
 - DB/security foundation: `04-05`
 - Integration/admin/optional: `06-11`
 - Auth: `12` (can follow `05`; replaces mock auth in `03`/`07`)
 - UI/UX polish: `13` (best after `06-12`, when real states and flows exist)
+- Access request / role elevation: `14` (best after `05`, `09`, and `12`)
 
 ## Dependency Chain
+
 - `01` -> `02` -> `03` (UI-first vertical slices with mock contracts)
 - `03` + frozen docs -> `04` (schema and constraints mirror mocked form contracts)
 - `04` -> `05` (RLS policies applied on finalized entities/functions)
@@ -60,3 +68,4 @@ Frontend-first (mock data) -> DB (Supabase) -> Integration (wire-up)
 - `07` + `09` -> `10` (insight recompute and moderation workflow)
 - `08` + `05` -> `11` (optional R2 uploads and safe public display)
 - `06-12` -> `13` (polish real public, auth, review, and admin journeys once they are wired)
+- `05` + `09` + `12` -> `14` (request flow depends on auth, role enforcement, and an admin review surface)
