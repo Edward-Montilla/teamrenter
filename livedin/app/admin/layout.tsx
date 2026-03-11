@@ -126,6 +126,12 @@ export default function AdminLayout({
               Reviews
             </Link>
             <Link
+              href="/admin/access-requests"
+              className={secondaryButtonClass}
+            >
+              Access requests
+            </Link>
+            <Link
               href="/admin/insights"
               className={secondaryButtonClass}
             >

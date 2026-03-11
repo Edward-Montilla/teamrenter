@@ -213,3 +213,57 @@ export type AdminAuditLogItem = {
   details: Record<string, unknown> | null;
   created_at: string;
 };
+
+// --- Slice 14: Admin access requests ---
+
+export type CurrentUserRole = "public" | "verified" | "admin";
+export type AdminRoleRequestState = "none" | "pending" | "approved" | "rejected";
+export type AdminRoleReviewStatus = Exclude<AdminRoleRequestState, "none" | "pending">;
+
+export type AdminRoleRequestCreateInput = {
+  reason: string;
+  team_context?: string;
+};
+
+export type AdminRoleRequestCreateResponse = {
+  status: "pending";
+  submittedAt: string;
+};
+
+export type AdminRoleRequestSummary = {
+  id: string;
+  reason: string;
+  team_context: string | null;
+  status: Exclude<AdminRoleRequestState, "none">;
+  review_notes: string | null;
+  reviewed_at: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type AdminRoleRequestStatusResponse = {
+  eligible: boolean;
+  hasActiveRequest: boolean;
+  requestStatus: AdminRoleRequestState;
+  currentRole: CurrentUserRole;
+  latestRequest: AdminRoleRequestSummary | null;
+};
+
+export type AdminRoleRequestQueueItem = {
+  id: string;
+  user_id: string;
+  email_snapshot: string;
+  reason: string;
+  team_context: string | null;
+  status: Exclude<AdminRoleRequestState, "none">;
+  review_notes: string | null;
+  reviewed_by: string | null;
+  reviewed_at: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type AdminRoleRequestReviewInput = {
+  status: AdminRoleReviewStatus;
+  review_notes?: string;
+};

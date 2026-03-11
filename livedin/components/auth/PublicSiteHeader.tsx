@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { SignOutButton } from "@/components/auth/SignOutButton";
 import { ThemeMenu } from "@/components/theme/ThemeMenu";
 import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
+import type { AdminRoleRequestStatusResponse } from "@/lib/types";
 import {
   pageContainerClass,
   primaryButtonClass,
@@ -31,6 +32,8 @@ export function PublicSiteHeader() {
   });
   const [email, setEmail] = useState<string | null>(null);
   const [profile, setProfile] = useState<HeaderProfile | null>(null);
+  const [adminRequestStatus, setAdminRequestStatus] =
+    useState<AdminRoleRequestStatusResponse | null>(null);
 
   useEffect(() => {
     const supabase = getSupabaseBrowserClient();
@@ -49,6 +52,7 @@ export function PublicSiteHeader() {
       if (!session?.user) {
         setEmail(null);
         setProfile(null);
+        setAdminRequestStatus(null);
         setLoading(false);
         return;
       }
@@ -63,6 +67,28 @@ export function PublicSiteHeader() {
 
       if (!active) return;
       setProfile(data ?? null);
+
+      if (session.access_token) {
+        const requestStatusResponse = await fetch("/api/admin-access-request", {
+          headers: {
+            Authorization: `Bearer ${session.access_token}`,
+          },
+        }).catch(() => null);
+
+        if (!active) return;
+
+        if (requestStatusResponse?.ok) {
+          const requestStatus =
+            (await requestStatusResponse.json()) as AdminRoleRequestStatusResponse;
+          if (!active) return;
+          setAdminRequestStatus(requestStatus);
+        } else {
+          setAdminRequestStatus(null);
+        }
+      } else {
+        setAdminRequestStatus(null);
+      }
+
       setLoading(false);
     };
 
@@ -120,6 +146,20 @@ export function PublicSiteHeader() {
                   Admin
                 </Link>
               )}
+              {profile?.role !== "admin" &&
+              adminRequestStatus &&
+              (adminRequestStatus.eligible ||
+                adminRequestStatus.hasActiveRequest ||
+                adminRequestStatus.requestStatus === "rejected") ? (
+                <Link
+                  href="/signup/request-admin"
+                  className={secondaryButtonClass}
+                >
+                  {adminRequestStatus.hasActiveRequest
+                    ? "Admin request"
+                    : "Request admin access"}
+                </Link>
+              ) : null}
               <SignOutButton />
             </>
           ) : (
