@@ -9,7 +9,7 @@ import type { AdminPropertyCreateInput } from "@/lib/types";
 export default function NewPropertyPage() {
   const router = useRouter();
 
-  const handleSubmit = async (data: AdminPropertyCreateInput) => {
+  const handleSubmit = async (data: AdminPropertyCreateInput | Record<string, unknown>) => {
     const supabase = getSupabaseBrowserClient();
     if (!supabase) throw new Error("Not configured");
     const {
@@ -23,7 +23,7 @@ export default function NewPropertyPage() {
         "Content-Type": "application/json",
         Authorization: `Bearer ${session.access_token}`,
       },
-      body: JSON.stringify(data),
+      body: JSON.stringify(data as AdminPropertyCreateInput),
     });
 
     if (!res.ok) {

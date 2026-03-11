@@ -11,29 +11,31 @@ export default function EditPropertyPage() {
   const params = useParams();
   const router = useRouter();
   const id = typeof params?.id === "string" ? params.id : "";
+  const hasValidId = Boolean(id);
   const [property, setProperty] = useState<AdminPropertyListItem | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(hasValidId);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!id) {
-      setLoading(false);
-      setError("Invalid property ID");
+    if (!hasValidId) {
       return;
     }
 
     let cancelled = false;
-    const supabase = getSupabaseBrowserClient();
-    if (!supabase) {
-      setError("Not configured");
-      setLoading(false);
-      return;
-    }
-
     async function load() {
+      const supabase = getSupabaseBrowserClient();
+      if (!supabase) {
+        if (!cancelled) {
+          setError("Not configured");
+          setLoading(false);
+        }
+        return;
+      }
+
       const {
         data: { session },
       } = await supabase.auth.getSession();
+      if (cancelled) return;
       if (!session?.access_token) {
         setError("Not signed in");
         setLoading(false);
@@ -62,7 +64,7 @@ export default function EditPropertyPage() {
     return () => {
       cancelled = true;
     };
-  }, [id]);
+  }, [hasValidId, id]);
 
   const handleSubmit = async (data: Record<string, unknown>) => {
     const supabase = getSupabaseBrowserClient();
@@ -87,6 +89,20 @@ export default function EditPropertyPage() {
     }
     router.push("/admin/properties");
   };
+
+  if (!hasValidId) {
+    return (
+      <div>
+        <Link
+          href="/admin/properties"
+          className="text-sm font-medium text-zinc-600 hover:text-foreground dark:text-zinc-400 dark:hover:text-foreground"
+        >
+          ← Back to properties
+        </Link>
+        <p className="mt-4 text-red-600 dark:text-red-400">Invalid property ID</p>
+      </div>
+    );
+  }
 
   if (loading) {
     return (

@@ -14,15 +14,17 @@ export default function AdminLayout({
   const [state, setState] = useState<GuardState>("loading");
 
   useEffect(() => {
-    const supabase = getSupabaseBrowserClient();
-    if (!supabase) {
-      setState("forbidden");
-      return;
-    }
-
     let cancelled = false;
 
     async function check() {
+      const supabase = getSupabaseBrowserClient();
+      if (!supabase) {
+        if (!cancelled) {
+          setState("forbidden");
+        }
+        return;
+      }
+
       const {
         data: { session },
       } = await supabase.auth.getSession();

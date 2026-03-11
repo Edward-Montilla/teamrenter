@@ -16,6 +16,20 @@ type DbRow = {
   updated_at: string;
 };
 
+type DbUpdateRow = Partial<
+  Pick<
+    DbRow,
+    | "display_name"
+    | "address_line1"
+    | "address_line2"
+    | "city"
+    | "province"
+    | "postal_code"
+    | "management_company"
+    | "status"
+  >
+>;
+
 export async function GET(
   req: NextRequest,
   context: { params: Promise<{ id: string }> }
@@ -165,7 +179,7 @@ export async function PATCH(
   }
   const { data: input } = validation;
 
-  const updatePayload: Record<string, unknown> = {};
+  const updatePayload: DbUpdateRow = {};
   if (input.display_name !== undefined) updatePayload.display_name = input.display_name;
   if (input.address_line1 !== undefined) updatePayload.address_line1 = input.address_line1;
   if (input.address_line2 !== undefined) updatePayload.address_line2 = input.address_line2;
@@ -177,7 +191,7 @@ export async function PATCH(
 
   const { data: property, error } = await admin.supabase
     .from("properties")
-    .update(updatePayload)
+    .update(updatePayload as never)
     .eq("id", id)
     .select("id")
     .maybeSingle();
