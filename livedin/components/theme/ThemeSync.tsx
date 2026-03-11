@@ -7,11 +7,6 @@ import {
   THEME_STORAGE_KEY,
   type AppThemeKey,
 } from "@/lib/themes";
-import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
-
-type ThemeProfile = {
-  theme_key: string | null;
-};
 
 export function applyTheme(themeKey: AppThemeKey) {
   document.documentElement.dataset.theme = themeKey;
@@ -31,52 +26,18 @@ export function ThemeSync() {
     }
 
     applyTheme(getStoredTheme());
-
-    const supabase = getSupabaseBrowserClient();
-    if (!supabase) {
-      return;
-    }
-
-    let active = true;
-
-    const syncTheme = async () => {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-
-      if (!active || !session?.user) {
+    const syncTheme = (event: StorageEvent) => {
+      if (event.key !== null && event.key !== THEME_STORAGE_KEY) {
         return;
       }
 
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("theme_key")
-        .eq("user_id", session.user.id)
-        .maybeSingle<ThemeProfile>();
-
-      if (!active) {
-        return;
-      }
-
-      const nextTheme =
-        !error && isAppThemeKey(data?.theme_key)
-          ? data.theme_key
-          : getStoredTheme();
-
-      applyTheme(nextTheme);
+      const nextTheme = event.newValue;
+      applyTheme(isAppThemeKey(nextTheme) ? nextTheme : DEFAULT_THEME_KEY);
     };
 
-    void syncTheme();
-
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange(() => {
-      void syncTheme();
-    });
-
+    window.addEventListener("storage", syncTheme);
     return () => {
-      active = false;
-      subscription.unsubscribe();
+      window.removeEventListener("storage", syncTheme);
     };
   }, []);
 

@@ -2,8 +2,9 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
 import { SignOutButton } from "@/components/auth/SignOutButton";
+import { ThemeMenu } from "@/components/theme/ThemeMenu";
+import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
 import {
   pageContainerClass,
   primaryButtonClass,
@@ -96,21 +97,17 @@ export function PublicSiteHeader() {
             >
               Leave a review
             </Link>
-            {profile?.email_verified ? (
-              <Link
-                href="/themes"
-                className="transition hover:text-zinc-950 dark:hover:text-zinc-100"
-              >
-                Themes
-              </Link>
-            ) : null}
           </nav>
         </div>
         <div className="flex flex-wrap items-center gap-3 text-sm">
           {loading ? (
-            <span className="text-zinc-500 dark:text-zinc-400">Checking session…</span>
+            <>
+              <ThemeMenu />
+              <span className="text-zinc-500 dark:text-zinc-400">Checking session…</span>
+            </>
           ) : email ? (
             <>
+              <ThemeMenu />
               <span className="hidden rounded-full bg-zinc-100 px-3 py-1 text-zinc-600 dark:bg-zinc-900 dark:text-zinc-400 sm:inline">
                 {formatUserLabel(email)}
                 {profile?.email_verified ? " · verified" : ""}
@@ -123,15 +120,11 @@ export function PublicSiteHeader() {
                   Admin
                 </Link>
               )}
-              {profile?.email_verified && (
-                <Link href="/themes" className={secondaryButtonClass}>
-                  Themes
-                </Link>
-              )}
               <SignOutButton />
             </>
           ) : (
             <>
+              <ThemeMenu />
               <Link href="/submit-review/new" className={secondaryButtonClass}>
                 Leave a review
               </Link>
