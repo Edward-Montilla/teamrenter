@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { AuthPromptCard } from "@/components/auth/AuthPromptCard";
 import { SignOutButton } from "@/components/auth/SignOutButton";
-import { applyTheme } from "@/components/theme/ThemeSync";
+import { applyTheme, getStoredTheme } from "@/components/theme/ThemeSync";
 import { FeedbackPanel } from "@/components/ui/FeedbackPanel";
 import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
 import {
@@ -21,8 +21,11 @@ import {
 
 type GateState = "loading" | "unauthenticated" | "unverified" | "ready";
 
-type ThemeProfile = {
+type VerificationProfile = {
   email_verified: boolean;
+};
+
+type ThemeProfile = {
   theme_key: string | null;
 };
 
@@ -119,29 +122,41 @@ export function ThemeSettingsPanel() {
       } = await supabase.auth.getSession();
 
       if (!active) return;
-      if (!session?.user) {
+      if (!session?.access_token || !session.user) {
         setGateState("unauthenticated");
         return;
       }
 
-      const { data } = await supabase
+      const fallbackTheme = getStoredTheme();
+      const { data: verificationData } = await supabase
         .from("profiles")
-        .select("email_verified, theme_key")
+        .select("email_verified")
+        .eq("user_id", session.user.id)
+        .maybeSingle<VerificationProfile>();
+
+      if (!active) {
+        return;
+      }
+
+      const { data: themeData } = await supabase
+        .from("profiles")
+        .select("theme_key")
         .eq("user_id", session.user.id)
         .maybeSingle<ThemeProfile>();
 
-      if (!active || !data) {
-        setGateState("unauthenticated");
+      if (!active) {
         return;
       }
 
-      const nextTheme = isAppThemeKey(data.theme_key)
-        ? data.theme_key
-        : DEFAULT_THEME_KEY;
+      const nextTheme = isAppThemeKey(themeData?.theme_key)
+        ? themeData.theme_key
+        : fallbackTheme;
+      const isVerified =
+        verificationData?.email_verified ?? Boolean(session.user.email_confirmed_at);
 
       setCurrentTheme(nextTheme);
       applyTheme(nextTheme);
-      setGateState(data.email_verified ? "ready" : "unverified");
+      setGateState(isVerified ? "ready" : "unverified");
     };
 
     void sync();

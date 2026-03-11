@@ -10,7 +10,6 @@ import {
 import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
 
 type ThemeProfile = {
-  email_verified: boolean;
   theme_key: string | null;
 };
 
@@ -20,7 +19,7 @@ export function applyTheme(themeKey: AppThemeKey) {
   window.localStorage.setItem(THEME_STORAGE_KEY, themeKey);
 }
 
-function getStoredTheme(): AppThemeKey {
+export function getStoredTheme(): AppThemeKey {
   const stored = window.localStorage.getItem(THEME_STORAGE_KEY);
   return isAppThemeKey(stored) ? stored : DEFAULT_THEME_KEY;
 }
@@ -49,19 +48,20 @@ export function ThemeSync() {
         return;
       }
 
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from("profiles")
-        .select("email_verified, theme_key")
+        .select("theme_key")
         .eq("user_id", session.user.id)
         .maybeSingle<ThemeProfile>();
 
-      if (!active || !data) {
+      if (!active) {
         return;
       }
 
-      const nextTheme = isAppThemeKey(data.theme_key)
-        ? data.theme_key
-        : getStoredTheme();
+      const nextTheme =
+        !error && isAppThemeKey(data?.theme_key)
+          ? data.theme_key
+          : getStoredTheme();
 
       applyTheme(nextTheme);
     };
