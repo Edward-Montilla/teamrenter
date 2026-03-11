@@ -196,13 +196,43 @@ export function ThemeSettingsPanel() {
         throw new Error("Sign in again to save your theme.");
       }
 
-      const { error: updateError } = await supabase
+      const { data: updatedProfile, error: updateError } = await supabase
         .from("profiles")
         .update({ theme_key: themeKey })
-        .eq("user_id", session.user.id);
+        .eq("user_id", session.user.id)
+        .select("user_id")
+        .maybeSingle<{ user_id: string }>();
 
       if (updateError) {
         throw updateError;
+      }
+
+      if (!updatedProfile) {
+        const isVerified = Boolean(session.user.email_confirmed_at);
+        const { error: insertError } = await supabase.from("profiles").insert({
+          user_id: session.user.id,
+          role: isVerified ? "verified" : "public",
+          email_verified: isVerified,
+          theme_key: themeKey,
+        });
+
+        if (insertError) {
+          throw insertError;
+        }
+      }
+
+      const { data: savedTheme, error: readbackError } = await supabase
+        .from("profiles")
+        .select("theme_key")
+        .eq("user_id", session.user.id);
+
+      if (readbackError) {
+        throw readbackError;
+      }
+
+      const persistedTheme = savedTheme?.[0]?.theme_key;
+      if (!isAppThemeKey(persistedTheme) || persistedTheme !== themeKey) {
+        throw new Error("Theme save did not persist to your profile.");
       }
 
       setMessage("Theme saved to your verified account.");
