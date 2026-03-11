@@ -85,10 +85,10 @@ export default function AdminLayout({
         <div className={`${pageContainerClass} max-w-lg py-16`}>
           <AuthPromptCard
             title="Sign in to continue"
-            description="Use an admin account to manage properties."
+            description="Use an admin account to open the admin command center."
             primaryAction={{
               label: "Sign in",
-              href: "/sign-in?redirect=%2Fadmin%2Fproperties",
+              href: "/sign-in?redirect=%2Fadmin",
             }}
             secondaryAction={{ label: "Back to home", href: "/" }}
           />
@@ -103,16 +103,22 @@ export default function AdminLayout({
         <div className={`${pageContainerClass} flex flex-wrap items-center justify-between gap-4 py-4`}>
           <div>
             <Link
-              href="/admin/properties"
+              href="/admin"
               className="text-lg font-semibold text-foreground hover:underline"
             >
               Admin
             </Link>
             <p className="text-sm text-zinc-500 dark:text-zinc-400">
-              Moderate data, manage properties, and review publication state.
+              Audit reviews, manage properties, and review publication state.
             </p>
           </div>
           <nav className="flex flex-wrap gap-3">
+            <Link
+              href="/admin"
+              className={secondaryButtonClass}
+            >
+              Dashboard
+            </Link>
             <Link
               href="/admin/properties"
               className={secondaryButtonClass}

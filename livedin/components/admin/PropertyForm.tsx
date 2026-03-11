@@ -8,6 +8,7 @@ type PropertyFormProps = {
   initial?: Partial<AdminPropertyListItem>;
   mode: "create" | "edit";
   onSubmit: (data: AdminPropertyCreateInput | Record<string, unknown>) => Promise<void>;
+  cancelHref?: string;
 };
 
 const defaultValues: AdminPropertyCreateInput = {
@@ -25,6 +26,7 @@ export function PropertyForm({
   initial,
   mode,
   onSubmit,
+  cancelHref = "/admin/properties",
 }: PropertyFormProps) {
   const [display_name, setDisplayName] = useState(initial?.display_name ?? defaultValues.display_name);
   const [address_line1, setAddressLine1] = useState(initial?.address_line1 ?? defaultValues.address_line1);
@@ -205,7 +207,7 @@ export function PropertyForm({
           {submitting ? "Saving…" : mode === "create" ? "Create property" : "Save changes"}
         </button>
         <Link
-          href="/admin/properties"
+          href={cancelHref}
           className="rounded-lg border border-zinc-300 bg-white px-4 py-2 text-sm font-medium text-foreground hover:bg-zinc-50 dark:border-zinc-600 dark:bg-zinc-900 dark:hover:bg-zinc-800"
         >
           Cancel

@@ -295,7 +295,7 @@ export function RequestAdminAccessPage() {
               tone="success"
               title="This account already has admin access"
               description="You can go straight to the admin area. No additional request is needed."
-              primaryAction={{ label: "Open admin", href: "/admin/properties" }}
+              primaryAction={{ label: "Open admin", href: "/admin" }}
               secondaryAction={{ label: "Back to home", href: "/" }}
             />
           </div>

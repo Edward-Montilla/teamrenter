@@ -223,3 +223,55 @@ export async function PATCH(
 
   return NextResponse.json({ id: property.id });
 }
+
+export async function DELETE(
+  req: NextRequest,
+  context: { params: Promise<{ id: string }> }
+) {
+  const admin = await getAdminFromRequest(req);
+  if (!admin) {
+    return NextResponse.json(
+      { message: "Forbidden. Admin access required." },
+      { status: 403 }
+    );
+  }
+
+  const { id } = await context.params;
+  if (!id) {
+    return NextResponse.json({ message: "Property ID required." }, { status: 400 });
+  }
+
+  const { data: property, error } = await admin.supabase
+    .from("properties")
+    .delete()
+    .eq("id", id)
+    .select("id, display_name")
+    .maybeSingle<{ id: string; display_name: string }>();
+
+  if (error) {
+    if (error.code === "PGRST301" || error.message?.toLowerCase().includes("row-level security")) {
+      return NextResponse.json(
+        { message: "Forbidden. Admin access required." },
+        { status: 403 }
+      );
+    }
+    return NextResponse.json(
+      { message: "Failed to delete property." },
+      { status: 500 }
+    );
+  }
+
+  if (!property) {
+    return NextResponse.json({ message: "Property not found." }, { status: 404 });
+  }
+
+  await admin.supabase.from("admin_audit_log").insert({
+    admin_user_id: admin.user.id,
+    action_type: "delete",
+    target_type: "property",
+    target_id: id,
+    details: { display_name: property.display_name },
+  } as never);
+
+  return NextResponse.json({ id: property.id });
+}

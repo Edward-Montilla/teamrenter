@@ -140,7 +140,7 @@ export function PublicSiteHeader() {
               </span>
               {profile?.role === "admin" && (
                 <Link
-                  href="/admin/properties"
+                  href="/admin"
                   className={secondaryButtonClass}
                 >
                   Admin

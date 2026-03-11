@@ -5,7 +5,11 @@ import Link from "next/link";
 import { FeedbackPanel } from "@/components/ui/FeedbackPanel";
 import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
 import type { AdminPropertyListItem } from "@/lib/types";
-import { primaryButtonClass, sectionCardClass } from "@/lib/ui";
+import {
+  destructiveButtonClass,
+  primaryButtonClass,
+  sectionCardClass,
+} from "@/lib/ui";
 
 function formatAddress(p: AdminPropertyListItem): string {
   const parts = [
@@ -22,6 +26,11 @@ export default function AdminPropertiesPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [togglingId, setTogglingId] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [statusMessage, setStatusMessage] = useState<{
+    tone: "success" | "error";
+    message: string;
+  } | null>(null);
 
   const fetchList = async () => {
     const supabase = getSupabaseBrowserClient();
@@ -73,6 +82,7 @@ export default function AdminPropertiesPage() {
     } = await supabase.auth.getSession();
     if (!session?.access_token) return;
 
+    setStatusMessage(null);
     setTogglingId(p.id);
     try {
       const res = await fetch(`/api/admin/properties/${p.id}`, {
@@ -85,9 +95,65 @@ export default function AdminPropertiesPage() {
           status: p.status === "active" ? "inactive" : "active",
         }),
       });
-      if (res.ok) await fetchList();
+      if (!res.ok) {
+        const json = (await res.json().catch(() => ({}))) as { message?: string };
+        setStatusMessage({
+          tone: "error",
+          message: json.message ?? "Failed to update property",
+        });
+        return;
+      }
+      await fetchList();
+      setStatusMessage({
+        tone: "success",
+        message: `${p.display_name} is now ${
+          p.status === "active" ? "inactive" : "active"
+        }.`,
+      });
     } finally {
       setTogglingId(null);
+    }
+  };
+
+  const deleteProperty = async (p: AdminPropertyListItem) => {
+    const confirmed = window.confirm(
+      `Delete "${p.display_name}"? This also removes its reviews, aggregates, and related admin records.`
+    );
+    if (!confirmed) return;
+
+    const supabase = getSupabaseBrowserClient();
+    if (!supabase?.auth) return;
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+    if (!session?.access_token) return;
+
+    setStatusMessage(null);
+    setDeletingId(p.id);
+    try {
+      const res = await fetch(`/api/admin/properties/${p.id}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
+      });
+
+      if (!res.ok) {
+        const json = (await res.json().catch(() => ({}))) as { message?: string };
+        setStatusMessage({
+          tone: "error",
+          message: json.message ?? "Failed to delete property",
+        });
+        return;
+      }
+
+      await fetchList();
+      setStatusMessage({
+        tone: "success",
+        message: `Deleted ${p.display_name}.`,
+      });
+    } finally {
+      setDeletingId(null);
     }
   };
 
@@ -125,6 +191,13 @@ export default function AdminPropertiesPage() {
           tone="error"
           description={error}
           primaryAction={{ label: "Retry", onClick: fetchList }}
+        />
+      )}
+
+      {statusMessage && !loading && (
+        <FeedbackPanel
+          tone={statusMessage.tone}
+          description={statusMessage.message}
         />
       )}
 
@@ -192,7 +265,7 @@ export default function AdminPropertiesPage() {
                       <button
                         type="button"
                         onClick={() => toggleStatus(p)}
-                        disabled={togglingId === p.id}
+                        disabled={togglingId === p.id || deletingId === p.id}
                         className={`${p.status === "active" ? "text-red-700 dark:text-red-300" : "text-foreground"} rounded-lg px-3 py-2 text-sm font-medium hover:bg-zinc-100 disabled:opacity-50 dark:hover:bg-zinc-900`}
                       >
                         {togglingId === p.id
@@ -200,6 +273,14 @@ export default function AdminPropertiesPage() {
                           : p.status === "active"
                             ? "Deactivate"
                             : "Activate"}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => void deleteProperty(p)}
+                        disabled={deletingId === p.id || togglingId === p.id}
+                        className={`${destructiveButtonClass} ml-2 px-3 py-2`}
+                      >
+                        {deletingId === p.id ? "Deleting…" : "Delete"}
                       </button>
                     </td>
                   </tr>
