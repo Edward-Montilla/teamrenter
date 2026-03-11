@@ -194,7 +194,7 @@ export async function PATCH(
     .update(updatePayload as never)
     .eq("id", id)
     .select("id")
-    .maybeSingle();
+    .maybeSingle<{ id: string }>();
 
   if (error) {
     if (error.code === "PGRST301" || error.message?.toLowerCase().includes("row-level security")) {
@@ -219,7 +219,7 @@ export async function PATCH(
     target_type: "property",
     target_id: id,
     details: updatePayload,
-  });
+  } as never);
 
   return NextResponse.json({ id: property.id });
 }

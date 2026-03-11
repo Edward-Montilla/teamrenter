@@ -93,7 +93,17 @@ export default function Home() {
   };
 
   useEffect(() => {
-    runSearch("");
+    async function loadInitialResults() {
+      try {
+        const res = await searchProperties("");
+        setData(res);
+        setState(res.items.length > 0 ? "ready" : "empty");
+      } catch {
+        setState("error");
+      }
+    }
+
+    void loadInitialResults();
   }, []);
 
   const handleSearchSubmit = (q: string) => {
@@ -147,11 +157,25 @@ export default function Home() {
               onRetry={handleRetry}
             />
           </section>
-          <aside
-            className="flex min-h-[300px] items-center justify-center rounded-lg border border-zinc-200 bg-zinc-100 text-zinc-500 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-400 lg:min-h-[500px]"
-            aria-hidden
-          >
-            Map placeholder
+          <aside className="rounded-lg border border-zinc-200 bg-white p-6 dark:border-zinc-700 dark:bg-zinc-900 lg:min-h-[500px]">
+            <h2 className="text-lg font-semibold text-foreground">
+              How Livedin works
+            </h2>
+            <div className="mt-4 space-y-4 text-sm text-zinc-600 dark:text-zinc-400">
+              <p>
+                Browse active properties, compare trust scores, and open any
+                listing to see structured ratings and distilled renter insights.
+              </p>
+              <p>
+                Reviews are limited to signed-in accounts with verified email
+                addresses, which keeps submissions attributable and reduces
+                abuse.
+              </p>
+              <p>
+                Property records are managed through the admin area so new
+                listings can go live without a code change.
+              </p>
+            </div>
           </aside>
         </div>
       </main>

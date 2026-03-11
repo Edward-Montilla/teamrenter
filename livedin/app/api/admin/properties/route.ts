@@ -142,9 +142,9 @@ export async function POST(req: NextRequest) {
       management_company: input.management_company ?? null,
       status: input.status ?? "active",
       created_by: admin.user.id,
-    })
+    } as never)
     .select("id")
-    .single();
+    .single<{ id: string }>();
 
   if (error) {
     if (error.code === "PGRST301" || error.message?.toLowerCase().includes("row-level security")) {
@@ -166,7 +166,7 @@ export async function POST(req: NextRequest) {
     target_type: "property",
     target_id: property.id,
     details: { display_name: input.display_name },
-  });
+  } as never);
 
   return NextResponse.json({ id: property.id }, { status: 201 });
 }

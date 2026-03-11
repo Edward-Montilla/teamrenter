@@ -1,81 +1,100 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import type { ReviewGateState, ReviewCreateInput } from "@/lib/types";
-import { useMockGate } from "@/components/reviews/MockGatePanel";
+import { useEffect, useState } from "react";
+import type {
+  ReviewCreateInput,
+  ReviewGateState,
+  ReviewableProperty,
+} from "@/lib/types";
 import { ReviewGateBanner } from "@/components/reviews/ReviewGateBanner";
 import { PropertySelectStep } from "@/components/reviews/PropertySelectStep";
 import { ReviewFormStep } from "@/components/reviews/ReviewFormStep";
 import { ReviewSubmittedScreen } from "@/components/reviews/ReviewSubmittedScreen";
-import type { MockPropertyForReview } from "@/lib/mocks/properties";
-import { storeReview } from "@/lib/mocks/reviews";
 import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
-
-const GATE_STATES: ReviewGateState[] = [
-  "unauthenticated",
-  "unverified",
-  "limit_reached",
-  "already_reviewed",
-  "allowed",
-];
-
-function resolveGateState(
-  toggles: {
-    authenticated: boolean;
-    email_verified: boolean;
-    limit_reached: boolean;
-    already_reviewed: boolean;
-  },
-  override: ReviewGateState | null,
-  apiGateState: ReviewGateState | null
-): ReviewGateState {
-  if (apiGateState && GATE_STATES.includes(apiGateState)) return apiGateState;
-  if (override && GATE_STATES.includes(override)) return override;
-  if (!toggles.authenticated) return "unauthenticated";
-  if (!toggles.email_verified) return "unverified";
-  if (toggles.limit_reached) return "limit_reached";
-  if (toggles.already_reviewed) return "already_reviewed";
-  return "allowed";
-}
-
-const MOCK_SUBMIT_DELAY_MS = 350;
 
 type ReviewSubmitFlowProps = {
   propertyId: string;
-  gateOverride: ReviewGateState | null;
 };
 
-export function ReviewSubmitFlow({
-  propertyId,
-  gateOverride,
-}: ReviewSubmitFlowProps) {
-  const { toggles, setAuthenticated, setEmailVerified } = useMockGate();
+async function resolveGateState(): Promise<{
+  gateState: ReviewGateState;
+  email: string | null;
+}> {
+  const supabase = getSupabaseBrowserClient();
+  if (!supabase) {
+    return { gateState: "unauthenticated", email: null };
+  }
+
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+
+  if (!session?.access_token || !session.user) {
+    return { gateState: "unauthenticated", email: null };
+  }
+
+  const email = session.user.email ?? null;
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("email_verified")
+    .eq("user_id", session.user.id)
+    .maybeSingle();
+
+  return {
+    gateState: profile?.email_verified ? "allowed" : "unverified",
+    email,
+  };
+}
+
+export function ReviewSubmitFlow({ propertyId }: ReviewSubmitFlowProps) {
   const [step, setStep] = useState<1 | 2 | "done">(1);
   const [selectedProperty, setSelectedProperty] =
-    useState<MockPropertyForReview | null>(null);
+    useState<ReviewableProperty | null>(null);
   const [submittedReviewId, setSubmittedReviewId] = useState<string | null>(
-    null
+    null,
   );
-  const [apiGateState, setApiGateState] = useState<ReviewGateState | null>(null);
+  const [gateState, setGateState] = useState<ReviewGateState | "loading">(
+    "loading",
+  );
+  const [sessionEmail, setSessionEmail] = useState<string | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
-
-  const gateState = useMemo(
-    () => resolveGateState(toggles, gateOverride, apiGateState),
-    [toggles, gateOverride, apiGateState]
+  const [verificationMessage, setVerificationMessage] = useState<string | null>(
+    null,
   );
+  const [resendingVerification, setResendingVerification] = useState(false);
 
-  const handleMockSignIn = () => {
-    setApiGateState(null);
-    setSubmitError(null);
-    setAuthenticated(true);
-  };
-  const handleMockVerifyEmail = () => {
-    setApiGateState(null);
-    setSubmitError(null);
-    setEmailVerified(true);
-  };
+  useEffect(() => {
+    const supabase = getSupabaseBrowserClient();
+    if (!supabase) {
+      setGateState("unauthenticated");
+      setSessionEmail(null);
+      return;
+    }
 
-  const handleContinueFromStep1 = (property: MockPropertyForReview) => {
+    let active = true;
+
+    const sync = async () => {
+      const next = await resolveGateState();
+      if (!active) return;
+      setGateState(next.gateState);
+      setSessionEmail(next.email);
+    };
+
+    void sync();
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(() => {
+      void sync();
+    });
+
+    return () => {
+      active = false;
+      subscription.unsubscribe();
+    };
+  }, []);
+
+  const handleContinueFromStep1 = (property: ReviewableProperty) => {
     setSelectedProperty(property);
     setStep(2);
     setSubmitError(null);
@@ -83,71 +102,139 @@ export function ReviewSubmitFlow({
 
   const handleSubmitReview = async (data: ReviewCreateInput) => {
     setSubmitError(null);
-    setApiGateState(null);
+    setVerificationMessage(null);
 
     const supabase = getSupabaseBrowserClient();
-    const session = supabase ? (await supabase.auth.getSession()).data?.session : null;
+    const session = supabase
+      ? (await supabase.auth.getSession()).data?.session
+      : null;
 
-    if (session?.access_token) {
-      const res = await fetch(`/api/properties/${data.property_id}/reviews`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${session.access_token}`,
-        },
-        body: JSON.stringify(data),
-      });
-      const json = await res.json().catch(() => ({}));
-      const message = typeof json?.message === "string" ? json.message : "Something went wrong.";
-
-      if (res.status === 201 && json.review_id) {
-        setSubmittedReviewId(json.review_id);
-        setStep("done");
-        return;
-      }
-      if (res.status === 401) {
-        setApiGateState("unauthenticated");
-        setSubmitError(message);
-        return;
-      }
-      if (res.status === 403) {
-        setApiGateState("unverified");
-        setSubmitError(message);
-        return;
-      }
-      if (res.status === 409) {
-        setSubmitError(message);
-        return;
-      }
-      if (res.status === 429) {
-        setSubmitError(message);
-        return;
-      }
-      setSubmitError(message || "Failed to save review. Please try again.");
+    if (!session?.access_token) {
+      setGateState("unauthenticated");
       return;
     }
 
-    await new Promise((r) => setTimeout(r, MOCK_SUBMIT_DELAY_MS));
-    const review_id = crypto.randomUUID();
-    storeReview({ ...data, review_id });
-    setSubmittedReviewId(review_id);
-    setStep("done");
+    const res = await fetch(`/api/properties/${data.property_id}/reviews`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${session.access_token}`,
+      },
+      body: JSON.stringify(data),
+    });
+    const json = await res.json().catch(() => ({}));
+    const message =
+      typeof json?.message === "string"
+        ? json.message
+        : "Something went wrong.";
+
+    if (res.status === 201 && json.review_id) {
+      setSubmittedReviewId(json.review_id);
+      setStep("done");
+      return;
+    }
+    if (res.status === 401) {
+      setGateState("unauthenticated");
+      setSubmitError(message);
+      return;
+    }
+    if (res.status === 403) {
+      setGateState("unverified");
+      setSubmitError(message);
+      return;
+    }
+    if (res.status === 409) {
+      setGateState("already_reviewed");
+      setSubmitError(message);
+      return;
+    }
+    if (res.status === 429) {
+      setGateState("limit_reached");
+      setSubmitError(message);
+      return;
+    }
+
+    setSubmitError(message || "Failed to save review. Please try again.");
   };
+
+  const handleResendVerification = async () => {
+    const supabase = getSupabaseBrowserClient();
+    if (!supabase || !sessionEmail) {
+      setVerificationMessage(
+        "Sign in again before requesting another verification email.",
+      );
+      return;
+    }
+
+    setResendingVerification(true);
+    setSubmitError(null);
+    setVerificationMessage(null);
+
+    try {
+      const { error } = await supabase.auth.resend({
+        type: "signup",
+        email: sessionEmail,
+        options: {
+          emailRedirectTo: `${window.location.origin}/sign-in?verified=1`,
+        },
+      });
+      if (error) {
+        throw error;
+      }
+
+      setVerificationMessage(
+        "Verification email sent. Check your inbox, then sign in again.",
+      );
+    } catch (error) {
+      setVerificationMessage(
+        error instanceof Error
+          ? error.message
+          : "Failed to resend verification email.",
+      );
+    } finally {
+      setResendingVerification(false);
+    }
+  };
+
+  if (gateState === "loading") {
+    return (
+      <div className="rounded-lg border border-zinc-200 bg-zinc-50 p-6 text-sm text-zinc-600 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-400">
+        Checking your account…
+      </div>
+    );
+  }
 
   if (gateState !== "allowed") {
     return (
-      <>
-        <div className="mx-auto max-w-2xl space-y-6">
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">
-            Submit a review
-          </h1>
-          <ReviewGateBanner
-            gateState={gateState}
-            onMockSignIn={handleMockSignIn}
-            onMockVerifyEmail={handleMockVerifyEmail}
-          />
-        </div>
-      </>
+      <div className="mx-auto max-w-2xl space-y-6">
+        <h1 className="text-2xl font-bold tracking-tight text-foreground">
+          Submit a review
+        </h1>
+        <ReviewGateBanner
+          gateState={gateState}
+          propertyId={propertyId}
+          email={sessionEmail}
+          resendLabel={
+            resendingVerification
+              ? "Sending verification email…"
+              : "Resend verification email"
+          }
+          onResendVerification={
+            gateState === "unverified" ? handleResendVerification : undefined
+          }
+          resendDisabled={resendingVerification}
+        />
+        {submitError && (
+          <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-800 dark:border-red-900 dark:bg-red-950/30 dark:text-red-200">
+            {submitError}
+          </div>
+        )}
+        {verificationMessage && (
+          <div className="rounded-lg border border-green-200 bg-green-50 p-4 text-sm text-green-900 dark:border-green-900/70 dark:bg-green-950/30 dark:text-green-200">
+            {verificationMessage}
+          </div>
+        )}
+      </div>
     );
   }
 

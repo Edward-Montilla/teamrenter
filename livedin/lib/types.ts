@@ -22,6 +22,15 @@ export type PropertySearchResponse = {
 
 export type UiListState = "loading" | "ready" | "empty" | "error";
 
+export type ReviewableProperty = {
+  id: string;
+  display_name: string;
+  address_line1: string;
+  city: string;
+  province: string;
+  management_company: string | null;
+};
+
 /** Display score 0–6; when review_count === 0 all are 0. */
 export type DisplayScore0_6 = 0 | 1 | 2 | 3 | 4 | 5 | 6;
 
@@ -59,7 +68,7 @@ export type PropertyDetailPublic = {
   insights: DistilledInsightPublic | null;
 };
 
-// --- Slice 03: Review submission (mocked; no Supabase yet) ---
+// --- Slice 03: Review submission ---
 
 export type ReviewCreateInput = {
   property_id: string;

@@ -6,7 +6,6 @@ import type { AdminPropertyCreateInput, AdminPropertyListItem } from "@/lib/type
 
 type PropertyFormProps = {
   initial?: Partial<AdminPropertyListItem>;
-  propertyId?: string;
   mode: "create" | "edit";
   onSubmit: (data: AdminPropertyCreateInput | Record<string, unknown>) => Promise<void>;
 };
@@ -24,7 +23,6 @@ const defaultValues: AdminPropertyCreateInput = {
 
 export function PropertyForm({
   initial,
-  propertyId,
   mode,
   onSubmit,
 }: PropertyFormProps) {

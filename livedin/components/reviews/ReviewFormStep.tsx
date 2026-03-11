@@ -1,8 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import type { ReviewCreateInput } from "@/lib/types";
-import type { MockPropertyForReview } from "@/lib/mocks/properties";
+import type { ReviewCreateInput, ReviewableProperty } from "@/lib/types";
 import {
   validateReviewCreateInput,
   TEXT_INPUT_MAX,
@@ -26,13 +25,13 @@ const METRIC_LABELS: Record<(typeof METRIC_KEYS)[number], string> = {
 };
 
 type ReviewFormStepProps = {
-  property: MockPropertyForReview;
+  property: ReviewableProperty;
   onSubmit: (data: ReviewCreateInput) => void | Promise<void>;
   onBack?: () => void;
   submitError?: string | null;
 };
 
-function formatAddress(p: MockPropertyForReview): string {
+function formatAddress(p: ReviewableProperty): string {
   const parts = [p.address_line1, p.city, p.province].filter(Boolean);
   return parts.join(", ");
 }

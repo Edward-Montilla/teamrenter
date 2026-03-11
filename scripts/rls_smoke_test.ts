@@ -43,6 +43,12 @@ async function signIn(
 
 async function main() {
   const seedPassword = process.env.SUPABASE_SEED_PASSWORD ?? 'seedpassword';
+  const publicEmail = process.env.PUBLIC_TEST_EMAIL ?? 'public@example.com';
+  const publicPassword = process.env.PUBLIC_TEST_PASSWORD ?? seedPassword;
+  const reviewEmail = process.env.REVIEW_TEST_EMAIL ?? 'verified@example.com';
+  const reviewPassword = process.env.REVIEW_TEST_PASSWORD ?? seedPassword;
+  const adminEmail = process.env.ADMIN_TEST_EMAIL ?? 'admin@example.com';
+  const adminPassword = process.env.ADMIN_TEST_PASSWORD ?? seedPassword;
 
   // ---------------------------------------------------------------------------
   // 1) Anon client tests
@@ -153,7 +159,7 @@ async function main() {
   // 2) Authenticated non-verified user (public@example.com)
   // ---------------------------------------------------------------------------
   const publicClient = createAnonClient();
-  await signIn(publicClient, 'public@example.com', seedPassword);
+  await signIn(publicClient, publicEmail, publicPassword);
 
   await runTest('Non-verified: INSERT review is denied', async () => {
     const {
@@ -187,7 +193,7 @@ async function main() {
   // 3) Authenticated verified user (verified@example.com)
   // ---------------------------------------------------------------------------
   const verifiedClient = createAnonClient();
-  await signIn(verifiedClient, 'verified@example.com', seedPassword);
+  await signIn(verifiedClient, reviewEmail, reviewPassword);
 
   await runTest('Verified: INSERT review succeeds', async () => {
     const { data: user, error: userError } =
@@ -270,7 +276,7 @@ async function main() {
   // 4) Admin session (admin@example.com)
   // ---------------------------------------------------------------------------
   const adminClient = createAnonClient();
-  await signIn(adminClient, 'admin@example.com', seedPassword);
+  await signIn(adminClient, adminEmail, adminPassword);
 
   await runTest('Admin: CRUD properties', async () => {
     // Create

@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "rls:test": "tsx ../scripts/rls_smoke_test.ts"
+    "api:test": "npx tsx scripts/api_smoke_test.ts",
+    "rls:test": "npx tsx ../scripts/rls_smoke_test.ts"
   },
   "dependencies": {
     "next": "16.1.6",

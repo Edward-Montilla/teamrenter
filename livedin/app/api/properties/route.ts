@@ -9,10 +9,10 @@ type ListRow = {
   city: string;
   province: string;
   management_company: string | null;
-  property_aggregates: {
+  property_aggregates: Array<{
     review_count: number;
     display_trustscore_0_6: 0 | 1 | 2 | 3 | 4 | 5 | 6;
-  } | null;
+  }> | null;
 };
 
 export async function GET(req: NextRequest) {
@@ -40,7 +40,7 @@ export async function GET(req: NextRequest) {
       )
     `,
     )
-    .eq("status", "active") as any;
+    .eq("status", "active");
 
   if (pattern) {
     dbQuery = dbQuery.or(
@@ -67,10 +67,10 @@ export async function GET(req: NextRequest) {
     );
   }
 
-  const rows = (data ?? []) as ListRow[];
+  const rows = (data ?? []) as unknown as ListRow[];
 
   const items: PropertyListItem[] = rows.map((row) => {
-    const aggregates = row.property_aggregates;
+    const aggregates = row.property_aggregates?.[0] ?? null;
     const reviewCount = aggregates?.review_count ?? 0;
     const trustScore = aggregates?.display_trustscore_0_6 ?? 0;
 

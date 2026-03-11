@@ -144,7 +144,6 @@ export default function EditPropertyPage() {
         <PropertyForm
           mode="edit"
           initial={property}
-          propertyId={id}
           onSubmit={handleSubmit}
         />
       </div>

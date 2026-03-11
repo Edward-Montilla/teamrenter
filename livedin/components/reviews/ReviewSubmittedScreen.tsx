@@ -19,6 +19,9 @@ export function ReviewSubmittedScreen({
         <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
           Thank you for contributing. Your review helps other renters.
         </p>
+        <p className="mt-2 text-xs text-zinc-500 dark:text-zinc-500">
+          Submission reference: {reviewId}
+        </p>
       </div>
       <div className="flex flex-wrap gap-3">
         <Link

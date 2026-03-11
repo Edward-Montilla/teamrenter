@@ -1,76 +1,107 @@
 "use client";
 
+import Link from "next/link";
+import { AuthPromptCard } from "@/components/auth/AuthPromptCard";
+import { SignOutButton } from "@/components/auth/SignOutButton";
 import type { ReviewGateState } from "@/lib/types";
 
 type ReviewGateBannerProps = {
   gateState: Exclude<ReviewGateState, "allowed">;
-  onMockSignIn?: () => void;
-  onMockVerifyEmail?: () => void;
+  propertyId: string;
+  email?: string | null;
+  resendLabel?: string;
+  onResendVerification?: () => void | Promise<void>;
+  resendDisabled?: boolean;
 };
 
 export function ReviewGateBanner({
   gateState,
-  onMockSignIn,
-  onMockVerifyEmail,
+  propertyId,
+  email,
+  resendLabel = "Resend verification email",
+  onResendVerification,
+  resendDisabled = false,
 }: ReviewGateBannerProps) {
-  const containerClass =
-    "rounded-lg border border-zinc-200 bg-zinc-50 p-6 dark:border-zinc-700 dark:bg-zinc-900";
+  const signInHref = `/sign-in?redirect=${encodeURIComponent(
+    `/submit-review/${propertyId}`,
+  )}`;
 
   if (gateState === "unauthenticated") {
     return (
-      <div className={containerClass}>
-        <p className="text-zinc-700 dark:text-zinc-300">
-          Sign in to submit a review.
-        </p>
-        {onMockSignIn && (
-          <button
-            type="button"
-            onClick={onMockSignIn}
-            className="mt-4 rounded-lg bg-foreground px-4 py-2 text-sm font-medium text-background hover:opacity-90"
-          >
-            Sign in (mock)
-          </button>
-        )}
-      </div>
+      <AuthPromptCard
+        title="Sign in required"
+        description="Sign in before you can submit a verified renter review."
+        primaryAction={{ label: "Sign in", href: signInHref }}
+        secondaryAction={{ label: "Back to property", href: `/properties/${propertyId}` }}
+      />
     );
   }
 
   if (gateState === "unverified") {
     return (
-      <div className={containerClass}>
-        <p className="text-zinc-700 dark:text-zinc-300">
-          Verify your email to submit a review.
-        </p>
-        {onMockVerifyEmail && (
-          <button
-            type="button"
-            onClick={onMockVerifyEmail}
-            className="mt-4 rounded-lg bg-foreground px-4 py-2 text-sm font-medium text-background hover:opacity-90"
+      <div className="space-y-4">
+        <AuthPromptCard
+          title="Verify your email"
+          description={
+            <>
+              <p>
+                Reviews are limited to verified accounts.{" "}
+                {email ? (
+                  <>
+                    We currently have <span className="font-medium">{email}</span>{" "}
+                    signed in.
+                  </>
+                ) : (
+                  "Finish email confirmation for your account."
+                )}
+              </p>
+              <p className="mt-2">
+                After you confirm your email, return here and refresh or sign in
+                again.
+              </p>
+            </>
+          }
+          primaryAction={
+            onResendVerification
+              ? {
+                  label: resendLabel,
+                  onClick: onResendVerification,
+                  disabled: resendDisabled,
+                }
+              : undefined
+          }
+          secondaryAction={{ label: "Back to property", href: `/properties/${propertyId}` }}
+        />
+        <div className="flex flex-wrap items-center gap-3">
+          <Link
+            href={signInHref}
+            className="text-sm font-medium text-foreground underline underline-offset-4"
           >
-            Verify email (mock)
-          </button>
-        )}
+            Switch account
+          </Link>
+          <SignOutButton redirectTo={signInHref} />
+        </div>
       </div>
     );
   }
 
   if (gateState === "limit_reached") {
     return (
-      <div className={containerClass}>
-        <p className="text-zinc-700 dark:text-zinc-300">
-          Review limit reached.
-        </p>
-      </div>
+      <AuthPromptCard
+        title="Review limit reached"
+        description="You can submit at most 3 reviews in a 6 month period. Try again later."
+        primaryAction={{ label: "Back to property", href: `/properties/${propertyId}` }}
+      />
     );
   }
 
   if (gateState === "already_reviewed") {
     return (
-      <div className={containerClass}>
-        <p className="text-zinc-700 dark:text-zinc-300">
-          You have already reviewed this property.
-        </p>
-      </div>
+      <AuthPromptCard
+        title="Review already submitted"
+        description="You have already reviewed this property with your current account."
+        primaryAction={{ label: "Back to property", href: `/properties/${propertyId}` }}
+      />
     );
   }
 

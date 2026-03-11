@@ -1,54 +1,161 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import {
-  getMockPropertiesForReview,
-  getMockPropertyById,
-  type MockPropertyForReview,
-} from "@/lib/mocks/properties";
+import { useEffect, useState } from "react";
+import type {
+  PropertyDetailPublic,
+  PropertySearchResponse,
+  ReviewableProperty,
+} from "@/lib/types";
 
 type PropertySelectStepProps = {
   initialPropertyId: string;
-  onContinue: (property: MockPropertyForReview) => void;
+  onContinue: (property: ReviewableProperty) => void;
 };
 
-function formatAddress(p: MockPropertyForReview): string {
+function formatAddress(p: ReviewableProperty): string {
   const parts = [p.address_line1, p.city, p.province].filter(Boolean);
   return parts.join(", ");
+}
+
+function mapListItemToReviewableProperty(
+  item: PropertySearchResponse["items"][number],
+): ReviewableProperty {
+  return {
+    id: item.id,
+    display_name: item.display_name,
+    address_line1: item.address_line1,
+    city: item.city,
+    province: item.province,
+    management_company: item.management_company,
+  };
+}
+
+function mapDetailToReviewableProperty(
+  detail: PropertyDetailPublic,
+): ReviewableProperty {
+  return {
+    id: detail.property.id,
+    display_name: detail.property.display_name,
+    address_line1: detail.property.address_line1,
+    city: detail.property.city,
+    province: detail.property.province,
+    management_company: detail.property.management_company,
+  };
 }
 
 export function PropertySelectStep({
   initialPropertyId,
   onContinue,
 }: PropertySelectStepProps) {
-  const allProperties = useMemo(() => getMockPropertiesForReview(), []);
-  const preselected = useMemo(
-    () =>
-      initialPropertyId && initialPropertyId !== "new"
-        ? getMockPropertyById(initialPropertyId)
-        : null,
-    [initialPropertyId]
-  );
-
   const [searchQuery, setSearchQuery] = useState("");
-  const [selected, setSelected] = useState<MockPropertyForReview | null>(
-    preselected
+  const [selected, setSelected] = useState<ReviewableProperty | null>(null);
+  const [preselected, setPreselected] = useState<ReviewableProperty | null>(null);
+  const [items, setItems] = useState<ReviewableProperty[]>([]);
+  const [loadingList, setLoadingList] = useState(false);
+  const [listError, setListError] = useState<string | null>(null);
+  const [loadingProperty, setLoadingProperty] = useState(
+    Boolean(initialPropertyId && initialPropertyId !== "new"),
+  );
+  const [propertyError, setPropertyError] = useState<string | null>(null);
+
+  const hasExplicitPropertyId = Boolean(
+    initialPropertyId && initialPropertyId !== "new",
   );
 
-  const filteredList = useMemo(() => {
-    if (!searchQuery.trim()) return allProperties;
-    const q = searchQuery.toLowerCase().trim();
-    return allProperties.filter((p) => {
-      const searchable = [
-        p.display_name,
-        p.address_line1,
-        p.city,
-        p.province,
-        p.management_company ?? "",
-      ].join(" ");
-      return searchable.toLowerCase().includes(q);
-    });
-  }, [allProperties, searchQuery]);
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadProperty() {
+      if (!hasExplicitPropertyId) {
+        setLoadingProperty(false);
+        setPropertyError(null);
+        setPreselected(null);
+        return;
+      }
+
+      setLoadingProperty(true);
+      setPropertyError(null);
+
+      try {
+        const res = await fetch(`/api/properties/${initialPropertyId}`);
+        if (!res.ok) {
+          if (res.status === 404) {
+            throw new Error("This property is no longer available to review.");
+          }
+          throw new Error("Failed to load the selected property.");
+        }
+
+        const detail = (await res.json()) as PropertyDetailPublic;
+        if (cancelled) return;
+        const property = mapDetailToReviewableProperty(detail);
+        setPreselected(property);
+        setSelected(property);
+      } catch (error) {
+        if (cancelled) return;
+        setPropertyError(
+          error instanceof Error
+            ? error.message
+            : "Failed to load the selected property.",
+        );
+        setPreselected(null);
+        setSelected(null);
+      } finally {
+        if (!cancelled) {
+          setLoadingProperty(false);
+        }
+      }
+    }
+
+    loadProperty();
+    return () => {
+      cancelled = true;
+    };
+  }, [hasExplicitPropertyId, initialPropertyId]);
+
+  useEffect(() => {
+    if (loadingProperty || preselected) {
+      return;
+    }
+
+    const controller = new AbortController();
+
+    async function loadProperties() {
+      setLoadingList(true);
+      setListError(null);
+      try {
+        const params = new URLSearchParams();
+        if (searchQuery.trim()) {
+          params.set("q", searchQuery.trim());
+        }
+
+        const query = params.toString();
+        const res = await fetch(`/api/properties${query ? `?${query}` : ""}`, {
+          signal: controller.signal,
+        });
+        if (!res.ok) {
+          throw new Error("Failed to load properties.");
+        }
+
+        const payload = (await res.json()) as PropertySearchResponse;
+        setItems(payload.items.map(mapListItemToReviewableProperty));
+      } catch (error) {
+        if (controller.signal.aborted) {
+          return;
+        }
+        setListError(
+          error instanceof Error ? error.message : "Failed to load properties.",
+        );
+        setItems([]);
+      } finally {
+        if (!controller.signal.aborted) {
+          setLoadingList(false);
+        }
+      }
+    }
+
+    loadProperties();
+    return () => controller.abort();
+  }, [loadingProperty, preselected, searchQuery]);
 
   const currentSelection = selected ?? preselected;
   const canContinue = currentSelection != null;
@@ -60,7 +167,11 @@ export function PropertySelectStep({
         Select the property you want to review.
       </p>
 
-      {preselected ? (
+      {loadingProperty ? (
+        <div className="rounded-lg border border-zinc-200 bg-zinc-50 p-4 text-sm text-zinc-600 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-400">
+          Loading property details…
+        </div>
+      ) : preselected ? (
         <div className="space-y-4">
           <div className="rounded-lg border border-zinc-200 bg-white p-4 dark:border-zinc-700 dark:bg-zinc-900">
             <h3 className="font-semibold text-foreground">
@@ -85,6 +196,11 @@ export function PropertySelectStep({
         </div>
       ) : (
         <>
+          {propertyError && (
+            <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900 dark:border-amber-900/70 dark:bg-amber-950/30 dark:text-amber-200">
+              {propertyError} Choose another property below.
+            </div>
+          )}
           <div className="relative flex items-center rounded-lg border border-zinc-300 bg-white dark:border-zinc-600 dark:bg-zinc-900">
             <input
               type="text"
@@ -96,12 +212,26 @@ export function PropertySelectStep({
             />
           </div>
           <div className="max-h-80 space-y-2 overflow-y-auto">
-            {filteredList.length === 0 ? (
+            {loadingList ? (
+              <div className="space-y-2">
+                {[1, 2, 3].map((item) => (
+                  <div
+                    key={item}
+                    className="h-20 animate-pulse rounded-lg border border-zinc-200 bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-800"
+                    aria-hidden
+                  />
+                ))}
+              </div>
+            ) : listError ? (
+              <p className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-800 dark:border-red-900 dark:bg-red-950/30 dark:text-red-200">
+                {listError}
+              </p>
+            ) : items.length === 0 ? (
               <p className="rounded-lg border border-zinc-200 bg-zinc-50 p-4 text-sm text-zinc-600 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-400">
                 No properties match your search.
               </p>
             ) : (
-              filteredList.map((p) => (
+              items.map((p) => (
                 <button
                   key={p.id}
                   type="button"

@@ -23,7 +23,7 @@ export function createUserClient(accessToken: string) {
 }
 
 export type AdminContext = {
-  supabase: ReturnType<typeof createClient>;
+  supabase: ReturnType<typeof createUserClient>;
   user: { id: string };
 };
 

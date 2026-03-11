@@ -111,7 +111,11 @@ VALUES
   ('11111111-1111-1111-1111-111111111111', 'public', false, now(), now()),
   ('22222222-2222-2222-2222-222222222222', 'verified', true, now(), now()),
   ('33333333-3333-3333-3333-333333333333', 'admin', true, now(), now())
-ON CONFLICT (user_id) DO NOTHING;
+ON CONFLICT (user_id) DO UPDATE
+SET
+  role = EXCLUDED.role,
+  email_verified = EXCLUDED.email_verified,
+  updated_at = now();
 
 -- =============================================================================
 -- 3) properties (4 rows: 2 active with reviews, 1 inactive, 1 active no reviews)

@@ -163,7 +163,7 @@ export async function POST(
       text_input: payload.text_input,
       tenancy_start: payload.tenancy_start ?? null,
       tenancy_end: payload.tenancy_end ?? null,
-    })
+    } as never)
     .select("id")
     .single();
 
