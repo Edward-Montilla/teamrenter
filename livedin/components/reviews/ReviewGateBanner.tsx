@@ -30,7 +30,7 @@ export function ReviewGateBanner({
     return (
       <AuthPromptCard
         title="Sign in required"
-        description="Sign in before you can submit a verified renter review."
+        description="Sign in first so we can tie the review to your account and return you directly to this review flow."
         primaryAction={{ label: "Sign in", href: signInHref }}
         secondaryAction={{ label: "Back to property", href: `/properties/${propertyId}` }}
       />
@@ -56,8 +56,7 @@ export function ReviewGateBanner({
                 )}
               </p>
               <p className="mt-2">
-                After you confirm your email, return here and refresh or sign in
-                again.
+                After you confirm your email, come back here and continue with property selection.
               </p>
             </>
           }
@@ -89,7 +88,7 @@ export function ReviewGateBanner({
     return (
       <AuthPromptCard
         title="Review limit reached"
-        description="You can submit at most 3 reviews in a 6 month period. Try again later."
+        description="You can submit up to 3 reviews in a 6 month period. You can still browse property details now and return when the limit window resets."
         primaryAction={{ label: "Back to property", href: `/properties/${propertyId}` }}
       />
     );
@@ -99,7 +98,7 @@ export function ReviewGateBanner({
     return (
       <AuthPromptCard
         title="Review already submitted"
-        description="You have already reviewed this property with your current account."
+        description="This account has already submitted a review for this property, so you do not need to complete the form again."
         primaryAction={{ label: "Back to property", href: `/properties/${propertyId}` }}
       />
     );

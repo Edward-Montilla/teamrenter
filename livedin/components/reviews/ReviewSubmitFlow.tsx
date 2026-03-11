@@ -10,7 +10,9 @@ import { ReviewGateBanner } from "@/components/reviews/ReviewGateBanner";
 import { PropertySelectStep } from "@/components/reviews/PropertySelectStep";
 import { ReviewFormStep } from "@/components/reviews/ReviewFormStep";
 import { ReviewSubmittedScreen } from "@/components/reviews/ReviewSubmittedScreen";
+import { FeedbackPanel } from "@/components/ui/FeedbackPanel";
 import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
+import { cn, sectionCardClass } from "@/lib/ui";
 
 type ReviewSubmitFlowProps = {
   propertyId: string;
@@ -196,54 +198,105 @@ export function ReviewSubmitFlow({ propertyId }: ReviewSubmitFlowProps) {
     }
   };
 
+  const stepItems = [
+    {
+      id: 1,
+      label: "Choose property",
+      active: gateState === "allowed" && step === 1,
+      complete: gateState === "allowed" && (step === 2 || step === "done"),
+    },
+    {
+      id: 2,
+      label: "Complete review",
+      active: gateState === "allowed" && step === 2,
+      complete: gateState === "allowed" && step === "done",
+    },
+    {
+      id: 3,
+      label: "Confirmation",
+      active: gateState === "allowed" && step === "done",
+      complete: false,
+    },
+  ];
+
   if (gateState === "loading") {
     return (
-      <div className="rounded-lg border border-zinc-200 bg-zinc-50 p-6 text-sm text-zinc-600 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-400">
-        Checking your account…
+      <div className={`${sectionCardClass} mx-auto max-w-4xl p-6 sm:p-8`}>
+        <FeedbackPanel title="Checking your account" description="Loading your review permissions and current session." />
       </div>
     );
   }
 
   if (gateState !== "allowed") {
     return (
-      <div className="mx-auto max-w-2xl space-y-6">
-        <h1 className="text-2xl font-bold tracking-tight text-foreground">
-          Submit a review
-        </h1>
-        <ReviewGateBanner
-          gateState={gateState}
-          propertyId={propertyId}
-          email={sessionEmail}
-          resendLabel={
-            resendingVerification
-              ? "Sending verification email…"
-              : "Resend verification email"
-          }
-          onResendVerification={
-            gateState === "unverified" ? handleResendVerification : undefined
-          }
-          resendDisabled={resendingVerification}
-        />
-        {submitError && (
-          <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-800 dark:border-red-900 dark:bg-red-950/30 dark:text-red-200">
-            {submitError}
-          </div>
-        )}
-        {verificationMessage && (
-          <div className="rounded-lg border border-green-200 bg-green-50 p-4 text-sm text-green-900 dark:border-green-900/70 dark:bg-green-950/30 dark:text-green-200">
-            {verificationMessage}
-          </div>
-        )}
+      <div className={`${sectionCardClass} mx-auto max-w-4xl p-6 sm:p-8`}>
+        <div className="border-b border-zinc-200 pb-6 dark:border-zinc-800">
+          <p className="text-sm font-medium uppercase tracking-[0.22em] text-zinc-500 dark:text-zinc-400">
+            Submit a review
+          </p>
+          <h1 className="mt-3 text-3xl font-semibold tracking-tight text-foreground">
+            You are almost ready to review this property
+          </h1>
+          <p className="mt-3 max-w-2xl text-sm leading-7 text-zinc-600 dark:text-zinc-400">
+            Review submission stays focused on one task at a time. Complete the gate below, then you can confirm the property and continue.
+          </p>
+        </div>
+
+        <ol className="mt-6 grid gap-3 sm:grid-cols-3">
+          {stepItems.map((stepItem) => (
+            <li
+              key={stepItem.id}
+              className={cn(
+                "rounded-2xl border px-4 py-3 text-sm",
+                stepItem.active
+                  ? "border-zinc-950 bg-zinc-950 text-white dark:border-zinc-100 dark:bg-zinc-100 dark:text-zinc-950"
+                  : "border-zinc-200 bg-zinc-50 text-zinc-500 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400",
+              )}
+            >
+              <span className="font-medium">Step {stepItem.id}</span>
+              <span className="ml-2">{stepItem.label}</span>
+            </li>
+          ))}
+        </ol>
+
+        <div className="mt-6 space-y-4">
+          <ReviewGateBanner
+            gateState={gateState}
+            propertyId={propertyId}
+            email={sessionEmail}
+            resendLabel={
+              resendingVerification
+                ? "Sending verification email…"
+                : "Resend verification email"
+            }
+            onResendVerification={
+              gateState === "unverified" ? handleResendVerification : undefined
+            }
+            resendDisabled={resendingVerification}
+          />
+          {submitError ? <FeedbackPanel tone="error" description={submitError} /> : null}
+          {verificationMessage ? (
+            <FeedbackPanel tone="success" description={verificationMessage} />
+          ) : null}
+        </div>
       </div>
     );
   }
 
   if (step === 1) {
     return (
-      <div className="mx-auto max-w-2xl space-y-6">
-        <h1 className="text-2xl font-bold tracking-tight text-foreground">
-          Submit a review
-        </h1>
+      <div className={`${sectionCardClass} mx-auto max-w-5xl p-6 sm:p-8`}>
+        <div className="border-b border-zinc-200 pb-6 dark:border-zinc-800">
+          <p className="text-sm font-medium uppercase tracking-[0.22em] text-zinc-500 dark:text-zinc-400">
+            Step 1 of 3
+          </p>
+          <h1 className="mt-3 text-3xl font-semibold tracking-tight text-foreground">
+            Confirm the property you want to review
+          </h1>
+          <p className="mt-3 max-w-2xl text-sm leading-7 text-zinc-600 dark:text-zinc-400">
+            Search by address or management company, choose the correct property, then continue to the review form.
+          </p>
+        </div>
         <PropertySelectStep
           initialPropertyId={propertyId}
           onContinue={handleContinueFromStep1}
@@ -254,10 +307,7 @@ export function ReviewSubmitFlow({ propertyId }: ReviewSubmitFlowProps) {
 
   if (step === 2 && selectedProperty) {
     return (
-      <div className="mx-auto max-w-2xl space-y-6">
-        <h1 className="text-2xl font-bold tracking-tight text-foreground">
-          Submit a review
-        </h1>
+      <div className={`${sectionCardClass} mx-auto max-w-4xl p-6 sm:p-8`}>
         <ReviewFormStep
           property={selectedProperty}
           onSubmit={handleSubmitReview}
@@ -270,10 +320,7 @@ export function ReviewSubmitFlow({ propertyId }: ReviewSubmitFlowProps) {
 
   if (step === "done" && submittedReviewId && selectedProperty) {
     return (
-      <div className="mx-auto max-w-2xl space-y-6">
-        <h1 className="text-2xl font-bold tracking-tight text-foreground">
-          Submit a review
-        </h1>
+      <div className={`${sectionCardClass} mx-auto max-w-4xl p-6 sm:p-8`}>
         <ReviewSubmittedScreen
           reviewId={submittedReviewId}
           propertyId={selectedProperty.id}

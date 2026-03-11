@@ -1,7 +1,14 @@
 "use client";
 
 import { useState } from "react";
+import { FeedbackPanel } from "@/components/ui/FeedbackPanel";
 import type { ReviewCreateInput, ReviewableProperty } from "@/lib/types";
+import {
+  inputClass,
+  primaryButtonClass,
+  secondaryButtonClass,
+  textareaClass,
+} from "@/lib/ui";
 import {
   validateReviewCreateInput,
   TEXT_INPUT_MAX,
@@ -116,33 +123,57 @@ export function ReviewFormStep({
 
   return (
     <div className="space-y-6">
-      <h2 className="text-xl font-semibold text-foreground">Review — Form</h2>
-      <div className="rounded-lg border border-zinc-200 bg-zinc-50 p-3 dark:border-zinc-700 dark:bg-zinc-900">
-        <p className="font-medium text-foreground">{property.display_name}</p>
-        <p className="text-sm text-zinc-600 dark:text-zinc-400">
-          {formatAddress(property)}
+      <div className="border-b border-zinc-200 pb-6 dark:border-zinc-800">
+        <p className="text-sm font-medium uppercase tracking-[0.22em] text-zinc-500 dark:text-zinc-400">
+          Step 2 of 3
         </p>
+        <h2 className="mt-3 text-3xl font-semibold tracking-tight text-foreground">
+          Complete your renter review
+        </h2>
+        <p className="mt-3 max-w-2xl text-sm leading-7 text-zinc-600 dark:text-zinc-400">
+          Keep feedback specific to this property. Required ratings stay inline so you can fix issues without leaving the form.
+        </p>
+      </div>
+
+      <div className="rounded-3xl border border-zinc-200 bg-zinc-50 p-4 dark:border-zinc-800 dark:bg-zinc-900">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <p className="font-medium text-foreground">{property.display_name}</p>
+            <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
+              {formatAddress(property)}
+            </p>
+          </div>
+          {onBack ? (
+            <button
+              type="button"
+              onClick={onBack}
+              className={secondaryButtonClass}
+            >
+              Change property
+            </button>
+          ) : null}
+        </div>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
         {submitError && (
-          <div
-            className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800 dark:border-red-800 dark:bg-red-950/40 dark:text-red-200"
-            role="alert"
-          >
-            {submitError}
-          </div>
+          <FeedbackPanel tone="error" description={submitError} />
         )}
-        <div>
-          <p className="mb-3 text-sm font-medium text-foreground">
-            Rate the following (0–5, required)
-          </p>
-          <div className="space-y-4">
+        <section className="rounded-3xl border border-zinc-200 p-5 dark:border-zinc-800">
+          <div className="mb-4">
+            <h3 className="text-lg font-semibold text-foreground">
+              Ratings
+            </h3>
+            <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
+              Score each category from 0 to 5. Enter whole numbers only.
+            </p>
+          </div>
+          <div className="grid gap-4 sm:grid-cols-2">
             {METRIC_KEYS.map((key) => (
-              <div key={key}>
+              <div key={key} className="rounded-2xl border border-zinc-200 p-4 dark:border-zinc-800">
                 <label
                   htmlFor={`metric-${key}`}
-                  className="block text-sm text-zinc-700 dark:text-zinc-300"
+                  className="block text-sm font-medium text-zinc-700 dark:text-zinc-300"
                 >
                   {METRIC_LABELS[key]}
                 </label>
@@ -154,7 +185,7 @@ export function ReviewFormStep({
                   step={1}
                   value={metrics[key] === "" ? "" : metrics[key]}
                   onChange={(e) => handleMetricChange(key, e.target.value)}
-                  className="mt-1 w-20 rounded-lg border border-zinc-300 bg-white px-3 py-2 text-foreground focus:outline-none focus:ring-2 focus:ring-zinc-400 dark:border-zinc-600 dark:bg-zinc-900 dark:focus:ring-zinc-500"
+                  className={`${inputClass} mt-3 w-24`}
                   aria-invalid={Boolean(errors[key])}
                   aria-describedby={errors[key] ? `error-${key}` : undefined}
                 />
@@ -170,12 +201,16 @@ export function ReviewFormStep({
               </div>
             ))}
           </div>
-        </div>
+        </section>
 
-        <div>
+        <section className="rounded-3xl border border-zinc-200 p-5 dark:border-zinc-800">
+          <h3 className="text-lg font-semibold text-foreground">Private notes</h3>
+          <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
+            This text is reviewed in the admin area and is not shown directly on the public property page.
+          </p>
           <label
             htmlFor="text_input"
-            className="block text-sm font-medium text-foreground"
+            className="mt-4 block text-sm font-medium text-foreground"
           >
             Private notes (optional, max {TEXT_INPUT_MAX} characters)
           </label>
@@ -187,7 +222,7 @@ export function ReviewFormStep({
             }
             maxLength={TEXT_INPUT_MAX}
             rows={4}
-            className="mt-1 w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-foreground focus:outline-none focus:ring-2 focus:ring-zinc-400 dark:border-zinc-600 dark:bg-zinc-900 dark:focus:ring-zinc-500"
+            className={`${textareaClass} mt-1`}
             aria-invalid={Boolean(errors.text_input)}
             aria-describedby={errors.text_input ? "error-text_input" : undefined}
           />
@@ -203,9 +238,14 @@ export function ReviewFormStep({
               {errors.text_input}
             </p>
           )}
-        </div>
+        </section>
 
-        <div className="grid gap-4 sm:grid-cols-2">
+        <section className="rounded-3xl border border-zinc-200 p-5 dark:border-zinc-800">
+          <h3 className="text-lg font-semibold text-foreground">Tenancy dates</h3>
+          <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
+            Add dates if you want to give moderators more context for when this experience happened.
+          </p>
+          <div className="mt-4 grid gap-4 sm:grid-cols-2">
           <div>
             <label
               htmlFor="tenancy_start"
@@ -218,7 +258,7 @@ export function ReviewFormStep({
               type="date"
               value={tenancyStart}
               onChange={(e) => setTenancyStart(e.target.value)}
-              className="mt-1 w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-foreground focus:outline-none focus:ring-2 focus:ring-zinc-400 dark:border-zinc-600 dark:bg-zinc-900 dark:focus:ring-zinc-500"
+              className={`${inputClass} mt-1`}
               aria-invalid={Boolean(errors.tenancy_start)}
             />
             {errors.tenancy_start && (
@@ -242,7 +282,7 @@ export function ReviewFormStep({
               type="date"
               value={tenancyEnd}
               onChange={(e) => setTenancyEnd(e.target.value)}
-              className="mt-1 w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-foreground focus:outline-none focus:ring-2 focus:ring-zinc-400 dark:border-zinc-600 dark:bg-zinc-900 dark:focus:ring-zinc-500"
+              className={`${inputClass} mt-1`}
               aria-invalid={Boolean(errors.tenancy_end)}
             />
             {errors.tenancy_end && (
@@ -254,22 +294,14 @@ export function ReviewFormStep({
               </p>
             )}
           </div>
-        </div>
+          </div>
+        </section>
 
         <div className="flex flex-wrap gap-3">
-          {onBack && (
-            <button
-              type="button"
-              onClick={onBack}
-              className="rounded-lg border border-zinc-300 bg-white px-4 py-2 text-sm font-medium text-foreground hover:bg-zinc-50 dark:border-zinc-600 dark:bg-zinc-900 dark:hover:bg-zinc-800"
-            >
-              Back
-            </button>
-          )}
           <button
             type="submit"
             disabled={submitting}
-            className="rounded-lg bg-foreground px-4 py-2 text-sm font-medium text-background hover:opacity-90 disabled:opacity-50 disabled:pointer-events-none"
+            className={primaryButtonClass}
           >
             {submitting ? "Submitting…" : "Submit review"}
           </button>

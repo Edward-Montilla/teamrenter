@@ -3,11 +3,19 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { AdminAuditFeed } from "@/components/admin/AdminAuditFeed";
+import { FeedbackPanel } from "@/components/ui/FeedbackPanel";
 import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
 import type {
   AdminInsightModerationItem,
   DistilledInsightStatus,
 } from "@/lib/types";
+import {
+  destructiveButtonClass,
+  primaryButtonClass,
+  secondaryButtonClass,
+  sectionCardClass,
+  selectClass,
+} from "@/lib/ui";
 
 const INSIGHT_STATUS_OPTIONS: Array<"all" | DistilledInsightStatus> = [
   "all",
@@ -201,7 +209,7 @@ export default function AdminInsightsPage() {
             onChange={(e) =>
               setFilter(e.target.value as "all" | DistilledInsightStatus)
             }
-            className="rounded-lg border border-zinc-300 bg-white px-3 py-2 text-foreground dark:border-zinc-600 dark:bg-zinc-900"
+            className={selectClass}
           >
             {INSIGHT_STATUS_OPTIONS.map((status) => (
               <option key={status} value={status}>
@@ -213,13 +221,11 @@ export default function AdminInsightsPage() {
       </div>
 
       {error && (
-        <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-800 dark:border-red-900 dark:bg-red-950/30 dark:text-red-200">
-          {error}
-        </div>
+        <FeedbackPanel tone="error" description={error} />
       )}
 
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1.2fr)_minmax(320px,1fr)]">
-        <section className="overflow-hidden rounded-lg border border-zinc-200 bg-white dark:border-zinc-700 dark:bg-zinc-950">
+        <section className={`${sectionCardClass} overflow-hidden`}>
           <div className="border-b border-zinc-200 px-4 py-3 dark:border-zinc-800">
             <h2 className="text-lg font-semibold text-foreground">
               Insight queue
@@ -289,7 +295,7 @@ export default function AdminInsightsPage() {
         </section>
 
         <section className="space-y-6">
-          <div className="rounded-lg border border-zinc-200 bg-white p-6 dark:border-zinc-700 dark:bg-zinc-950">
+          <div className={`${sectionCardClass} p-6`}>
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
                 <h2 className="text-lg font-semibold text-foreground">
@@ -366,7 +372,7 @@ export default function AdminInsightsPage() {
                     type="button"
                     disabled={actionStatus !== null || isRecomputing}
                     onClick={() => void recomputeInsight()}
-                    className="rounded-lg bg-foreground px-4 py-2 text-sm font-medium text-background hover:opacity-90 disabled:pointer-events-none disabled:opacity-50"
+                    className={primaryButtonClass}
                   >
                     {isRecomputing ? "Recomputing…" : "Recompute insight"}
                   </button>
@@ -378,7 +384,7 @@ export default function AdminInsightsPage() {
                       selectedInsight.status === "approved"
                     }
                     onClick={() => void updateStatus("approved")}
-                    className="rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-500 disabled:pointer-events-none disabled:opacity-50"
+                    className={primaryButtonClass}
                   >
                     {actionStatus === "approved" ? "Approving…" : "Approve"}
                   </button>
@@ -390,7 +396,7 @@ export default function AdminInsightsPage() {
                       selectedInsight.status === "rejected"
                     }
                     onClick={() => void updateStatus("rejected")}
-                    className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-500 disabled:pointer-events-none disabled:opacity-50"
+                    className={destructiveButtonClass}
                   >
                     {actionStatus === "rejected" ? "Rejecting…" : "Reject"}
                   </button>
@@ -402,7 +408,7 @@ export default function AdminInsightsPage() {
                       selectedInsight.status === "hidden"
                     }
                     onClick={() => void updateStatus("hidden")}
-                    className="rounded-lg border border-zinc-300 bg-white px-4 py-2 text-sm font-medium text-foreground hover:bg-zinc-50 disabled:pointer-events-none disabled:opacity-50 dark:border-zinc-600 dark:bg-zinc-900 dark:hover:bg-zinc-800"
+                    className={secondaryButtonClass}
                   >
                     {actionStatus === "hidden" ? "Hiding…" : "Hide"}
                   </button>
@@ -414,7 +420,7 @@ export default function AdminInsightsPage() {
                       selectedInsight.status === "pending"
                     }
                     onClick={() => void updateStatus("pending")}
-                    className="rounded-lg border border-zinc-300 bg-white px-4 py-2 text-sm font-medium text-foreground hover:bg-zinc-50 disabled:pointer-events-none disabled:opacity-50 dark:border-zinc-600 dark:bg-zinc-900 dark:hover:bg-zinc-800"
+                    className={secondaryButtonClass}
                   >
                     {actionStatus === "pending" ? "Resetting…" : "Reset to pending"}
                   </button>

@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
+import { secondaryButtonClass } from "@/lib/ui";
 
 type SignOutButtonProps = {
   redirectTo?: string;
@@ -36,8 +37,7 @@ export function SignOutButton({
       onClick={handleSignOut}
       disabled={submitting}
       className={`disabled:pointer-events-none disabled:opacity-50 ${
-        className ??
-        "rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm font-medium text-foreground hover:bg-zinc-50 dark:border-zinc-600 dark:bg-zinc-900 dark:hover:bg-zinc-800"
+        className ?? secondaryButtonClass
       }`}
     >
       {submitting ? "Signing out…" : "Sign out"}

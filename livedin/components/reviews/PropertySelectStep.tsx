@@ -6,6 +6,8 @@ import type {
   PropertySearchResponse,
   ReviewableProperty,
 } from "@/lib/types";
+import { FeedbackPanel } from "@/components/ui/FeedbackPanel";
+import { cn, inputClass, primaryButtonClass, secondaryButtonClass } from "@/lib/ui";
 
 type PropertySelectStepProps = {
   initialPropertyId: string;
@@ -160,113 +162,208 @@ export function PropertySelectStep({
   const currentSelection = selected ?? preselected;
   const canContinue = currentSelection != null;
 
-  return (
-    <div className="space-y-6">
-      <h2 className="text-xl font-semibold text-foreground">Review Address</h2>
-      <p className="text-sm text-zinc-600 dark:text-zinc-400">
-        Select the property you want to review.
-      </p>
+  const renderPropertyButton = (property: ReviewableProperty) => {
+    const isSelected = selected?.id === property.id || preselected?.id === property.id;
 
-      {loadingProperty ? (
-        <div className="rounded-lg border border-zinc-200 bg-zinc-50 p-4 text-sm text-zinc-600 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-400">
-          Loading property details…
-        </div>
-      ) : preselected ? (
-        <div className="space-y-4">
-          <div className="rounded-lg border border-zinc-200 bg-white p-4 dark:border-zinc-700 dark:bg-zinc-900">
-            <h3 className="font-semibold text-foreground">
-              {preselected.display_name}
-            </h3>
-            <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-              {formatAddress(preselected)}
+    return (
+      <button
+        key={property.id}
+        type="button"
+        onClick={() => setSelected(property)}
+        className={cn(
+          "block w-full rounded-3xl border p-4 text-left transition",
+          isSelected
+            ? "border-zinc-950 bg-zinc-950 text-white shadow-sm dark:border-zinc-100 dark:bg-zinc-100 dark:text-zinc-950"
+            : "border-zinc-200 bg-white hover:border-zinc-300 hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-950 dark:hover:border-zinc-700 dark:hover:bg-zinc-900",
+        )}
+        aria-pressed={isSelected}
+      >
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <h3 className="font-semibold">{property.display_name}</h3>
+            <p
+              className={cn(
+                "mt-1 text-sm leading-6",
+                isSelected ? "text-white/85 dark:text-zinc-700" : "text-zinc-600 dark:text-zinc-400",
+              )}
+            >
+              {formatAddress(property)}
             </p>
-            {preselected.management_company && (
-              <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-500">
-                {preselected.management_company}
+            {property.management_company ? (
+              <p
+                className={cn(
+                  "mt-2 text-xs font-medium uppercase tracking-[0.18em]",
+                  isSelected ? "text-white/75 dark:text-zinc-600" : "text-zinc-500 dark:text-zinc-500",
+                )}
+              >
+                {property.management_company}
               </p>
-            )}
+            ) : null}
           </div>
-          <button
-            type="button"
-            onClick={() => onContinue(preselected)}
-            className="rounded-lg bg-foreground px-4 py-2 text-sm font-medium text-background hover:opacity-90"
+          <span
+            className={cn(
+              "rounded-full px-3 py-1 text-xs font-medium",
+              isSelected
+                ? "bg-white/15 text-white dark:bg-zinc-200 dark:text-zinc-900"
+                : "bg-zinc-100 text-zinc-600 dark:bg-zinc-900 dark:text-zinc-300",
+            )}
           >
-            Continue
-          </button>
+            {isSelected ? "Selected" : "Choose"}
+          </span>
         </div>
-      ) : (
-        <>
-          {propertyError && (
-            <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900 dark:border-amber-900/70 dark:bg-amber-950/30 dark:text-amber-200">
-              {propertyError} Choose another property below.
-            </div>
-          )}
-          <div className="relative flex items-center rounded-lg border border-zinc-300 bg-white dark:border-zinc-600 dark:bg-zinc-900">
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search by address or management company"
-              className="w-full rounded-lg border-0 bg-transparent py-3 pl-4 pr-4 text-foreground placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-400 dark:placeholder:text-zinc-500"
-              aria-label="Search properties"
+      </button>
+    );
+  };
+
+  return (
+    <div className="space-y-6 pt-6">
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,1.25fr)_320px]">
+        <div className="space-y-5">
+          <div>
+            <label
+              htmlFor="review-property-search"
+              className="block text-sm font-medium text-foreground"
+            >
+              Search by address or management company
+            </label>
+            <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
+              Pick the exact location first so the rest of the review stays tied to the right property.
+            </p>
+          </div>
+
+          {loadingProperty ? (
+            <FeedbackPanel
+              title="Loading property details"
+              description="Checking the property you selected before opening the review form."
             />
-          </div>
-          <div className="max-h-80 space-y-2 overflow-y-auto">
-            {loadingList ? (
-              <div className="space-y-2">
-                {[1, 2, 3].map((item) => (
-                  <div
-                    key={item}
-                    className="h-20 animate-pulse rounded-lg border border-zinc-200 bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-800"
-                    aria-hidden
-                  />
-                ))}
+          ) : preselected ? (
+            <div className="rounded-3xl border border-zinc-200 bg-white p-5 shadow-sm dark:border-zinc-800 dark:bg-zinc-950">
+              <div className="flex items-center justify-between gap-3">
+                <h2 className="text-lg font-semibold text-foreground">
+                  Selected property
+                </h2>
+                <span className="rounded-full bg-zinc-100 px-3 py-1 text-xs font-medium text-zinc-700 dark:bg-zinc-900 dark:text-zinc-300">
+                  Confirmed from link
+                </span>
               </div>
-            ) : listError ? (
-              <p className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-800 dark:border-red-900 dark:bg-red-950/30 dark:text-red-200">
-                {listError}
-              </p>
-            ) : items.length === 0 ? (
-              <p className="rounded-lg border border-zinc-200 bg-zinc-50 p-4 text-sm text-zinc-600 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-400">
-                No properties match your search.
-              </p>
-            ) : (
-              items.map((p) => (
-                <button
-                  key={p.id}
-                  type="button"
-                  onClick={() => setSelected(p)}
-                  className={`block w-full rounded-lg border p-4 text-left transition-colors ${
-                    selected?.id === p.id
-                      ? "border-foreground bg-zinc-100 dark:bg-zinc-800"
-                      : "border-zinc-200 bg-white hover:border-zinc-300 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:hover:border-zinc-600 dark:hover:bg-zinc-800"
-                  }`}
-                >
-                  <h3 className="font-semibold text-foreground">
-                    {p.display_name}
-                  </h3>
-                  <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-                    {formatAddress(p)}
+              <div className="mt-4">{renderPropertyButton(preselected)}</div>
+            </div>
+          ) : (
+            <>
+              <div className="relative">
+                <input
+                  id="review-property-search"
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Start typing an address or management company"
+                  className={inputClass}
+                  aria-label="Search properties"
+                />
+                {searchQuery ? (
+                  <button
+                    type="button"
+                    onClick={() => setSearchQuery("")}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 rounded-lg px-2 py-1 text-sm font-medium text-zinc-500 hover:bg-zinc-100 hover:text-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-200"
+                  >
+                    Clear
+                  </button>
+                ) : null}
+              </div>
+
+              {propertyError && (
+                <FeedbackPanel
+                  tone="warning"
+                  description={`${propertyError} Choose another property below.`}
+                />
+              )}
+
+              <div className="space-y-3">
+                <div className="flex items-center justify-between gap-3">
+                  <h2 className="text-lg font-semibold text-foreground">Matching properties</h2>
+                  <p className="text-sm text-zinc-500 dark:text-zinc-400" aria-live="polite">
+                    {loadingList ? "Searching…" : `${items.length} shown`}
                   </p>
-                  {p.management_company && (
-                    <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-500">
-                      {p.management_company}
-                    </p>
+                </div>
+                <div className="max-h-[28rem] space-y-3 overflow-y-auto pr-1">
+                  {loadingList ? (
+                    <div className="space-y-3">
+                      {[1, 2, 3].map((item) => (
+                        <div
+                          key={item}
+                          className="h-28 animate-pulse rounded-3xl border border-zinc-200 bg-zinc-100 dark:border-zinc-800 dark:bg-zinc-900"
+                          aria-hidden
+                        />
+                      ))}
+                    </div>
+                  ) : listError ? (
+                    <FeedbackPanel
+                      tone="error"
+                      description={listError}
+                      primaryAction={{ label: "Retry", onClick: () => setSearchQuery((value) => value) }}
+                    />
+                  ) : items.length === 0 ? (
+                    <FeedbackPanel
+                      title="No matching properties"
+                      description="Try a broader address search, a nearby street, or a management company name."
+                    />
+                  ) : (
+                    items.map((p) => renderPropertyButton(p))
                   )}
-                </button>
-              ))
-            )}
+                </div>
+              </div>
+            </>
+          )}
+        </div>
+
+        <aside className="rounded-3xl border border-zinc-200 bg-zinc-50 p-5 dark:border-zinc-800 dark:bg-zinc-900 lg:sticky lg:top-6 lg:self-start">
+          <p className="text-sm font-medium uppercase tracking-[0.22em] text-zinc-500 dark:text-zinc-400">
+            Is this the correct location?
+          </p>
+          {currentSelection ? (
+            <div className="mt-4 rounded-3xl border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-950">
+              <h3 className="text-lg font-semibold text-foreground">
+                {currentSelection.display_name}
+              </h3>
+              <p className="mt-2 text-sm leading-6 text-zinc-600 dark:text-zinc-400">
+                {formatAddress(currentSelection)}
+              </p>
+              {currentSelection.management_company ? (
+                <p className="mt-3 text-sm text-zinc-500 dark:text-zinc-400">
+                  Managed by {currentSelection.management_company}
+                </p>
+              ) : null}
+            </div>
+          ) : (
+            <p className="mt-4 rounded-3xl border border-dashed border-zinc-300 px-4 py-6 text-sm leading-6 text-zinc-600 dark:border-zinc-700 dark:text-zinc-400">
+              Choose a property from the results list to confirm it here before continuing.
+            </p>
+          )}
+
+          <div className="mt-5 space-y-3">
+            <button
+              type="button"
+              disabled={!canContinue}
+              onClick={() => currentSelection && onContinue(currentSelection)}
+              className={`${primaryButtonClass} w-full`}
+            >
+              Continue
+            </button>
+            {!preselected ? (
+              <button
+                type="button"
+                onClick={() => {
+                  setSelected(null);
+                  setSearchQuery("");
+                }}
+                className={`${secondaryButtonClass} w-full`}
+              >
+                Reset selection
+              </button>
+            ) : null}
           </div>
-          <button
-            type="button"
-            disabled={!canContinue}
-            onClick={() => currentSelection && onContinue(currentSelection)}
-            className="rounded-lg bg-foreground px-4 py-2 text-sm font-medium text-background hover:opacity-90 disabled:opacity-50 disabled:pointer-events-none"
-          >
-            Continue
-          </button>
-        </>
-      )}
+        </aside>
+      </div>
     </div>
   );
 }

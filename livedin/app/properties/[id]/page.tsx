@@ -1,8 +1,11 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { PublicSiteHeader } from "@/components/auth/PublicSiteHeader";
+import { Breadcrumbs } from "@/components/ui/Breadcrumbs";
+import { FeedbackPanel } from "@/components/ui/FeedbackPanel";
 import { getPropertyDetail } from "@/lib/property-detail";
 import type { PropertyDetailPublic } from "@/lib/types";
+import { pageContainerClass, primaryButtonClass, sectionCardClass, secondaryButtonClass } from "@/lib/ui";
 
 type Props = {
   params: Promise<{ id: string }>;
@@ -125,25 +128,34 @@ export default async function PropertyDetailPage({ params }: Props) {
   const hasReviews = aggregates.review_count > 0;
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-950 dark:bg-slate-950 dark:text-slate-50">
+    <div className="min-h-screen bg-zinc-50 text-slate-950 dark:bg-slate-950 dark:text-slate-50">
       <PublicSiteHeader />
-      <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
-        <div className="mb-8 flex flex-wrap items-center gap-3">
-          <Link
-            href="/"
-            className="text-sm font-medium text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-slate-50"
-          >
-            Back to results
-          </Link>
+      <div className={`${pageContainerClass} py-8 sm:py-10`}>
+        <div className="space-y-6">
+          <Breadcrumbs
+            items={[
+              { label: "Browse properties", href: "/" },
+              { label: property.display_name },
+            ]}
+          />
+
+          <div className="flex flex-wrap gap-3">
+            <Link href="/" className={secondaryButtonClass}>
+              Back to results
+            </Link>
+            <Link href={`/submit-review/${id}`} className={primaryButtonClass}>
+              Leave a review
+            </Link>
+          </div>
         </div>
 
-        <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_320px]">
+        <div className="mt-6 grid gap-8 lg:grid-cols-[minmax(0,1fr)_340px]">
           <div className="min-w-0">
-            <header className="rounded-[28px] border border-slate-200 bg-white p-8 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+            <header className={`${sectionCardClass} p-6 sm:p-8`}>
               <p className="text-xs font-medium uppercase tracking-[0.2em] text-slate-400">
                 Property detail
               </p>
-              <h1 className="mt-3 max-w-2xl text-4xl font-semibold tracking-tight text-slate-950 dark:text-slate-50 sm:text-5xl">
+              <h1 className="mt-3 max-w-3xl text-3xl font-semibold tracking-tight text-slate-950 dark:text-slate-50 sm:text-4xl lg:text-5xl">
                 {property.display_name}
               </h1>
               <div className="mt-4 flex flex-wrap items-center gap-x-2 gap-y-1 text-lg text-slate-500 dark:text-slate-400">
@@ -151,9 +163,43 @@ export default async function PropertyDetailPage({ params }: Props) {
                 {property.management_company && <span aria-hidden>•</span>}
                 <span>{formatAddress(property)}</span>
               </div>
+              <div className="mt-8 grid gap-4 sm:grid-cols-3">
+                <div className="rounded-3xl bg-slate-950 p-5 text-white dark:bg-slate-100 dark:text-slate-950">
+                  <p className="text-xs uppercase tracking-[0.2em] opacity-70">Trust score</p>
+                  <p className="mt-3 text-4xl font-semibold">
+                    {formatScore(aggregates.display_trustscore_0_6)}/6
+                  </p>
+                  <div className="mt-4">
+                    <ScoreDots score={aggregates.display_trustscore_0_6} />
+                  </div>
+                </div>
+                <div className="rounded-3xl border border-slate-200 p-5 dark:border-slate-800">
+                  <p className="text-xs uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
+                    Review count
+                  </p>
+                  <p className="mt-3 text-3xl font-semibold text-slate-950 dark:text-slate-50">
+                    {aggregates.review_count}
+                  </p>
+                  <p className="mt-2 text-sm leading-6 text-slate-500 dark:text-slate-400">
+                    <ConfidenceLabel reviewCount={aggregates.review_count} />
+                  </p>
+                </div>
+                <div className="rounded-3xl border border-slate-200 p-5 dark:border-slate-800">
+                  <p className="text-xs uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
+                    Insight summary
+                  </p>
+                  <p className="mt-3 text-sm leading-7 text-slate-600 dark:text-slate-300">
+                    {insights
+                      ? "Approved renter insight is available below."
+                      : hasReviews
+                        ? "Reviews exist, but a public insight summary has not been approved yet."
+                        : "Public insight summaries appear after enough verified reviews are available."}
+                  </p>
+                </div>
+              </div>
             </header>
 
-            <section className="mt-8 rounded-[28px] border border-slate-200 bg-white p-8 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+            <section className={`${sectionCardClass} mt-8 p-6 sm:p-8`}>
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
                   <h2 className="text-2xl font-semibold text-slate-950 dark:text-slate-50">
@@ -179,13 +225,17 @@ export default async function PropertyDetailPage({ params }: Props) {
               </div>
 
               {!hasReviews && (
-                <p className="mt-6 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-300">
-                  No reviews yet. Scores will appear once renters leave verified reviews.
-                </p>
+                <div className="mt-6">
+                  <FeedbackPanel
+                    title="No verified reviews yet"
+                    description="This property is live, but renters have not submitted approved reviews yet. Be the first to share your experience."
+                    primaryAction={{ label: "Leave a review", href: `/submit-review/${id}` }}
+                  />
+                </div>
               )}
             </section>
 
-            <section className="mt-8 rounded-[28px] border border-slate-200 bg-white p-8 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+            <section className={`${sectionCardClass} mt-8 p-6 sm:p-8`}>
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <h2 className="text-2xl font-semibold text-slate-950 dark:text-slate-50">
                   Distilled insights
@@ -205,34 +255,31 @@ export default async function PropertyDetailPage({ params }: Props) {
                   </p>
                 </div>
               ) : (
-                <p className="mt-6 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-300">
-                  {hasReviews ? "No insights yet." : "Not enough data to generate insights yet."}
-                </p>
+                <div className="mt-6">
+                  <FeedbackPanel
+                    title={hasReviews ? "Insight summary not published yet" : "Not enough data for insights yet"}
+                    description={
+                      hasReviews
+                        ? "Verified reviews exist, but there is no approved public summary available yet. Check back after moderation."
+                        : "Insights appear once enough verified review data is available for a meaningful summary."
+                    }
+                  />
+                </div>
               )}
             </section>
           </div>
 
           <aside className="space-y-6 lg:sticky lg:top-8 lg:self-start">
-            <section className="rounded-[28px] border border-slate-200 bg-white p-8 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-              <h2 className="sr-only">Trust score</h2>
-              <div className="text-center">
-                <p className="text-6xl font-semibold tracking-tight text-slate-950 dark:text-slate-50">
-                  {formatScore(aggregates.display_trustscore_0_6)}
-                </p>
-                <div className="mt-4 flex justify-center">
-                  <ScoreDots score={aggregates.display_trustscore_0_6} />
-                </div>
-                <p className="mt-3 text-base text-slate-500 dark:text-slate-400">
-                  Overall rating
-                </p>
-                <p className="mt-2 text-sm leading-6 text-slate-500 dark:text-slate-400">
-                  <ConfidenceLabel reviewCount={aggregates.review_count} />
-                </p>
-              </div>
-
+            <section className={`${sectionCardClass} p-6`}>
+              <h2 className="text-lg font-semibold text-slate-950 dark:text-slate-50">
+                Next step
+              </h2>
+              <p className="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-400">
+                Confirm the address, then share a structured renter review to help future tenants evaluate this property.
+              </p>
               <Link
                 href={`/submit-review/${id}`}
-                className="mt-8 block rounded-2xl bg-slate-950 px-4 py-4 text-center text-base font-medium text-white transition hover:bg-slate-800 dark:bg-slate-50 dark:text-slate-950 dark:hover:bg-slate-200"
+                className={`${primaryButtonClass} mt-5 w-full`}
               >
                 Leave a review
               </Link>

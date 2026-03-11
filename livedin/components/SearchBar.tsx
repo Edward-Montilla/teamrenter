@@ -1,5 +1,7 @@
 "use client";
 
+import { inputClass, primaryButtonClass } from "@/lib/ui";
+
 const SearchIcon = () => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
@@ -37,35 +39,39 @@ export function SearchBar({ value, onChange, onSubmit, disabled = false }: Searc
   };
 
   return (
-    <form onSubmit={handleSubmit} className="flex w-full max-w-xl gap-2">
-      <div className="relative flex flex-1 items-center rounded-lg border border-zinc-300 bg-white dark:border-zinc-600 dark:bg-zinc-900">
-        <span className="pointer-events-none absolute left-3 text-zinc-400 dark:text-zinc-500">
+    <form onSubmit={handleSubmit} className="flex w-full flex-col gap-3 sm:flex-row">
+      <div className="relative flex-1">
+        <label htmlFor="property-search" className="sr-only">
+          Search by address or management company
+        </label>
+        <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400 dark:text-zinc-500">
           <SearchIcon />
         </span>
         <input
+          id="property-search"
           type="text"
           value={value}
           onChange={(e) => onChange(e.target.value)}
           placeholder="Search address or property management company"
           disabled={disabled}
-          className="w-full rounded-lg border-0 bg-transparent py-3 pl-10 pr-4 text-foreground placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-400 dark:placeholder:text-zinc-500 dark:focus:ring-zinc-500"
+          className={`${inputClass} pl-12 pr-28`}
           aria-label="Search address or property management company"
         />
         {value.length > 0 && (
           <button
             type="button"
             onClick={handleClear}
-            className="absolute right-2 rounded p-1 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-600 dark:hover:bg-zinc-700 dark:hover:text-zinc-300"
+            className="absolute right-3 top-1/2 -translate-y-1/2 rounded-lg px-2 py-1 text-sm font-medium text-zinc-500 transition hover:bg-zinc-100 hover:text-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-200"
             aria-label="Clear search"
           >
-            <span className="text-lg leading-none">×</span>
+            Clear
           </button>
         )}
       </div>
       <button
         type="submit"
         disabled={disabled}
-        className="rounded-lg bg-foreground px-4 py-3 font-medium text-background transition-colors hover:opacity-90 disabled:opacity-50"
+        className={`${primaryButtonClass} min-w-28 px-5 py-3`}
       >
         Search
       </button>

@@ -4,6 +4,11 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
 import { SignOutButton } from "@/components/auth/SignOutButton";
+import {
+  pageContainerClass,
+  primaryButtonClass,
+  secondaryButtonClass,
+} from "@/lib/ui";
 
 type HeaderProfile = {
   role: string;
@@ -75,24 +80,37 @@ export function PublicSiteHeader() {
   }, []);
 
   return (
-    <div className="border-b border-zinc-200 bg-white/95 backdrop-blur dark:border-zinc-800 dark:bg-zinc-950/95">
-      <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3 sm:px-6 lg:px-8">
-        <Link href="/" className="text-base font-semibold text-foreground">
-          Livedin
-        </Link>
-        <div className="flex items-center gap-3 text-sm">
+    <div className="sticky top-0 z-40 border-b border-zinc-200 bg-white/95 backdrop-blur dark:border-zinc-800 dark:bg-zinc-950/95">
+      <div className={`${pageContainerClass} flex flex-wrap items-center justify-between gap-4 py-3`}>
+        <div className="flex items-center gap-6">
+          <Link href="/" className="text-base font-semibold text-foreground">
+            Livedin
+          </Link>
+          <nav className="hidden items-center gap-4 text-sm text-zinc-600 dark:text-zinc-400 md:flex">
+            <Link href="/" className="transition hover:text-zinc-950 dark:hover:text-zinc-100">
+              Browse properties
+            </Link>
+            <Link
+              href="/submit-review/new"
+              className="transition hover:text-zinc-950 dark:hover:text-zinc-100"
+            >
+              Leave a review
+            </Link>
+          </nav>
+        </div>
+        <div className="flex flex-wrap items-center gap-3 text-sm">
           {loading ? (
             <span className="text-zinc-500 dark:text-zinc-400">Checking session…</span>
           ) : email ? (
             <>
-              <span className="hidden text-zinc-600 dark:text-zinc-400 sm:inline">
+              <span className="hidden rounded-full bg-zinc-100 px-3 py-1 text-zinc-600 dark:bg-zinc-900 dark:text-zinc-400 sm:inline">
                 {formatUserLabel(email)}
                 {profile?.email_verified ? " · verified" : ""}
               </span>
               {profile?.role === "admin" && (
                 <Link
                   href="/admin/properties"
-                  className="rounded-lg border border-zinc-300 bg-white px-3 py-2 font-medium text-foreground hover:bg-zinc-50 dark:border-zinc-600 dark:bg-zinc-900 dark:hover:bg-zinc-800"
+                  className={secondaryButtonClass}
                 >
                   Admin
                 </Link>
@@ -100,12 +118,14 @@ export function PublicSiteHeader() {
               <SignOutButton />
             </>
           ) : (
-            <Link
-              href="/sign-in?redirect=%2F"
-              className="rounded-lg border border-zinc-300 bg-white px-3 py-2 font-medium text-foreground hover:bg-zinc-50 dark:border-zinc-600 dark:bg-zinc-900 dark:hover:bg-zinc-800"
-            >
-              Sign in
-            </Link>
+            <>
+              <Link href="/submit-review/new" className={secondaryButtonClass}>
+                Leave a review
+              </Link>
+              <Link href="/sign-in?redirect=%2F" className={primaryButtonClass}>
+                Sign in
+              </Link>
+            </>
           )}
         </div>
       </div>

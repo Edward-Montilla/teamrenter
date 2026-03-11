@@ -1,6 +1,8 @@
 "use client";
 
 import Link from "next/link";
+import { FeedbackPanel } from "@/components/ui/FeedbackPanel";
+import { primaryButtonClass, secondaryButtonClass } from "@/lib/ui";
 
 type ReviewSubmittedScreenProps = {
   reviewId: string;
@@ -13,26 +15,33 @@ export function ReviewSubmittedScreen({
 }: ReviewSubmittedScreenProps) {
   return (
     <div className="space-y-6">
-      <h2 className="text-xl font-semibold text-foreground">Review — Done</h2>
-      <div className="rounded-lg border border-zinc-200 bg-zinc-50 p-6 dark:border-zinc-700 dark:bg-zinc-900">
-        <p className="font-medium text-foreground">Review submitted.</p>
-        <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-          Thank you for contributing. Your review helps other renters.
+      <div className="border-b border-zinc-200 pb-6 dark:border-zinc-800">
+        <p className="text-sm font-medium uppercase tracking-[0.22em] text-zinc-500 dark:text-zinc-400">
+          Step 3 of 3
         </p>
-        <p className="mt-2 text-xs text-zinc-500 dark:text-zinc-500">
-          Submission reference: {reviewId}
-        </p>
+        <h2 className="mt-3 text-3xl font-semibold tracking-tight text-foreground">
+          Review submitted
+        </h2>
       </div>
+      <FeedbackPanel
+        tone="success"
+        description={
+          <div className="space-y-2">
+            <p>Thank you for contributing. Your review helps other renters evaluate this property with more confidence.</p>
+            <p className="text-xs opacity-75">Submission reference: {reviewId}</p>
+          </div>
+        }
+      />
       <div className="flex flex-wrap gap-3">
         <Link
           href={`/properties/${propertyId}`}
-          className="inline-block rounded-lg bg-foreground px-4 py-2 text-sm font-medium text-background hover:opacity-90"
+          className={primaryButtonClass}
         >
           View property listing
         </Link>
         <Link
           href="/"
-          className="inline-block rounded-lg border border-zinc-300 bg-white px-4 py-2 text-sm font-medium text-foreground hover:bg-zinc-50 dark:border-zinc-600 dark:bg-zinc-900 dark:hover:bg-zinc-800"
+          className={secondaryButtonClass}
         >
           Return to search
         </Link>

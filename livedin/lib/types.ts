@@ -21,6 +21,18 @@ export type PropertySearchResponse = {
 };
 
 export type UiListState = "loading" | "ready" | "empty" | "error";
+export type UiFeedbackTone = "info" | "success" | "warning" | "error";
+export type UiSurfaceState =
+  | "idle"
+  | "loading"
+  | "empty"
+  | "error"
+  | "success";
+
+export type BreadcrumbItem = {
+  label: string;
+  href?: string;
+};
 
 export type ReviewableProperty = {
   id: string;

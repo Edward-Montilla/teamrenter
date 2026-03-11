@@ -5,6 +5,7 @@ import Link from "next/link";
 import { AuthPromptCard } from "@/components/auth/AuthPromptCard";
 import { SignOutButton } from "@/components/auth/SignOutButton";
 import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
+import { pageContainerClass, secondaryButtonClass, sectionCardClass } from "@/lib/ui";
 
 type GuardState = "loading" | "unauthenticated" | "forbidden" | "allowed";
 
@@ -55,16 +56,18 @@ export default function AdminLayout({
 
   if (state === "loading") {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-background text-foreground">
-        <p className="text-zinc-500">Checking access…</p>
+      <div className="flex min-h-screen items-center justify-center bg-zinc-50 text-foreground dark:bg-zinc-950">
+        <div className={`${sectionCardClass} p-6`}>
+          <p className="text-zinc-500">Checking access…</p>
+        </div>
       </div>
     );
   }
 
   if (state === "forbidden") {
     return (
-      <div className="min-h-screen bg-background text-foreground">
-        <div className="mx-auto max-w-lg px-4 py-16 space-y-4">
+      <div className="min-h-screen bg-zinc-50 text-foreground dark:bg-zinc-950">
+        <div className={`${pageContainerClass} max-w-lg space-y-4 py-16`}>
           <AuthPromptCard
             title="Admin access required"
             description="You are signed in, but this account does not have access to the admin area."
@@ -78,8 +81,8 @@ export default function AdminLayout({
 
   if (state === "unauthenticated") {
     return (
-      <div className="min-h-screen bg-background text-foreground">
-        <div className="mx-auto max-w-lg px-4 py-16">
+      <div className="min-h-screen bg-zinc-50 text-foreground dark:bg-zinc-950">
+        <div className={`${pageContainerClass} max-w-lg py-16`}>
           <AuthPromptCard
             title="Sign in to continue"
             description="Use an admin account to manage properties."
@@ -95,48 +98,53 @@ export default function AdminLayout({
   }
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      <header className="border-b border-zinc-200 bg-white px-4 py-3 dark:border-zinc-800 dark:bg-zinc-950 sm:px-6">
-        <div className="mx-auto flex max-w-6xl items-center justify-between">
-          <Link
-            href="/admin/properties"
-            className="text-lg font-semibold text-foreground hover:underline"
-          >
-            Admin
-          </Link>
-          <nav className="flex gap-4">
+    <div className="min-h-screen bg-zinc-50 text-foreground dark:bg-zinc-950">
+      <header className="border-b border-zinc-200 bg-white/95 backdrop-blur dark:border-zinc-800 dark:bg-zinc-950/95">
+        <div className={`${pageContainerClass} flex flex-wrap items-center justify-between gap-4 py-4`}>
+          <div>
             <Link
               href="/admin/properties"
-              className="text-sm font-medium text-zinc-600 hover:text-foreground dark:text-zinc-400 dark:hover:text-foreground"
+              className="text-lg font-semibold text-foreground hover:underline"
+            >
+              Admin
+            </Link>
+            <p className="text-sm text-zinc-500 dark:text-zinc-400">
+              Moderate data, manage properties, and review publication state.
+            </p>
+          </div>
+          <nav className="flex flex-wrap gap-3">
+            <Link
+              href="/admin/properties"
+              className={secondaryButtonClass}
             >
               Properties
             </Link>
             <Link
               href="/admin/reviews"
-              className="text-sm font-medium text-zinc-600 hover:text-foreground dark:text-zinc-400 dark:hover:text-foreground"
+              className={secondaryButtonClass}
             >
               Reviews
             </Link>
             <Link
               href="/admin/insights"
-              className="text-sm font-medium text-zinc-600 hover:text-foreground dark:text-zinc-400 dark:hover:text-foreground"
+              className={secondaryButtonClass}
             >
               Insights
             </Link>
             <Link
               href="/"
-              className="text-sm font-medium text-zinc-600 hover:text-foreground dark:text-zinc-400 dark:hover:text-foreground"
+              className={secondaryButtonClass}
             >
               Public site
             </Link>
             <SignOutButton
-              className="text-sm font-medium text-zinc-600 hover:text-foreground dark:text-zinc-400 dark:hover:text-foreground"
+              className={secondaryButtonClass}
               redirectTo="/"
             />
           </nav>
         </div>
       </header>
-      <main className="mx-auto max-w-6xl px-4 py-6 sm:px-6">{children}</main>
+      <main className={`${pageContainerClass} py-8`}>{children}</main>
     </div>
   );
 }
