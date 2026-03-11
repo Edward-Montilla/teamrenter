@@ -1,8 +1,79 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #f3f4f6;
+  --foreground: #1f2937;
+  --theme-surface: #ffffff;
+  --theme-surface-alt: #ddd6fe;
+  --theme-primary: #8b5cf6;
+  --theme-primary-foreground: #ffffff;
+  --theme-secondary: #14b8a6;
+  --theme-border: #d1d5db;
+  --theme-muted: #6b7280;
+  --theme-success: #14b8a6;
+  --theme-warning: #f59e0b;
+  --theme-error: #ef4444;
+  --theme-info: #38bdf8;
+}
+
+[data-theme="recommended"] {
+  --background: #f3f4f6;
+  --foreground: #1f2937;
+  --theme-surface: #ffffff;
+  --theme-surface-alt: #ddd6fe;
+  --theme-primary: #8b5cf6;
+  --theme-primary-foreground: #ffffff;
+  --theme-secondary: #14b8a6;
+  --theme-border: #d1d5db;
+  --theme-muted: #6b7280;
+}
+
+[data-theme="ink-blue-peach-pop"] {
+  --background: #fff8f2;
+  --foreground: #1e2a38;
+  --theme-surface: #f5e9da;
+  --theme-surface-alt: #fff1e6;
+  --theme-primary: #ff8a65;
+  --theme-primary-foreground: #ffffff;
+  --theme-secondary: #ff8a65;
+  --theme-border: #d6c1af;
+  --theme-muted: #7c7c82;
+}
+
+[data-theme="forest-charcoal"] {
+  --background: #f6f2e8;
+  --foreground: #1f2a24;
+  --theme-surface: #ffffff;
+  --theme-surface-alt: #d9c7b8;
+  --theme-primary: #b7f34d;
+  --theme-primary-foreground: #1f2a24;
+  --theme-secondary: #7a8577;
+  --theme-border: #c6b8ab;
+  --theme-muted: #7a8577;
+}
+
+[data-theme="navy-digital-sky"] {
+  --background: #fafaf9;
+  --foreground: #243b53;
+  --theme-surface: #ffffff;
+  --theme-surface-alt: #fbcfe8;
+  --theme-primary: #38bdf8;
+  --theme-primary-foreground: #0f172a;
+  --theme-secondary: #38bdf8;
+  --theme-border: #cbd5e1;
+  --theme-muted: #94a3b8;
+}
+
+[data-theme="aubergine-rose"] {
+  --background: #faf7f5;
+  --foreground: #3c2541;
+  --theme-surface: #ffffff;
+  --theme-surface-alt: #f4e5ea;
+  --theme-primary: #e9a6b3;
+  --theme-primary-foreground: #3c2541;
+  --theme-secondary: #7e6c77;
+  --theme-border: #e5e7eb;
+  --theme-muted: #7e6c77;
 }
 
 @theme inline {
@@ -12,11 +83,10 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  background: var(--background);
+  color: var(--foreground);
+  color-scheme: light;
 }
 
 body {
@@ -26,10 +96,193 @@ body {
 }
 
 :where(a, button, input, select, textarea, [tabindex]:not([tabindex="-1"])):focus-visible {
-  outline: 2px solid #2563eb;
+  outline: 2px solid var(--theme-primary);
   outline-offset: 2px;
 }
 
 ::selection {
-  background: rgba(37, 99, 235, 0.18);
+  background: color-mix(in srgb, var(--theme-primary) 22%, transparent);
+}
+
+[data-theme] .dark\:border-zinc-800,
+[data-theme] .dark\:border-zinc-700,
+[data-theme] .dark\:border-slate-800,
+[data-theme] .dark\:border-slate-700,
+[data-theme] .border-zinc-300,
+[data-theme] .border-zinc-200,
+[data-theme] .border-slate-200 {
+  border-color: var(--theme-border);
+}
+
+[data-theme] .dark\:bg-zinc-950,
+[data-theme] .dark\:bg-zinc-900,
+[data-theme] .dark\:bg-slate-950,
+[data-theme] .dark\:bg-slate-900,
+[data-theme] .bg-zinc-900 {
+  background-color: var(--theme-surface);
+}
+
+[data-theme] .bg-zinc-50,
+[data-theme] .dark\:bg-zinc-950 {
+  background-color: var(--background);
+}
+
+[data-theme] .bg-white {
+  background-color: var(--theme-surface);
+}
+
+[data-theme] .bg-white\/90,
+[data-theme] .bg-white\/95,
+[data-theme] .dark\:bg-zinc-950\/90,
+[data-theme] .dark\:bg-zinc-950\/95 {
+  background-color: color-mix(in srgb, var(--theme-surface) 94%, transparent);
+}
+
+[data-theme] .bg-zinc-100,
+[data-theme] .dark\:bg-zinc-900,
+[data-theme] .bg-slate-200,
+[data-theme] .dark\:bg-slate-700 {
+  background-color: var(--theme-surface-alt);
+}
+
+[data-theme] .bg-zinc-950,
+[data-theme] .dark\:bg-zinc-100,
+[data-theme] .bg-slate-950,
+[data-theme] .dark\:bg-slate-100,
+[data-theme] .bg-slate-800 {
+  background-color: var(--theme-primary);
+}
+
+[data-theme] .text-white,
+[data-theme] .dark\:text-zinc-950,
+[data-theme] .dark\:text-slate-950 {
+  color: var(--theme-primary-foreground);
+}
+
+[data-theme] .text-white\/85 {
+  color: color-mix(in srgb, var(--theme-primary-foreground) 85%, transparent);
+}
+
+[data-theme] .text-white\/75 {
+  color: color-mix(in srgb, var(--theme-primary-foreground) 75%, transparent);
+}
+
+[data-theme] .bg-white\/15 {
+  background-color: color-mix(
+    in srgb,
+    var(--theme-primary-foreground) 15%,
+    transparent
+  );
+}
+
+[data-theme] .dark\:text-zinc-400,
+[data-theme] .dark\:text-zinc-300,
+[data-theme] .dark\:text-zinc-200,
+[data-theme] .dark\:text-slate-400,
+[data-theme] .dark\:text-slate-300 {
+  color: var(--theme-muted);
+}
+
+[data-theme] .text-zinc-500,
+[data-theme] .text-zinc-600,
+[data-theme] .text-zinc-700,
+[data-theme] .text-zinc-400,
+[data-theme] .text-slate-500,
+[data-theme] .text-slate-600,
+[data-theme] .text-slate-700,
+[data-theme] .text-slate-400 {
+  color: var(--theme-muted);
+}
+
+[data-theme] .dark\:text-zinc-100,
+[data-theme] .dark\:text-zinc-50,
+[data-theme] .dark\:text-slate-50 {
+  color: var(--foreground);
+}
+
+[data-theme] .text-zinc-950,
+[data-theme] .text-zinc-900,
+[data-theme] .text-foreground,
+[data-theme] .text-slate-950,
+[data-theme] .text-slate-900 {
+  color: var(--foreground);
+}
+
+[data-theme] .hover\:bg-zinc-50:hover,
+[data-theme] .hover\:bg-zinc-100:hover,
+[data-theme] .dark\:hover\:bg-zinc-800:hover {
+  background-color: color-mix(in srgb, var(--theme-surface-alt) 78%, var(--theme-surface));
+}
+
+[data-theme] .hover\:bg-zinc-800:hover,
+[data-theme] .dark\:hover\:bg-zinc-300:hover {
+  background-color: color-mix(in srgb, var(--theme-primary) 88%, black);
+}
+
+[data-theme] .hover\:text-zinc-950:hover,
+[data-theme] .dark\:hover\:text-zinc-100:hover {
+  color: var(--foreground);
+}
+
+[data-theme] .hover\:border-zinc-300:hover,
+[data-theme] .dark\:hover\:border-zinc-700:hover {
+  border-color: var(--theme-primary);
+}
+
+[data-theme] .bg-green-50,
+[data-theme] .dark\:bg-green-950\/30 {
+  background-color: color-mix(in srgb, var(--theme-success) 14%, var(--theme-surface));
+}
+
+[data-theme] .border-green-200,
+[data-theme] .dark\:border-green-900\/70 {
+  border-color: color-mix(in srgb, var(--theme-success) 40%, var(--theme-border));
+}
+
+[data-theme] .text-green-950,
+[data-theme] .dark\:text-green-200 {
+  color: color-mix(in srgb, var(--theme-success) 75%, var(--foreground));
+}
+
+[data-theme] .bg-amber-50,
+[data-theme] .dark\:bg-amber-950\/30 {
+  background-color: color-mix(in srgb, var(--theme-warning) 14%, var(--theme-surface));
+}
+
+[data-theme] .border-amber-200,
+[data-theme] .dark\:border-amber-900\/70 {
+  border-color: color-mix(in srgb, var(--theme-warning) 42%, var(--theme-border));
+}
+
+[data-theme] .text-amber-950,
+[data-theme] .dark\:text-amber-200 {
+  color: color-mix(in srgb, var(--theme-warning) 78%, var(--foreground));
+}
+
+[data-theme] .bg-red-50,
+[data-theme] .dark\:bg-red-950\/30 {
+  background-color: color-mix(in srgb, var(--theme-error) 14%, var(--theme-surface));
+}
+
+[data-theme] .bg-red-600 {
+  background-color: var(--theme-error);
+}
+
+[data-theme] .border-red-200,
+[data-theme] .dark\:border-red-900\/70 {
+  border-color: color-mix(in srgb, var(--theme-error) 44%, var(--theme-border));
+}
+
+[data-theme] .text-red-950,
+[data-theme] .dark\:text-red-200 {
+  color: color-mix(in srgb, var(--theme-error) 82%, white 6%);
+}
+
+[data-theme] .hover\:bg-red-500:hover {
+  background-color: color-mix(in srgb, var(--theme-error) 88%, black);
+}
+
+[data-theme] .bg-red-600,
+[data-theme] .hover\:bg-red-500:hover {
+  color: white;
 }

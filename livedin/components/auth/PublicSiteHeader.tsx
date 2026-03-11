@@ -96,6 +96,14 @@ export function PublicSiteHeader() {
             >
               Leave a review
             </Link>
+            {profile?.email_verified ? (
+              <Link
+                href="/themes"
+                className="transition hover:text-zinc-950 dark:hover:text-zinc-100"
+              >
+                Themes
+              </Link>
+            ) : null}
           </nav>
         </div>
         <div className="flex flex-wrap items-center gap-3 text-sm">
@@ -113,6 +121,11 @@ export function PublicSiteHeader() {
                   className={secondaryButtonClass}
                 >
                   Admin
+                </Link>
+              )}
+              {profile?.email_verified && (
+                <Link href="/themes" className={secondaryButtonClass}>
+                  Themes
                 </Link>
               )}
               <SignOutButton />
