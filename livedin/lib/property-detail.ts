@@ -19,12 +19,12 @@ type PropertyRow = {
 
 type AggregateRow = {
   review_count: number;
-  display_trustscore_0_6: PropertyAggregatePublic["display_trustscore_0_6"];
-  display_management_responsiveness_0_6: PropertyAggregatePublic["display_management_responsiveness_0_6"];
-  display_maintenance_timeliness_0_6: PropertyAggregatePublic["display_maintenance_timeliness_0_6"];
-  display_listing_accuracy_0_6: PropertyAggregatePublic["display_listing_accuracy_0_6"];
-  display_fee_transparency_0_6: PropertyAggregatePublic["display_fee_transparency_0_6"];
-  display_lease_clarity_0_6: PropertyAggregatePublic["display_lease_clarity_0_6"];
+  display_trustscore_0_5: PropertyAggregatePublic["display_trustscore_0_5"];
+  display_management_responsiveness_0_5: PropertyAggregatePublic["display_management_responsiveness_0_5"];
+  display_maintenance_timeliness_0_5: PropertyAggregatePublic["display_maintenance_timeliness_0_5"];
+  display_listing_accuracy_0_5: PropertyAggregatePublic["display_listing_accuracy_0_5"];
+  display_fee_transparency_0_5: PropertyAggregatePublic["display_fee_transparency_0_5"];
+  display_lease_clarity_0_5: PropertyAggregatePublic["display_lease_clarity_0_5"];
   last_updated: string;
 };
 
@@ -67,12 +67,12 @@ export async function getPropertyDetail(id: string): Promise<PropertyDetailPubli
     .select(
       `
       review_count,
-      display_trustscore_0_6,
-      display_management_responsiveness_0_6,
-      display_maintenance_timeliness_0_6,
-      display_listing_accuracy_0_6,
-      display_fee_transparency_0_6,
-      display_lease_clarity_0_6,
+      display_trustscore_0_5,
+      display_management_responsiveness_0_5,
+      display_maintenance_timeliness_0_5,
+      display_listing_accuracy_0_5,
+      display_fee_transparency_0_5,
+      display_lease_clarity_0_5,
       last_updated
     `,
     )
@@ -85,26 +85,26 @@ export async function getPropertyDetail(id: string): Promise<PropertyDetailPubli
 
   const zeroAggregates: PropertyAggregatePublic = {
     review_count: 0,
-    display_trustscore_0_6: 0,
-    display_management_responsiveness_0_6: 0,
-    display_maintenance_timeliness_0_6: 0,
-    display_listing_accuracy_0_6: 0,
-    display_fee_transparency_0_6: 0,
-    display_lease_clarity_0_6: 0,
+    display_trustscore_0_5: 0,
+    display_management_responsiveness_0_5: 0,
+    display_maintenance_timeliness_0_5: 0,
+    display_listing_accuracy_0_5: 0,
+    display_fee_transparency_0_5: 0,
+    display_lease_clarity_0_5: 0,
     last_updated: new Date().toISOString(),
   };
 
   const aggregatesPublic: PropertyAggregatePublic = aggregates
     ? {
         review_count: aggregates.review_count,
-        display_trustscore_0_6: aggregates.display_trustscore_0_6,
-        display_management_responsiveness_0_6:
-          aggregates.display_management_responsiveness_0_6,
-        display_maintenance_timeliness_0_6:
-          aggregates.display_maintenance_timeliness_0_6,
-        display_listing_accuracy_0_6: aggregates.display_listing_accuracy_0_6,
-        display_fee_transparency_0_6: aggregates.display_fee_transparency_0_6,
-        display_lease_clarity_0_6: aggregates.display_lease_clarity_0_6,
+        display_trustscore_0_5: aggregates.display_trustscore_0_5,
+        display_management_responsiveness_0_5:
+          aggregates.display_management_responsiveness_0_5,
+        display_maintenance_timeliness_0_5:
+          aggregates.display_maintenance_timeliness_0_5,
+        display_listing_accuracy_0_5: aggregates.display_listing_accuracy_0_5,
+        display_fee_transparency_0_5: aggregates.display_fee_transparency_0_5,
+        display_lease_clarity_0_5: aggregates.display_lease_clarity_0_5,
         last_updated: aggregates.last_updated,
       }
     : zeroAggregates;

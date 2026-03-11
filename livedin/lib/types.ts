@@ -10,7 +10,7 @@ export type PropertyListItem = {
   city: string;
   province: string;
   management_company: string | null;
-  trustscore_display_0_6: 0 | 1 | 2 | 3 | 4 | 5 | 6;
+  trustscore_display_0_5: 0 | 1 | 2 | 3 | 4 | 5;
   review_count: number;
 };
 
@@ -43,18 +43,18 @@ export type ReviewableProperty = {
   management_company: string | null;
 };
 
-/** Display score 0–6; when review_count === 0 all are 0. */
-export type DisplayScore0_6 = 0 | 1 | 2 | 3 | 4 | 5 | 6;
+/** Display score 0–5; when review_count === 0 all are 0. */
+export type DisplayScore0_5 = 0 | 1 | 2 | 3 | 4 | 5;
 
-/** Property detail aggregates (Slice 02). Public only sees display_*_0_6. */
+/** Property detail aggregates (Slice 02). Public only sees display_*_0_5. */
 export type PropertyAggregatePublic = {
   review_count: number;
-  display_trustscore_0_6: DisplayScore0_6;
-  display_management_responsiveness_0_6: DisplayScore0_6;
-  display_maintenance_timeliness_0_6: DisplayScore0_6;
-  display_listing_accuracy_0_6: DisplayScore0_6;
-  display_fee_transparency_0_6: DisplayScore0_6;
-  display_lease_clarity_0_6: DisplayScore0_6;
+  display_trustscore_0_5: DisplayScore0_5;
+  display_management_responsiveness_0_5: DisplayScore0_5;
+  display_maintenance_timeliness_0_5: DisplayScore0_5;
+  display_listing_accuracy_0_5: DisplayScore0_5;
+  display_fee_transparency_0_5: DisplayScore0_5;
+  display_lease_clarity_0_5: DisplayScore0_5;
   last_updated: string; // ISO timestamp
 };
 

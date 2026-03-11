@@ -11,7 +11,7 @@ type ListRow = {
   management_company: string | null;
   property_aggregates: Array<{
     review_count: number;
-    display_trustscore_0_6: 0 | 1 | 2 | 3 | 4 | 5 | 6;
+    display_trustscore_0_5: 0 | 1 | 2 | 3 | 4 | 5;
   }> | null;
 };
 
@@ -36,7 +36,7 @@ export async function GET(req: NextRequest) {
       management_company,
       property_aggregates (
         review_count,
-        display_trustscore_0_6
+        display_trustscore_0_5
       )
     `,
     )
@@ -72,7 +72,7 @@ export async function GET(req: NextRequest) {
   const items: PropertyListItem[] = rows.map((row) => {
     const aggregates = row.property_aggregates?.[0] ?? null;
     const reviewCount = aggregates?.review_count ?? 0;
-    const trustScore = aggregates?.display_trustscore_0_6 ?? 0;
+    const trustScore = aggregates?.display_trustscore_0_5 ?? 0;
 
     return {
       id: row.id,
@@ -81,7 +81,7 @@ export async function GET(req: NextRequest) {
       city: row.city,
       province: row.province,
       management_company: row.management_company,
-      trustscore_display_0_6: trustScore,
+      trustscore_display_0_5: trustScore,
       review_count: reviewCount,
     };
   });

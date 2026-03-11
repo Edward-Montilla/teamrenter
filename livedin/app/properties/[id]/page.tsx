@@ -13,25 +13,25 @@ type Props = {
 
 const METRIC_LABELS: Record<keyof Pick<
   PropertyDetailPublic["aggregates"],
-  | "display_management_responsiveness_0_6"
-  | "display_maintenance_timeliness_0_6"
-  | "display_listing_accuracy_0_6"
-  | "display_fee_transparency_0_6"
-  | "display_lease_clarity_0_6"
+  | "display_management_responsiveness_0_5"
+  | "display_maintenance_timeliness_0_5"
+  | "display_listing_accuracy_0_5"
+  | "display_fee_transparency_0_5"
+  | "display_lease_clarity_0_5"
 >, string> = {
-  display_management_responsiveness_0_6: "Management responsiveness",
-  display_maintenance_timeliness_0_6: "Maintenance timeliness",
-  display_listing_accuracy_0_6: "Listing accuracy",
-  display_fee_transparency_0_6: "Fee transparency",
-  display_lease_clarity_0_6: "Lease clarity",
+  display_management_responsiveness_0_5: "Management responsiveness",
+  display_maintenance_timeliness_0_5: "Maintenance timeliness",
+  display_listing_accuracy_0_5: "Listing accuracy",
+  display_fee_transparency_0_5: "Fee transparency",
+  display_lease_clarity_0_5: "Lease clarity",
 };
 
 const METRIC_KEYS = [
-  "display_management_responsiveness_0_6",
-  "display_maintenance_timeliness_0_6",
-  "display_listing_accuracy_0_6",
-  "display_fee_transparency_0_6",
-  "display_lease_clarity_0_6",
+  "display_management_responsiveness_0_5",
+  "display_maintenance_timeliness_0_5",
+  "display_listing_accuracy_0_5",
+  "display_fee_transparency_0_5",
+  "display_lease_clarity_0_5",
 ] as const;
 
 function formatAddress(p: PropertyDetailPublic["property"]): string {
@@ -81,7 +81,7 @@ function ScoreDots({ score }: { score: number }) {
   const filled = Math.round(score);
   return (
     <div className="flex gap-2" aria-hidden>
-      {Array.from({ length: 6 }, (_, index) => (
+      {Array.from({ length: 5 }, (_, index) => (
         <span
           key={index}
           className={`h-2.5 w-8 rounded-full ${
@@ -96,7 +96,7 @@ function ScoreDots({ score }: { score: number }) {
 }
 
 function MetricBar({ label, value }: { label: string; value: number }) {
-  const width = `${(value / 6) * 100}%`;
+  const width = `${(value / 5) * 100}%`;
 
   return (
     <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-950">
@@ -107,7 +107,7 @@ function MetricBar({ label, value }: { label: string; value: number }) {
             {formatScore(value)}
           </p>
         </div>
-        <p className="text-sm text-slate-500 dark:text-slate-400">/ 6</p>
+        <p className="text-sm text-slate-500 dark:text-slate-400">/ 5</p>
       </div>
       <div className="mt-4 h-2 rounded-full bg-slate-200 dark:bg-slate-800">
         <div
@@ -167,10 +167,10 @@ export default async function PropertyDetailPage({ params }: Props) {
                 <div className="rounded-3xl bg-slate-950 p-5 text-white dark:bg-slate-100 dark:text-slate-950">
                   <p className="text-xs uppercase tracking-[0.2em] opacity-70">Trust score</p>
                   <p className="mt-3 text-4xl font-semibold">
-                    {formatScore(aggregates.display_trustscore_0_6)}/6
+                    {formatScore(aggregates.display_trustscore_0_5)}/5
                   </p>
                   <div className="mt-4">
-                    <ScoreDots score={aggregates.display_trustscore_0_6} />
+                    <ScoreDots score={aggregates.display_trustscore_0_5} />
                   </div>
                 </div>
                 <div className="rounded-3xl border border-slate-200 p-5 dark:border-slate-800">
@@ -206,7 +206,7 @@ export default async function PropertyDetailPage({ params }: Props) {
                     Structured rating breakdown
                   </h2>
                   <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                    Scores are shown on a 0 to 6 scale using approved public aggregates only.
+                    Scores are shown on a 0 to 5 scale using approved public aggregates only.
                   </p>
                 </div>
                 <p className="text-sm text-slate-500 dark:text-slate-400">

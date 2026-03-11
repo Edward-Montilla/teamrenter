@@ -41,7 +41,7 @@ export function PropertyCard({ item }: PropertyCardProps) {
             )}
           >
             <p className="text-xs uppercase tracking-[0.2em] opacity-75">Trust</p>
-            <p className="text-2xl font-semibold">{item.trustscore_display_0_6}/6</p>
+            <p className="text-2xl font-semibold">{item.trustscore_display_0_5}/5</p>
           </div>
           <span className="text-sm text-zinc-500 dark:text-zinc-400">
             {item.review_count > 0 ? "Verified renter data" : "Awaiting first review"}
