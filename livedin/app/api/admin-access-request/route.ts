@@ -13,6 +13,10 @@ type ProfileRow = {
 };
 
 type RequestRow = NonNullable<AdminRoleRequestStatusResponse["latestRequest"]>;
+type BootstrapStatusRow = {
+  has_admin_accounts: boolean;
+  can_claim: boolean;
+};
 
 function getBearerToken(req: NextRequest): string | null {
   const authHeader = req.headers.get("Authorization");
@@ -71,6 +75,26 @@ async function getAuthenticatedContext(req: NextRequest) {
   };
 }
 
+async function getBootstrapStatus(supabase: ReturnType<typeof createUserClient>) {
+  const { data, error } = await supabase.rpc("get_first_admin_bootstrap_status");
+  const row = (data as BootstrapStatusRow[] | null)?.[0];
+
+  if (error || !row) {
+    return {
+      ok: false as const,
+      response: NextResponse.json(
+        { message: "Failed to load first-admin bootstrap status." },
+        { status: 500 },
+      ),
+    };
+  }
+
+  return {
+    ok: true as const,
+    data: row,
+  };
+}
+
 function validateCreateBody(
   body: unknown,
 ): { ok: true; data: AdminRoleRequestCreateInput } | { ok: false; message: string } {
@@ -121,6 +145,11 @@ export async function GET(req: NextRequest) {
   }
 
   const { supabase, user, profile } = auth;
+  const bootstrap = await getBootstrapStatus(supabase);
+  if (!bootstrap.ok) {
+    return bootstrap.response;
+  }
+
   const { data: latestRequest, error } = await supabase
     .from("admin_role_requests")
     .select(
@@ -142,6 +171,8 @@ export async function GET(req: NextRequest) {
     currentRole: profile.role,
     email: user.email,
     latestRequest,
+    bootstrapRequired: !bootstrap.data.has_admin_accounts,
+    bootstrapEligible: bootstrap.data.can_claim,
   });
 
   return NextResponse.json(status);
@@ -166,6 +197,62 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(
       { message: "This account does not have a usable email address." },
       { status: 400 },
+    );
+  }
+
+  const bootstrap = await getBootstrapStatus(supabase);
+  if (!bootstrap.ok) {
+    return bootstrap.response;
+  }
+
+  if (!bootstrap.data.has_admin_accounts) {
+    if (bootstrap.data.can_claim) {
+      const { error } = await supabase.rpc("claim_first_admin");
+
+      if (error) {
+        const message = error.message.toLowerCase();
+
+        if (message.includes("already exists")) {
+          return NextResponse.json(
+            { message: "An admin account already exists. Refresh and try again." },
+            { status: 409 },
+          );
+        }
+
+        if (message.includes("not allowed")) {
+          return NextResponse.json(
+            { message: "This account is not allowed to claim first admin." },
+            { status: 403 },
+          );
+        }
+
+        if (message.includes("email address is required")) {
+          return NextResponse.json(
+            { message: "A usable email address is required to claim first admin." },
+            { status: 400 },
+          );
+        }
+
+        return NextResponse.json(
+          { message: "Failed to claim the first admin role." },
+          { status: 500 },
+        );
+      }
+
+      const response: AdminRoleRequestCreateResponse = {
+        status: "approved",
+        promotedImmediately: true,
+      };
+
+      return NextResponse.json(response, { status: 200 });
+    }
+
+    return NextResponse.json(
+      {
+        message:
+          "No admin exists yet. A configured bootstrap account must claim the initial admin role before access requests can be reviewed.",
+      },
+      { status: 409 },
     );
   }
 

@@ -38,6 +38,19 @@ Optional smoke-test helpers:
 - `REVIEW_TEST_EMAIL`
 - `REVIEW_TEST_PASSWORD`
 
+Optional first-admin bootstrap setup:
+
+- Add the exact email that is allowed to claim the first admin role:
+
+```sql
+insert into public.admin_bootstrap_allowlist (email)
+values ('owner@example.com');
+```
+
+- This bootstrap path only works while there are zero `profiles.role = 'admin'`
+  rows.
+- Once any admin exists, normal admin access requests and admin review apply.
+
 The browser variables must point at the same Supabase project as the server
 variables.
 
@@ -80,6 +93,8 @@ More detail is documented in `../supabase/README.md`.
 - Email verification is synced from `auth.users.email_confirmed_at` into
   `public.profiles`
 - Admin access is controlled by `profiles.role = 'admin'`
+- The first admin is controlled by `public.admin_bootstrap_allowlist` and must be
+  claimed by an exact matching signed-in email before any review workflow exists
 
 ## Scripts
 

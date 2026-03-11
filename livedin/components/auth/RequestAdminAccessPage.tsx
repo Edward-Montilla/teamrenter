@@ -96,10 +96,23 @@ export function RequestAdminAccessPage() {
     }
 
     return (
+      !status.bootstrapRequired &&
       status.currentRole !== "admin" &&
       status.eligible &&
       !status.hasActiveRequest &&
       status.requestStatus !== "approved"
+    );
+  }, [status]);
+
+  const canClaimBootstrap = useMemo(() => {
+    if (!status) {
+      return false;
+    }
+
+    return (
+      status.bootstrapRequired &&
+      status.bootstrapEligible &&
+      status.currentRole !== "admin"
     );
   }, [status]);
 
@@ -140,6 +153,43 @@ export function RequestAdminAccessPage() {
     } catch (err) {
       setError(
         err instanceof Error ? err.message : "Failed to submit admin access request.",
+      );
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleBootstrapClaim = async () => {
+    if (!canClaimBootstrap) {
+      return;
+    }
+
+    setSubmitting(true);
+    setError(null);
+
+    try {
+      const token = await getSessionAccessToken();
+      if (!token) {
+        setPageState("unauthenticated");
+        return;
+      }
+
+      const res = await fetch("/api/admin-access-request", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!res.ok) {
+        const json = (await res.json().catch(() => ({}))) as { message?: string };
+        throw new Error(json.message ?? "Failed to claim the first admin role.");
+      }
+
+      await loadStatus();
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Failed to claim the first admin role.",
       );
     } finally {
       setSubmitting(false);
@@ -203,7 +253,7 @@ export function RequestAdminAccessPage() {
         <div className="mt-8 grid gap-4 sm:grid-cols-3">
           <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4 dark:border-zinc-800 dark:bg-zinc-900">
             <p className="text-xs uppercase tracking-[0.2em] text-zinc-400">
-              Eligibility
+              Request eligibility
             </p>
             <p className="mt-2 text-sm font-medium text-foreground">
               {status.eligible ? "Eligible account" : "Restricted account"}
@@ -225,6 +275,18 @@ export function RequestAdminAccessPage() {
               {status.requestStatus}
             </p>
           </div>
+          <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4 dark:border-zinc-800 dark:bg-zinc-900 sm:col-span-3">
+            <p className="text-xs uppercase tracking-[0.2em] text-zinc-400">
+              Bootstrap status
+            </p>
+            <p className="mt-2 text-sm font-medium text-foreground">
+              {status.bootstrapRequired
+                ? status.bootstrapEligible
+                  ? "No admin exists yet. This account can claim the initial admin role."
+                  : "No admin exists yet. A configured bootstrap account must claim the initial admin role first."
+                : "Admin review flow is active."}
+            </p>
+          </div>
         </div>
 
         {status.currentRole === "admin" ? (
@@ -234,6 +296,37 @@ export function RequestAdminAccessPage() {
               title="This account already has admin access"
               description="You can go straight to the admin area. No additional request is needed."
               primaryAction={{ label: "Open admin", href: "/admin/properties" }}
+              secondaryAction={{ label: "Back to home", href: "/" }}
+            />
+          </div>
+        ) : status.bootstrapRequired && status.bootstrapEligible ? (
+          <div className="mt-8">
+            <FeedbackPanel
+              tone="warning"
+              title="Claim the initial admin role"
+              description="No admin exists yet. Because this signed-in email is on the bootstrap allowlist, you can claim the first admin role directly from here."
+            />
+            {error ? <div className="mt-4"><FeedbackPanel tone="error" description={error} /></div> : null}
+            <div className="mt-6 flex flex-wrap gap-3">
+              <button
+                type="button"
+                onClick={() => void handleBootstrapClaim()}
+                disabled={submitting}
+                className={primaryButtonClass}
+              >
+                {submitting ? "Claiming…" : "Claim initial admin access"}
+              </button>
+              <Link href="/" className={secondaryButtonClass}>
+                Cancel
+              </Link>
+            </div>
+          </div>
+        ) : status.bootstrapRequired ? (
+          <div className="mt-8">
+            <FeedbackPanel
+              tone="warning"
+              title="Admin requests are paused"
+              description="No admin exists yet, so access requests cannot be reviewed. A configured bootstrap account must claim the first admin role before the normal request flow becomes available."
               secondaryAction={{ label: "Back to home", href: "/" }}
             />
           </div>
@@ -348,6 +441,7 @@ export function RequestAdminAccessPage() {
       <aside className={`${sectionCardClass} p-6`}>
         <h2 className="text-lg font-semibold text-foreground">What admins review</h2>
         <ul className="mt-4 space-y-3 text-sm leading-6 text-zinc-600 dark:text-zinc-400">
+          <li>The initial admin must be claimed by an exact-email bootstrap allowlist entry.</li>
           <li>Your reason for access and any team context you provide.</li>
           <li>Whether your account matches the current restricted allowlist.</li>
           <li>Whether the request needs property, review, or insight moderation access.</li>

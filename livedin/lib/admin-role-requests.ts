@@ -42,8 +42,16 @@ export function buildAdminRequestStatus(params: {
   currentRole: CurrentUserRole;
   email: string | null | undefined;
   latestRequest: StoredAdminRoleRequest | null;
+  bootstrapRequired: boolean;
+  bootstrapEligible: boolean;
 }): AdminRoleRequestStatusResponse {
-  const { currentRole, email, latestRequest } = params;
+  const {
+    currentRole,
+    email,
+    latestRequest,
+    bootstrapRequired,
+    bootstrapEligible,
+  } = params;
   const requestStatus = latestRequest?.status ?? "none";
 
   return {
@@ -51,6 +59,8 @@ export function buildAdminRequestStatus(params: {
     hasActiveRequest: requestStatus === "pending",
     requestStatus,
     currentRole,
+    bootstrapRequired,
+    bootstrapEligible,
     latestRequest,
   };
 }

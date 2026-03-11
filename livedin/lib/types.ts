@@ -225,10 +225,15 @@ export type AdminRoleRequestCreateInput = {
   team_context?: string;
 };
 
-export type AdminRoleRequestCreateResponse = {
-  status: "pending";
-  submittedAt: string;
-};
+export type AdminRoleRequestCreateResponse =
+  | {
+      status: "pending";
+      submittedAt: string;
+    }
+  | {
+      status: "approved";
+      promotedImmediately: true;
+    };
 
 export type AdminRoleRequestSummary = {
   id: string;
@@ -246,6 +251,8 @@ export type AdminRoleRequestStatusResponse = {
   hasActiveRequest: boolean;
   requestStatus: AdminRoleRequestState;
   currentRole: CurrentUserRole;
+  bootstrapRequired: boolean;
+  bootstrapEligible: boolean;
   latestRequest: AdminRoleRequestSummary | null;
 };
 
