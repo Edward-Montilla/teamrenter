@@ -27,7 +27,7 @@ Frontend-first (mock data) -> DB (Supabase) -> Integration (wire-up)
   - New reviews start as `pending`
   - New distilled insights start as `pending`
 
-## Ordered Slices (A-K)
+## Ordered Slices
 1. `01` Public browse/search
 2. `02` Property detail
 3. `03` Review form (gated states)
@@ -40,12 +40,14 @@ Frontend-first (mock data) -> DB (Supabase) -> Integration (wire-up)
 10. `10` Distilled insights pipeline + screening/approval flow
 11. `11` Optional: photos via R2 + metadata
 12. `12` Authentication (sign-in/sign-up + Google OAuth)
+13. `13` Site-wide UI/UX polish + accessibility
 
 ## Phase Grouping
 - Frontend-first: `01-03`
 - DB/security foundation: `04-05`
 - Integration/admin/optional: `06-11`
 - Auth: `12` (can follow `05`; replaces mock auth in `03`/`07`)
+- UI/UX polish: `13` (best after `06-12`, when real states and flows exist)
 
 ## Dependency Chain
 - `01` -> `02` -> `03` (UI-first vertical slices with mock contracts)
@@ -57,3 +59,4 @@ Frontend-first (mock data) -> DB (Supabase) -> Integration (wire-up)
 - `05` -> `08` + `09` (admin flows require role/RLS)
 - `07` + `09` -> `10` (insight recompute and moderation workflow)
 - `08` + `05` -> `11` (optional R2 uploads and safe public display)
+- `06-12` -> `13` (polish real public, auth, review, and admin journeys once they are wired)

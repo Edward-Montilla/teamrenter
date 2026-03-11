@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { getAdminFromRequest } from "@/lib/admin-auth";
+import { recomputeDistilledInsightForProperty } from "@/lib/distilled-insights";
 import type {
   AdminReviewStatusUpdateInput,
   ReviewStatus,
@@ -72,8 +73,13 @@ export async function PATCH(
     .from("reviews")
     .update({ status: validation.data.status } as never)
     .eq("id", id)
-    .select("id, property_id, status")
-    .maybeSingle<{ id: string; property_id: string; status: ReviewStatus }>();
+    .select("id, property_id, status, text_input")
+    .maybeSingle<{
+      id: string;
+      property_id: string;
+      status: ReviewStatus;
+      text_input: string | null;
+    }>();
 
   if (error) {
     return NextResponse.json(
@@ -97,5 +103,43 @@ export async function PATCH(
     },
   } as never);
 
-  return NextResponse.json({ id: review.id, status: review.status });
+  let recomputeWarning: string | null = null;
+
+  if (validation.data.status === "approved" && review.text_input?.trim()) {
+    try {
+      const recomputeResult = await recomputeDistilledInsightForProperty(
+        admin.supabase,
+        review.property_id
+      );
+
+      if (!recomputeResult.ok) {
+        recomputeWarning = recomputeResult.message;
+      }
+    } catch (recomputeError) {
+      recomputeWarning =
+        recomputeError instanceof Error
+          ? recomputeError.message
+          : "Failed to recompute distilled insight.";
+    }
+
+    if (recomputeWarning) {
+      await admin.supabase.from("admin_audit_log").insert({
+        admin_user_id: admin.user.id,
+        action_type: "insight_recompute_failed",
+        target_type: "insight",
+        target_id: review.property_id,
+        details: {
+          property_id: review.property_id,
+          review_id: review.id,
+          message: recomputeWarning,
+        },
+      } as never);
+    }
+  }
+
+  return NextResponse.json({
+    id: review.id,
+    status: review.status,
+    warning: recomputeWarning,
+  });
 }

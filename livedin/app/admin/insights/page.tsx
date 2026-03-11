@@ -57,6 +57,7 @@ export default function AdminInsightsPage() {
   const [selectedPropertyId, setSelectedPropertyId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isRecomputing, setIsRecomputing] = useState(false);
   const [actionStatus, setActionStatus] = useState<DistilledInsightStatus | null>(
     null,
   );
@@ -149,6 +150,37 @@ export default function AdminInsightsPage() {
       setError(err instanceof Error ? err.message : "Failed to update insight.");
     } finally {
       setActionStatus(null);
+    }
+  };
+
+  const recomputeInsight = async () => {
+    if (!selectedInsight) return;
+
+    setIsRecomputing(true);
+    setError(null);
+
+    try {
+      const token = await getAccessToken();
+      const res = await fetch(
+        `/api/admin/properties/${selectedInsight.property_id}/insights/recompute`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
+
+      if (!res.ok) {
+        const json = (await res.json().catch(() => ({}))) as { message?: string };
+        throw new Error(json.message ?? "Failed to recompute insight.");
+      }
+
+      setRefreshKey((value) => value + 1);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to recompute insight.");
+    } finally {
+      setIsRecomputing(false);
     }
   };
 
@@ -332,7 +364,19 @@ export default function AdminInsightsPage() {
                 <div className="flex flex-wrap gap-3">
                   <button
                     type="button"
-                    disabled={actionStatus !== null || selectedInsight.status === "approved"}
+                    disabled={actionStatus !== null || isRecomputing}
+                    onClick={() => void recomputeInsight()}
+                    className="rounded-lg bg-foreground px-4 py-2 text-sm font-medium text-background hover:opacity-90 disabled:pointer-events-none disabled:opacity-50"
+                  >
+                    {isRecomputing ? "Recomputing…" : "Recompute insight"}
+                  </button>
+                  <button
+                    type="button"
+                    disabled={
+                      actionStatus !== null ||
+                      isRecomputing ||
+                      selectedInsight.status === "approved"
+                    }
                     onClick={() => void updateStatus("approved")}
                     className="rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-500 disabled:pointer-events-none disabled:opacity-50"
                   >
@@ -340,7 +384,11 @@ export default function AdminInsightsPage() {
                   </button>
                   <button
                     type="button"
-                    disabled={actionStatus !== null || selectedInsight.status === "rejected"}
+                    disabled={
+                      actionStatus !== null ||
+                      isRecomputing ||
+                      selectedInsight.status === "rejected"
+                    }
                     onClick={() => void updateStatus("rejected")}
                     className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-500 disabled:pointer-events-none disabled:opacity-50"
                   >
@@ -348,7 +396,11 @@ export default function AdminInsightsPage() {
                   </button>
                   <button
                     type="button"
-                    disabled={actionStatus !== null || selectedInsight.status === "hidden"}
+                    disabled={
+                      actionStatus !== null ||
+                      isRecomputing ||
+                      selectedInsight.status === "hidden"
+                    }
                     onClick={() => void updateStatus("hidden")}
                     className="rounded-lg border border-zinc-300 bg-white px-4 py-2 text-sm font-medium text-foreground hover:bg-zinc-50 disabled:pointer-events-none disabled:opacity-50 dark:border-zinc-600 dark:bg-zinc-900 dark:hover:bg-zinc-800"
                   >
@@ -356,7 +408,11 @@ export default function AdminInsightsPage() {
                   </button>
                   <button
                     type="button"
-                    disabled={actionStatus !== null || selectedInsight.status === "pending"}
+                    disabled={
+                      actionStatus !== null ||
+                      isRecomputing ||
+                      selectedInsight.status === "pending"
+                    }
                     onClick={() => void updateStatus("pending")}
                     className="rounded-lg border border-zinc-300 bg-white px-4 py-2 text-sm font-medium text-foreground hover:bg-zinc-50 disabled:pointer-events-none disabled:opacity-50 dark:border-zinc-600 dark:bg-zinc-900 dark:hover:bg-zinc-800"
                   >
