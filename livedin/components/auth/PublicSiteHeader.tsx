@@ -127,14 +127,6 @@ export function PublicSiteHeader() {
             >
               Leave a review
             </Link>
-            {showAdminRequestLink && (
-              <Link
-                href="/signup/request-admin"
-                className="transition hover:text-zinc-950 dark:hover:text-zinc-100"
-              >
-                {adminRequestLabel}
-              </Link>
-            )}
             {profile?.role === "admin" && (
               <Link
                 href="/admin"
@@ -169,7 +161,7 @@ export function PublicSiteHeader() {
               {showAdminRequestLink ? (
                 <Link
                   href="/signup/request-admin"
-                  className={`md:hidden ${secondaryButtonClass}`}
+                  className={secondaryButtonClass}
                 >
                   {adminRequestLabel}
                 </Link>
