@@ -9,23 +9,27 @@ ALTER TABLE public.property_aggregates
   DROP CONSTRAINT IF EXISTS property_aggregates_display_lease_clarity_0_6_check,
   DROP CONSTRAINT IF EXISTS property_aggregates_display_trustscore_0_6_check;
 
-ALTER TABLE public.property_aggregates
-  RENAME COLUMN display_management_responsiveness_0_6 TO display_management_responsiveness_0_5;
-
-ALTER TABLE public.property_aggregates
-  RENAME COLUMN display_maintenance_timeliness_0_6 TO display_maintenance_timeliness_0_5;
-
-ALTER TABLE public.property_aggregates
-  RENAME COLUMN display_listing_accuracy_0_6 TO display_listing_accuracy_0_5;
-
-ALTER TABLE public.property_aggregates
-  RENAME COLUMN display_fee_transparency_0_6 TO display_fee_transparency_0_5;
-
-ALTER TABLE public.property_aggregates
-  RENAME COLUMN display_lease_clarity_0_6 TO display_lease_clarity_0_5;
-
-ALTER TABLE public.property_aggregates
-  RENAME COLUMN display_trustscore_0_6 TO display_trustscore_0_5;
+DO $$
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'property_aggregates' AND column_name = 'display_management_responsiveness_0_6') THEN
+    ALTER TABLE public.property_aggregates RENAME COLUMN display_management_responsiveness_0_6 TO display_management_responsiveness_0_5;
+  END IF;
+  IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'property_aggregates' AND column_name = 'display_maintenance_timeliness_0_6') THEN
+    ALTER TABLE public.property_aggregates RENAME COLUMN display_maintenance_timeliness_0_6 TO display_maintenance_timeliness_0_5;
+  END IF;
+  IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'property_aggregates' AND column_name = 'display_listing_accuracy_0_6') THEN
+    ALTER TABLE public.property_aggregates RENAME COLUMN display_listing_accuracy_0_6 TO display_listing_accuracy_0_5;
+  END IF;
+  IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'property_aggregates' AND column_name = 'display_fee_transparency_0_6') THEN
+    ALTER TABLE public.property_aggregates RENAME COLUMN display_fee_transparency_0_6 TO display_fee_transparency_0_5;
+  END IF;
+  IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'property_aggregates' AND column_name = 'display_lease_clarity_0_6') THEN
+    ALTER TABLE public.property_aggregates RENAME COLUMN display_lease_clarity_0_6 TO display_lease_clarity_0_5;
+  END IF;
+  IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'property_aggregates' AND column_name = 'display_trustscore_0_6') THEN
+    ALTER TABLE public.property_aggregates RENAME COLUMN display_trustscore_0_6 TO display_trustscore_0_5;
+  END IF;
+END $$;
 
 UPDATE public.property_aggregates
 SET
@@ -36,13 +40,27 @@ SET
   display_lease_clarity_0_5 = LEAST(5, display_lease_clarity_0_5),
   display_trustscore_0_5 = LEAST(5, display_trustscore_0_5);
 
-ALTER TABLE public.property_aggregates
-  ADD CONSTRAINT property_aggregates_display_management_responsiveness_0_5_check CHECK (display_management_responsiveness_0_5 >= 0 AND display_management_responsiveness_0_5 <= 5),
-  ADD CONSTRAINT property_aggregates_display_maintenance_timeliness_0_5_check CHECK (display_maintenance_timeliness_0_5 >= 0 AND display_maintenance_timeliness_0_5 <= 5),
-  ADD CONSTRAINT property_aggregates_display_listing_accuracy_0_5_check CHECK (display_listing_accuracy_0_5 >= 0 AND display_listing_accuracy_0_5 <= 5),
-  ADD CONSTRAINT property_aggregates_display_fee_transparency_0_5_check CHECK (display_fee_transparency_0_5 >= 0 AND display_fee_transparency_0_5 <= 5),
-  ADD CONSTRAINT property_aggregates_display_lease_clarity_0_5_check CHECK (display_lease_clarity_0_5 >= 0 AND display_lease_clarity_0_5 <= 5),
-  ADD CONSTRAINT property_aggregates_display_trustscore_0_5_check CHECK (display_trustscore_0_5 >= 0 AND display_trustscore_0_5 <= 5);
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'property_aggregates_display_management_responsiveness_0_5_check') THEN
+    ALTER TABLE public.property_aggregates ADD CONSTRAINT property_aggregates_display_management_responsiveness_0_5_check CHECK (display_management_responsiveness_0_5 >= 0 AND display_management_responsiveness_0_5 <= 5);
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'property_aggregates_display_maintenance_timeliness_0_5_check') THEN
+    ALTER TABLE public.property_aggregates ADD CONSTRAINT property_aggregates_display_maintenance_timeliness_0_5_check CHECK (display_maintenance_timeliness_0_5 >= 0 AND display_maintenance_timeliness_0_5 <= 5);
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'property_aggregates_display_listing_accuracy_0_5_check') THEN
+    ALTER TABLE public.property_aggregates ADD CONSTRAINT property_aggregates_display_listing_accuracy_0_5_check CHECK (display_listing_accuracy_0_5 >= 0 AND display_listing_accuracy_0_5 <= 5);
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'property_aggregates_display_fee_transparency_0_5_check') THEN
+    ALTER TABLE public.property_aggregates ADD CONSTRAINT property_aggregates_display_fee_transparency_0_5_check CHECK (display_fee_transparency_0_5 >= 0 AND display_fee_transparency_0_5 <= 5);
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'property_aggregates_display_lease_clarity_0_5_check') THEN
+    ALTER TABLE public.property_aggregates ADD CONSTRAINT property_aggregates_display_lease_clarity_0_5_check CHECK (display_lease_clarity_0_5 >= 0 AND display_lease_clarity_0_5 <= 5);
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'property_aggregates_display_trustscore_0_5_check') THEN
+    ALTER TABLE public.property_aggregates ADD CONSTRAINT property_aggregates_display_trustscore_0_5_check CHECK (display_trustscore_0_5 >= 0 AND display_trustscore_0_5 <= 5);
+  END IF;
+END $$;
 
 CREATE OR REPLACE FUNCTION public.recompute_property_aggregates(p_property_id uuid)
 RETURNS void

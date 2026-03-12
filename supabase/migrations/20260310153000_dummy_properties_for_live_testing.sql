@@ -177,12 +177,12 @@ INSERT INTO public.property_aggregates (
   avg_fee_transparency,
   avg_lease_clarity,
   avg_trustscore,
-  display_management_responsiveness_0_6,
-  display_maintenance_timeliness_0_6,
-  display_listing_accuracy_0_6,
-  display_fee_transparency_0_6,
-  display_lease_clarity_0_6,
-  display_trustscore_0_6,
+  display_management_responsiveness_0_5,
+  display_maintenance_timeliness_0_5,
+  display_listing_accuracy_0_5,
+  display_fee_transparency_0_5,
+  display_lease_clarity_0_5,
+  display_trustscore_0_5,
   last_updated
 ) VALUES
   (
@@ -347,12 +347,12 @@ INSERT INTO public.property_aggregates (
     4.5,
     4.7,
     4.66,
-    6,
-    6,
-    6,
     5,
-    6,
-    6,
+    5,
+    5,
+    5,
+    5,
+    5,
     '2026-03-10T15:30:00Z'
   )
 ON CONFLICT (property_id) DO UPDATE
@@ -364,12 +364,12 @@ SET
   avg_fee_transparency = EXCLUDED.avg_fee_transparency,
   avg_lease_clarity = EXCLUDED.avg_lease_clarity,
   avg_trustscore = EXCLUDED.avg_trustscore,
-  display_management_responsiveness_0_6 = EXCLUDED.display_management_responsiveness_0_6,
-  display_maintenance_timeliness_0_6 = EXCLUDED.display_maintenance_timeliness_0_6,
-  display_listing_accuracy_0_6 = EXCLUDED.display_listing_accuracy_0_6,
-  display_fee_transparency_0_6 = EXCLUDED.display_fee_transparency_0_6,
-  display_lease_clarity_0_6 = EXCLUDED.display_lease_clarity_0_6,
-  display_trustscore_0_6 = EXCLUDED.display_trustscore_0_6,
+  display_management_responsiveness_0_5 = EXCLUDED.display_management_responsiveness_0_5,
+  display_maintenance_timeliness_0_5 = EXCLUDED.display_maintenance_timeliness_0_5,
+  display_listing_accuracy_0_5 = EXCLUDED.display_listing_accuracy_0_5,
+  display_fee_transparency_0_5 = EXCLUDED.display_fee_transparency_0_5,
+  display_lease_clarity_0_5 = EXCLUDED.display_lease_clarity_0_5,
+  display_trustscore_0_5 = EXCLUDED.display_trustscore_0_5,
   last_updated = EXCLUDED.last_updated;
 
 INSERT INTO public.distilled_insights (

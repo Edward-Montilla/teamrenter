@@ -1,6 +1,6 @@
 -- Slice 14: admin access request workflow
 
-CREATE TABLE public.admin_role_requests (
+CREATE TABLE IF NOT EXISTS public.admin_role_requests (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id uuid NOT NULL REFERENCES public.profiles(user_id) ON DELETE CASCADE,
   email_snapshot text NOT NULL,
@@ -26,18 +26,27 @@ CREATE TABLE public.admin_role_requests (
   )
 );
 
-CREATE TRIGGER admin_role_requests_set_updated_at
-  BEFORE UPDATE ON public.admin_role_requests
-  FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_trigger
+    WHERE tgname = 'admin_role_requests_set_updated_at'
+      AND tgrelid = 'public.admin_role_requests'::regclass
+  ) THEN
+    CREATE TRIGGER admin_role_requests_set_updated_at
+      BEFORE UPDATE ON public.admin_role_requests
+      FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
+  END IF;
+END $$;
 
-CREATE UNIQUE INDEX admin_role_requests_one_pending_per_user
+CREATE UNIQUE INDEX IF NOT EXISTS admin_role_requests_one_pending_per_user
   ON public.admin_role_requests (user_id)
   WHERE status = 'pending';
 
-CREATE INDEX idx_admin_role_requests_status_created_at
+CREATE INDEX IF NOT EXISTS idx_admin_role_requests_status_created_at
   ON public.admin_role_requests (status, created_at DESC);
 
-CREATE INDEX idx_admin_role_requests_user_created_at
+CREATE INDEX IF NOT EXISTS idx_admin_role_requests_user_created_at
   ON public.admin_role_requests (user_id, created_at DESC);
 
 ALTER TABLE public.admin_role_requests ENABLE ROW LEVEL SECURITY;
