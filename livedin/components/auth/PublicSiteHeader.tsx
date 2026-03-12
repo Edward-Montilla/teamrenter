@@ -34,6 +34,11 @@ export function PublicSiteHeader() {
   const [profile, setProfile] = useState<HeaderProfile | null>(null);
   const [adminRequestStatus, setAdminRequestStatus] =
     useState<AdminRoleRequestStatusResponse | null>(null);
+  const showAdminRequestLink =
+    profile?.role !== "admin" && Boolean(email) && adminRequestStatus !== null;
+  const adminRequestLabel = adminRequestStatus?.hasActiveRequest
+    ? "Admin request"
+    : "Request admin access";
 
   useEffect(() => {
     const supabase = getSupabaseBrowserClient();
@@ -123,6 +128,14 @@ export function PublicSiteHeader() {
             >
               Leave a review
             </Link>
+            {showAdminRequestLink && (
+              <Link
+                href="/signup/request-admin"
+                className="transition hover:text-zinc-950 dark:hover:text-zinc-100"
+              >
+                {adminRequestLabel}
+              </Link>
+            )}
             {profile?.role === "admin" && (
               <Link
                 href="/admin"
@@ -154,18 +167,12 @@ export function PublicSiteHeader() {
                   Admin
                 </Link>
               )}
-              {profile?.role !== "admin" &&
-              adminRequestStatus &&
-              (adminRequestStatus.eligible ||
-                adminRequestStatus.hasActiveRequest ||
-                adminRequestStatus.requestStatus === "rejected") ? (
+              {showAdminRequestLink ? (
                 <Link
                   href="/signup/request-admin"
-                  className={secondaryButtonClass}
+                  className={`md:hidden ${secondaryButtonClass}`}
                 >
-                  {adminRequestStatus.hasActiveRequest
-                    ? "Admin request"
-                    : "Request admin access"}
+                  {adminRequestLabel}
                 </Link>
               ) : null}
               <SignOutButton />
