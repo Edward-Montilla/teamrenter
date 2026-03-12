@@ -3,10 +3,12 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { AdminAuditFeed } from "@/components/admin/AdminAuditFeed";
+import { AdminSummaryCard } from "@/components/admin/AdminSummaryCard";
 import { PropertyForm } from "@/components/admin/PropertyForm";
 import { FeedbackPanel } from "@/components/ui/FeedbackPanel";
 import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
 import type {
+  AdminOverviewResponse,
   AdminPropertyCreateInput,
   AdminPropertyListItem,
   AdminReviewModerationItem,
@@ -108,6 +110,8 @@ export default function AdminCommandCenterPage() {
   const [deletingPropertyId, setDeletingPropertyId] = useState<string | null>(null);
 
   const [activityRefreshKey, setActivityRefreshKey] = useState(0);
+  const [overview, setOverview] = useState<AdminOverviewResponse["counts"] | null>(null);
+  const [overviewError, setOverviewError] = useState<string | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -206,6 +210,41 @@ export default function AdminCommandCenterPage() {
       active = false;
     };
   }, [propertyRefreshKey]);
+
+  useEffect(() => {
+    let active = true;
+
+    const loadOverview = async () => {
+      setOverviewError(null);
+
+      try {
+        const token = await getAccessToken();
+        const res = await fetch("/api/admin/overview", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        if (!res.ok) {
+          throw new Error("Failed to load admin overview.");
+        }
+
+        const data = (await res.json()) as AdminOverviewResponse;
+        if (!active) return;
+        setOverview(data.counts);
+      } catch (error) {
+        if (!active) return;
+        setOverview(null);
+        setOverviewError(
+          error instanceof Error ? error.message : "Failed to load admin overview.",
+        );
+      }
+    };
+
+    void loadOverview();
+
+    return () => {
+      active = false;
+    };
+  }, [activityRefreshKey]);
 
   const selectedReview = useMemo(
     () => reviews.find((item) => item.id === selectedReviewId) ?? null,
@@ -380,6 +419,12 @@ export default function AdminCommandCenterPage() {
             </p>
           </div>
           <div className="flex flex-wrap gap-3">
+            <Link href="/admin/users" className={secondaryButtonClass}>
+              Users
+            </Link>
+            <Link href="/admin/audit" className={secondaryButtonClass}>
+              Audit history
+            </Link>
             <Link href="/admin/reviews" className={secondaryButtonClass}>
               Full review queue
             </Link>
@@ -389,6 +434,43 @@ export default function AdminCommandCenterPage() {
           </div>
         </div>
       </section>
+
+      {overviewError ? (
+        <FeedbackPanel tone="error" description={overviewError} />
+      ) : overview ? (
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+          <AdminSummaryCard
+            label="Pending reviews"
+            value={overview.pending_reviews}
+            description="Submissions waiting for a moderation decision."
+            href="/admin/reviews"
+            ctaLabel="Review queue"
+          />
+          <AdminSummaryCard
+            label="Pending insights"
+            value={overview.pending_insights}
+            description="Generated public summaries that still need approval."
+            href="/admin/insights"
+            ctaLabel="Moderate insights"
+          />
+          <AdminSummaryCard
+            label="Pending access"
+            value={overview.pending_access_requests}
+            description="Users waiting on an explicit admin-role decision."
+            href="/admin/access-requests"
+            ctaLabel="Access requests"
+          />
+          <AdminSummaryCard
+            label="Inactive properties"
+            value={overview.inactive_properties}
+            description={`${
+              overview.active_properties
+            } active properties are live in browse and review flows.`}
+            href="/admin/properties"
+            ctaLabel="Property catalog"
+          />
+        </div>
+      ) : null}
 
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1.3fr)_minmax(360px,0.9fr)]">
         <section className={`${sectionCardClass} p-6`}>

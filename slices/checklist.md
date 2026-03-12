@@ -1,59 +1,134 @@
 # Project Checklist
 
-This checklist is based on the slice docs in `slices/`, `implemented.md`, the current `livedin/` app, and the Supabase migrations/scripts that already exist in the repo.
-
-Checked items are already implemented or already documented as planning/spec work. Unchecked items still need implementation, validation, or release-readiness follow-through.
+Checked items are already implemented or documented in the repo. Unchecked items are still outstanding.
 
 ## Core Product Slices
 
-- [x] Slice 01: Public browse/search page exists with property cards, search, and navigation to property detail.
-- [x] Slice 02: Public property detail page exists with aggregate scores, empty states, and approved insight display.
-- [x] Slice 03: Review submission flow exists with gated states, validation, and confirmation UI.
-- [x] Slice 04: Supabase schema, constraints, and aggregate recompute logic are present.
-- [ ] Slice 04: Run and record the manual DB validation for constraints and aggregate recomputation.
-- [x] Slice 05: RLS policies, role helpers, and profile protections are present.
-- [ ] Slice 05: Run and record the anon/verified/admin RLS smoke tests in the supported environment.
-- [x] Slice 06: Public browse and property detail are wired to Supabase reads.
-- [x] Slice 07: Verified review submission is wired to Supabase with pending moderation flow and status handling.
-- [x] Slice 08: Admin property CRUD pages and APIs exist.
-- [x] Slice 09: Admin review moderation, insight moderation, and audit views exist.
-- [x] Slice 10: Distilled insight recompute and approval workflow exist.
-- [ ] Slice 11: Implement end-to-end property photo upload and public display via Cloudflare R2.
-- [x] Slice 12: Authentication exists with email sign-in/sign-up, sign-out, and Google OAuth.
-- [ ] Slice 13: Finish the site-wide UI/UX polish pass and verify consistent loading, empty, error, and success states across key flows.
-- [x] Slice 14: Admin access request flow, admin review path, and first-admin bootstrap hardening exist.
-- [x] Slice 15: Gestalt-inspired UI system specification document exists.
-- [ ] Slice 15: Apply the Gestalt-inspired UI system in the shipped app.
-- [x] Slice 16: Mobile-first UX polish specification document exists.
-- [ ] Slice 16: Apply the mobile-first UX improvements in the shipped app.
-- [x] Slice 17: Admin command center route exists with consolidated review/property workflows.
-- [ ] Slice 20: Implement the semantic renter feedback feature end to end, including normalized categories, evidence signals, review gating, and safe public display.
+### Slice 01 — Public browse/search
 
-## Quality And Alpha Readiness
+[x] Build `/` with hero content, search input, and a clear review CTA
+[x] Render searchable property cards with loading, empty, and error states
+[x] Let users open a property from the browse results
 
-- [x] Alpha readiness direction document exists.
-- [ ] Confirm the core `/` -> `/properties/[id]` -> `/sign-in` -> `/submit-review/[propertyId]` -> `/admin` journey works end to end in one supported environment.
-- [ ] Standardize one documented setup path for new contributors so they can run the app without slice-by-slice reconstruction.
-- [ ] Add browser-level end-to-end smoke coverage for the highest-risk user and admin journey.
-- [ ] Keep `api:test` and `rls:test` healthy and treat them as required alpha gates.
-- [ ] Remove, hide, or clearly label leftover mock-era or optional surfaces that are not part of the supported alpha path.
-- [ ] Add CI checks for install, lint, build, and smoke coverage where feasible.
-- [ ] Define an internal alpha deployment target and release/checklist process.
-- [ ] Add basic alpha observability for route/API failures, auth/admin failures, and migration/version traceability.
-- [ ] Refresh top-level README and tester guidance so they describe the current implementation and supported flows only.
+### Slice 02 — Property detail
 
-## Business Reporting Planning
+[x] Build `/properties/[id]` for public property detail
+[x] Show trust score, rating breakdown, review count, and confidence cues
+[x] Show approved distilled insights only, with helpful no-review and no-insight states
+[x] Keep raw review text out of the public detail page
 
-- [x] Business reporting PRD exists.
-- [x] Business reporting SRS exists.
-- [x] Business reporting technical specification exists.
-- [ ] Add organization ownership, membership, and property-mapping tables.
-- [ ] Build Phase 1 admin-visible reporting to validate report calculations and UX.
-- [ ] Build business reporting routes: `/business`, `/business/properties`, `/business/properties/[id]`, and `/business/issues`.
-- [ ] Implement the portfolio overview report.
-- [ ] Implement the property performance report with current-period metrics, previous-period comparison, and approved insight summary.
-- [ ] Implement the portfolio benchmark report with sorting, filtering, ranking, percentile, and pagination.
-- [ ] Implement the issue signals/watchlist report.
-- [ ] Add low-sample labeling, freshness indicators, and reporting-period filtering.
-- [ ] Enforce organization-scoped access for business users without exposing private review text.
-- [ ] Add reporting tests for org scoping, approved-only data, missing-insight handling, and private-text exclusion.
+### Slice 03 — Review form and gated states
+
+[x] Build `/submit-review/[propertyId]` as a guided multi-step flow
+[x] Support property selection, structured ratings, optional private notes, and tenancy dates
+[x] Show gated states for signed-out, unverified, already-reviewed, and rate-limited users
+[x] Show a submission confirmation state with next-step actions
+
+### Slice 04 — DB foundation
+
+[x] Create the core schema for profiles, properties, reviews, aggregates, insights, audit log, and optional photo metadata
+[x] Add database constraints for review validation, uniqueness, and tenancy dates
+[x] Add aggregate-refresh logic so approved moderation state drives public scores
+
+### Slice 05 — RLS, roles, and security
+
+[x] Enable RLS on the core public and admin tables
+[x] Restrict public reads to safe fields and safe statuses only
+[x] Gate review creation to verified users and admin actions to admins
+[x] Keep private review text and admin audit data out of public access paths
+
+### Slice 06 — Public reads wired to Supabase
+
+[x] Replace mocked browse data with DB-backed public property reads
+[x] Replace mocked property detail data with DB-backed property, aggregate, and approved insight reads
+[x] Keep public routes free of raw review queries and private text exposure
+
+### Slice 07 — Review submission integration
+
+[x] Wire review submission to a real backend endpoint
+[x] Insert new reviews as `pending` instead of changing public scores immediately
+[x] Return clear auth and constraint-driven outcomes for submit failures
+[x] Keep aggregate refresh tied to later admin approval
+
+### Slice 08 — Admin properties CRUD
+
+[x] Build `/admin/properties` with property listing, status, and actions
+[x] Let admins create, edit, activate, and deactivate properties
+[x] Keep non-admin users blocked from property-admin routes and actions
+[x] Ensure only active properties appear in public browse flows
+
+### Slice 09 — Admin moderation and audit
+
+[x] Build `/admin/reviews` moderation tools with private review text visible to admins only
+[x] Let admins approve, reject, remove, and reset review status
+[x] Build `/admin/insights` moderation tools for approve, reject, hide, and recompute flows
+[x] Record admin moderation and property actions in the audit log
+[x] Recompute public aggregates when review moderation changes
+
+### Slice 10 — Distilled insights pipeline
+
+[x] Store distilled insights with moderation status
+[x] Generate or recompute pending insights from approved review text
+[x] Let admins review and publish insight summaries
+[x] Show only approved insight summaries on public property pages
+
+### Slice 11 — Optional photos via R2
+
+[x] Lay DB groundwork for optional property photo metadata
+[ ] Add admin photo upload to Cloudflare R2
+[ ] Save photo metadata and safe public delivery URLs
+[ ] Render uploaded property photos on the public property page
+
+### Slice 12 — Authentication
+
+[x] Add `/sign-in` with Google OAuth and email/password auth flows
+[x] Support sign-up, sign-in, sign-out, and redirect back to the user’s target flow
+[x] Sync authenticated users into `public.profiles`
+[x] Use real auth state in gated review and admin flows
+
+### Slice 13 — Site-wide UI/UX polish
+
+[x] Apply consistent page layout, CTA hierarchy, and shared feedback surfaces across public, auth, review, and admin pages
+[x] Improve search, detail, sign-in, review, and admin usability
+[x] Keep key flows responsive and keyboard/focus friendly
+
+### Slice 14 — Admin access request path
+
+[x] Add `/signup/request-admin` for authenticated, eligible users
+[x] Add `admin_role_requests` persistence and request-status handling
+[x] Prevent self-promotion and require explicit admin review or bootstrap flow
+[x] Add admin review tooling for access requests and role promotion
+[x] Record request review metadata and enforce one active request path
+
+### Slice 15 — Gestalt-inspired UI system
+
+[x] Write the planning spec for a Gestalt-inspired design system
+[x] Cover public, auth, theme, review, and admin surfaces in the spec
+[x] Keep this slice documentation-only with no required backend changes
+
+### Slice 16 — Mobile-first UX polish
+
+[x] Write the planning spec for mobile-first browse, detail, review, sign-in, and admin-access flows
+[x] Define mobile priorities, before-scroll content, and progressive disclosure rules
+[x] Keep this slice documentation-only with no required backend changes
+
+### Slice 17 — Admin command center
+
+[x] Add `/admin` as the consolidated admin landing page
+[x] Show an admin entry point from the signed-in public header
+[x] Let admins moderate reviews directly from the command center
+[x] Let admins create, manage, and delete properties from the command center
+[x] Surface recent admin audit activity in the command center
+
+### Slice 20 — NLP semantic renter feedback
+
+[ ] Add `semantic_property_feedback` storage and moderation status flow
+[ ] Generate neutralized semantic feedback from approved renter review text
+[ ] Add admin review, approval, hide, and regenerate controls for semantic feedback
+[ ] Show approved semantic renter feedback on public property pages
+[ ] Preserve the currently approved public feedback until replacement output is approved
+
+## Remaining Work Summary
+
+[ ] Finish Slice 11 photo upload and public photo display
+[ ] Build Slice 20 semantic renter feedback pipeline and UI

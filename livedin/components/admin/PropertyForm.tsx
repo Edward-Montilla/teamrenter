@@ -3,6 +3,12 @@
 import { useState } from "react";
 import Link from "next/link";
 import type { AdminPropertyCreateInput, AdminPropertyListItem } from "@/lib/types";
+import {
+  inputClass,
+  primaryButtonClass,
+  secondaryButtonClass,
+  selectClass,
+} from "@/lib/ui";
 
 type PropertyFormProps = {
   initial?: Partial<AdminPropertyListItem>;
@@ -96,7 +102,7 @@ export function PropertyForm({
           required
           value={display_name}
           onChange={(e) => setDisplayName(e.target.value)}
-          className="mt-1 block w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-foreground shadow-sm dark:border-zinc-600 dark:bg-zinc-900"
+          className={`${inputClass} mt-1`}
         />
       </div>
 
@@ -110,7 +116,7 @@ export function PropertyForm({
           required
           value={address_line1}
           onChange={(e) => setAddressLine1(e.target.value)}
-          className="mt-1 block w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-foreground shadow-sm dark:border-zinc-600 dark:bg-zinc-900"
+          className={`${inputClass} mt-1`}
         />
       </div>
 
@@ -123,7 +129,7 @@ export function PropertyForm({
           type="text"
           value={address_line2}
           onChange={(e) => setAddressLine2(e.target.value)}
-          className="mt-1 block w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-foreground shadow-sm dark:border-zinc-600 dark:bg-zinc-900"
+          className={`${inputClass} mt-1`}
         />
       </div>
 
@@ -138,7 +144,7 @@ export function PropertyForm({
             required
             value={city}
             onChange={(e) => setCity(e.target.value)}
-            className="mt-1 block w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-foreground shadow-sm dark:border-zinc-600 dark:bg-zinc-900"
+            className={`${inputClass} mt-1`}
           />
         </div>
         <div>
@@ -151,7 +157,7 @@ export function PropertyForm({
             required
             value={province}
             onChange={(e) => setProvince(e.target.value)}
-            className="mt-1 block w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-foreground shadow-sm dark:border-zinc-600 dark:bg-zinc-900"
+            className={`${inputClass} mt-1`}
           />
         </div>
       </div>
@@ -166,7 +172,7 @@ export function PropertyForm({
           required
           value={postal_code}
           onChange={(e) => setPostalCode(e.target.value)}
-          className="mt-1 block w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-foreground shadow-sm dark:border-zinc-600 dark:bg-zinc-900"
+          className={`${inputClass} mt-1`}
         />
       </div>
 
@@ -179,7 +185,7 @@ export function PropertyForm({
           type="text"
           value={management_company}
           onChange={(e) => setManagementCompany(e.target.value)}
-          className="mt-1 block w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-foreground shadow-sm dark:border-zinc-600 dark:bg-zinc-900"
+          className={`${inputClass} mt-1`}
         />
       </div>
 
@@ -191,7 +197,7 @@ export function PropertyForm({
           id="status"
           value={status}
           onChange={(e) => setStatus(e.target.value as "active" | "inactive")}
-          className="mt-1 block w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-foreground shadow-sm dark:border-zinc-600 dark:bg-zinc-900"
+          className={`${selectClass} mt-1 w-full`}
         >
           <option value="active">Active</option>
           <option value="inactive">Inactive</option>
@@ -202,13 +208,13 @@ export function PropertyForm({
         <button
           type="submit"
           disabled={submitting}
-          className="rounded-lg bg-foreground px-4 py-2 text-sm font-medium text-background hover:opacity-90 disabled:opacity-50"
+          className={primaryButtonClass}
         >
           {submitting ? "Saving…" : mode === "create" ? "Create property" : "Save changes"}
         </button>
         <Link
           href={cancelHref}
-          className="rounded-lg border border-zinc-300 bg-white px-4 py-2 text-sm font-medium text-foreground hover:bg-zinc-50 dark:border-zinc-600 dark:bg-zinc-900 dark:hover:bg-zinc-800"
+          className={secondaryButtonClass}
         >
           Cancel
         </Link>

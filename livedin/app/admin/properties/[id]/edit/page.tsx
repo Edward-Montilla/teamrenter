@@ -129,12 +129,20 @@ export default function EditPropertyPage() {
   return (
     <div>
       <div className="mb-6">
-        <Link
-          href="/admin/properties"
-          className="text-sm font-medium text-zinc-600 hover:text-foreground dark:text-zinc-400 dark:hover:text-foreground"
-        >
-          ← Back to properties
-        </Link>
+        <div className="flex flex-wrap gap-3">
+          <Link
+            href="/admin/properties"
+            className="text-sm font-medium text-zinc-600 hover:text-foreground dark:text-zinc-400 dark:hover:text-foreground"
+          >
+            ← Back to properties
+          </Link>
+          <Link
+            href={`/admin/properties/${id}/photos`}
+            className="text-sm font-medium text-zinc-600 hover:text-foreground dark:text-zinc-400 dark:hover:text-foreground"
+          >
+            Manage photos
+          </Link>
+        </div>
       </div>
       <h1 className="text-2xl font-bold tracking-tight">Edit property</h1>
       <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">

@@ -126,6 +126,7 @@ export default async function PropertyDetailPage({ params }: Props) {
 
   const { property, aggregates, insights } = data;
   const hasReviews = aggregates.review_count > 0;
+  const hasPhotos = data.photos.length > 0;
 
   return (
     <div className="min-h-screen bg-zinc-50 text-slate-950 dark:bg-slate-950 dark:text-slate-50">
@@ -198,6 +199,43 @@ export default async function PropertyDetailPage({ params }: Props) {
                 </div>
               </div>
             </header>
+
+            {hasPhotos ? (
+              <section className={`${sectionCardClass} mt-8 p-6 sm:p-8`}>
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <h2 className="text-2xl font-semibold text-slate-950 dark:text-slate-50">
+                      Property photos
+                    </h2>
+                    <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+                      Gallery items are published from admin-managed photo metadata.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                  {data.photos.map((photo, index) => (
+                    <div
+                      key={photo.id}
+                      className="overflow-hidden rounded-3xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900"
+                    >
+                      {photo.display_url ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={photo.display_url}
+                          alt={`${property.display_name} photo ${index + 1}`}
+                          className="h-56 w-full object-cover"
+                        />
+                      ) : (
+                        <div className="flex h-56 items-center justify-center bg-[linear-gradient(135deg,#cbd5e1_0%,#94a3b8_45%,#64748b_100%)] px-6 text-center text-sm text-white">
+                          Photo is registered but no public display URL is configured.
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </section>
+            ) : null}
 
             <section className={`${sectionCardClass} mt-8 p-6 sm:p-8`}>
               <div className="flex flex-wrap items-center justify-between gap-3">

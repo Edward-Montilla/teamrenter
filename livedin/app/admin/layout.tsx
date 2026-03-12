@@ -109,7 +109,7 @@ export default function AdminLayout({
               Admin
             </Link>
             <p className="text-sm text-zinc-500 dark:text-zinc-400">
-              Audit reviews, manage properties, and review publication state.
+              Manage users, content, moderation queues, and operational history.
             </p>
           </div>
           <nav className="flex flex-wrap gap-3">
@@ -124,6 +124,12 @@ export default function AdminLayout({
               className={secondaryButtonClass}
             >
               Properties
+            </Link>
+            <Link
+              href="/admin/users"
+              className={secondaryButtonClass}
+            >
+              Users
             </Link>
             <Link
               href="/admin/reviews"
@@ -142,6 +148,12 @@ export default function AdminLayout({
               className={secondaryButtonClass}
             >
               Insights
+            </Link>
+            <Link
+              href="/admin/audit"
+              className={secondaryButtonClass}
+            >
+              Audit
             </Link>
             <Link
               href="/"

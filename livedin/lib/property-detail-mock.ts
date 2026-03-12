@@ -35,6 +35,7 @@ const MOCK_DETAILS: Record<string, PropertyDetailPublic> = {
         "Tenants report responsive management and timely maintenance. Listing descriptions match the unit well. Fees are clearly communicated; lease terms are easy to understand.",
       last_generated_at: "2025-02-28T10:00:00.000Z",
     },
+    photos: [],
   },
   "b2c3d4e5-f6a7-5b6c-9d0e-1f2a3b4c5d6e": {
     property: {
@@ -58,6 +59,7 @@ const MOCK_DETAILS: Record<string, PropertyDetailPublic> = {
       last_updated: "2025-02-28T14:00:00.000Z",
     },
     insights: null,
+    photos: [],
   },
   "c3d4e5f6-a7b8-6c7d-0e1f-2a3b4c5d6e7f": {
     property: {
@@ -84,6 +86,7 @@ const MOCK_DETAILS: Record<string, PropertyDetailPublic> = {
         "Strong scores across the board. Management is highly responsive; maintenance requests are handled quickly. Listings are accurate and fees are transparent.",
       last_generated_at: "2025-03-01T08:00:00.000Z",
     },
+    photos: [],
   },
   "d4e5f6a7-b8c9-7d8e-1f2a-3b4c5d6e7f8a": {
     property: {
@@ -106,6 +109,7 @@ const MOCK_DETAILS: Record<string, PropertyDetailPublic> = {
       last_updated: "2025-03-01T11:00:00.000Z",
     },
     insights: null,
+    photos: [],
   },
   "e5f6a7b8-c9d0-8e9f-2a3b-4c5d6e7f8a9b": {
     property: {
@@ -128,6 +132,7 @@ const MOCK_DETAILS: Record<string, PropertyDetailPublic> = {
       last_updated: "2025-02-25T16:00:00.000Z",
     },
     insights: null,
+    photos: [],
   },
   "f6a7b8c9-d0e1-9f0a-3b4c-5d6e7f8a9b0c": {
     property: {
@@ -150,6 +155,7 @@ const MOCK_DETAILS: Record<string, PropertyDetailPublic> = {
       last_updated: "2025-02-27T12:00:00.000Z",
     },
     insights: null,
+    photos: [],
   },
   "a7b8c9d0-e1f2-0a1b-4c5d-6e7f8a9b0c1d": {
     property: {
@@ -172,6 +178,7 @@ const MOCK_DETAILS: Record<string, PropertyDetailPublic> = {
       last_updated: "2025-03-02T08:00:00.000Z",
     },
     insights: null,
+    photos: [],
   },
   "b8c9d0e1-f2a3-1b2c-5d6e-7f8a9b0c1d2e": {
     property: {
@@ -194,6 +201,7 @@ const MOCK_DETAILS: Record<string, PropertyDetailPublic> = {
       last_updated: "2025-02-26T10:00:00.000Z",
     },
     insights: null,
+    photos: [],
   },
   "c9d0e1f2-a3b4-2c3d-6e7f-8a9b0c1d2e3f": {
     property: {
@@ -216,6 +224,7 @@ const MOCK_DETAILS: Record<string, PropertyDetailPublic> = {
       last_updated: "2025-03-01T14:00:00.000Z",
     },
     insights: null,
+    photos: [],
   },
   "d0e1f2a3-b4c5-3d4e-7f8a-9b0c1d2e3f4a": {
     property: {
@@ -238,6 +247,7 @@ const MOCK_DETAILS: Record<string, PropertyDetailPublic> = {
       last_updated: "2025-02-24T09:00:00.000Z",
     },
     insights: null,
+    photos: [],
   },
   [ZERO_REVIEWS_PROPERTY_ID]: {
     property: {
@@ -260,6 +270,7 @@ const MOCK_DETAILS: Record<string, PropertyDetailPublic> = {
       last_updated: "2025-01-01T00:00:00.000Z",
     },
     insights: null,
+    photos: [],
   },
 };
 

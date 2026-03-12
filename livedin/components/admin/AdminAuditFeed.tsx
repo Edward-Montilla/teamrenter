@@ -8,6 +8,10 @@ type AdminAuditFeedProps = {
   title?: string;
   limit?: number;
   targetTypes?: string[];
+  targetId?: string | null;
+  actionType?: string | null;
+  adminUserId?: string | null;
+  emptyMessage?: string;
   refreshKey?: string | number;
 };
 
@@ -19,6 +23,10 @@ export function AdminAuditFeed({
   title = "Recent moderation activity",
   limit = 8,
   targetTypes = ["review", "insight"],
+  targetId,
+  actionType,
+  adminUserId,
+  emptyMessage = "No moderation activity yet.",
   refreshKey,
 }: AdminAuditFeedProps) {
   const [items, setItems] = useState<AdminAuditLogItem[]>([]);
@@ -59,6 +67,15 @@ export function AdminAuditFeed({
         if (targetTypesKey) {
           params.set("target_type", targetTypesKey);
         }
+        if (targetId) {
+          params.set("target_id", targetId);
+        }
+        if (actionType) {
+          params.set("action_type", actionType);
+        }
+        if (adminUserId) {
+          params.set("admin_user_id", adminUserId);
+        }
 
         const res = await fetch(`/api/admin/audit?${params.toString()}`, {
           headers: { Authorization: `Bearer ${session.access_token}` },
@@ -88,7 +105,7 @@ export function AdminAuditFeed({
     return () => {
       active = false;
     };
-  }, [limit, refreshKey, targetTypesKey]);
+  }, [actionType, adminUserId, limit, refreshKey, targetId, targetTypesKey]);
 
   return (
     <section className="rounded-lg border border-zinc-200 bg-white p-6 dark:border-zinc-700 dark:bg-zinc-950">
@@ -111,7 +128,7 @@ export function AdminAuditFeed({
 
       {!loading && !error && items.length === 0 && (
         <p className="mt-4 text-sm text-zinc-500 dark:text-zinc-400">
-          No moderation activity yet.
+          {emptyMessage}
         </p>
       )}
 

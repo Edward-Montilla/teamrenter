@@ -1,14 +1,22 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { AdminSummaryCard } from "@/components/admin/AdminSummaryCard";
 import { FeedbackPanel } from "@/components/ui/FeedbackPanel";
-import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
+import { adminFetch } from "@/lib/admin-client";
+import {
+  formatDateTime,
+  propertyStatusBadgeClass,
+} from "@/lib/admin-display";
 import type { AdminPropertyListItem } from "@/lib/types";
 import {
   destructiveButtonClass,
+  inputClass,
   primaryButtonClass,
   sectionCardClass,
+  secondaryButtonClass,
+  selectClass,
 } from "@/lib/ui";
 
 function formatAddress(p: AdminPropertyListItem): string {
@@ -21,6 +29,8 @@ function formatAddress(p: AdminPropertyListItem): string {
   return parts.join(", ");
 }
 
+type SortOption = "updated_desc" | "updated_asc" | "name_asc";
+
 export default function AdminPropertiesPage() {
   const [items, setItems] = useState<AdminPropertyListItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -31,39 +41,22 @@ export default function AdminPropertiesPage() {
     tone: "success" | "error";
     message: string;
   } | null>(null);
+  const [query, setQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState<"all" | "active" | "inactive">(
+    "all",
+  );
+  const [sortBy, setSortBy] = useState<SortOption>("updated_desc");
 
   const fetchList = async () => {
-    const supabase = getSupabaseBrowserClient();
-    if (!supabase) {
-      setError("Not configured");
-      setLoading(false);
-      return;
-    }
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
-    if (!session?.access_token) {
-      setError("Not signed in");
-      setLoading(false);
-      return;
-    }
-
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch("/api/admin/properties", {
-        headers: { Authorization: `Bearer ${session.access_token}` },
-      });
-      if (!res.ok) {
-        if (res.status === 403) setError("Forbidden");
-        else setError("Failed to load properties");
-        setItems([]);
-        return;
-      }
-      const data = (await res.json()) as { items: AdminPropertyListItem[] };
+      const data = await adminFetch<{ items: AdminPropertyListItem[] }>(
+        "/api/admin/properties",
+      );
       setItems(data.items ?? []);
-    } catch {
-      setError("Failed to load properties");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to load properties");
       setItems([]);
     } finally {
       setLoading(false);
@@ -71,86 +64,94 @@ export default function AdminPropertiesPage() {
   };
 
   useEffect(() => {
-    fetchList();
+    void fetchList();
   }, []);
 
-  const toggleStatus = async (p: AdminPropertyListItem) => {
-    const supabase = getSupabaseBrowserClient();
-    if (!supabase?.auth) return;
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
-    if (!session?.access_token) return;
-
-    setStatusMessage(null);
-    setTogglingId(p.id);
-    try {
-      const res = await fetch(`/api/admin/properties/${p.id}`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${session.access_token}`,
-        },
-        body: JSON.stringify({
-          status: p.status === "active" ? "inactive" : "active",
-        }),
-      });
-      if (!res.ok) {
-        const json = (await res.json().catch(() => ({}))) as { message?: string };
-        setStatusMessage({
-          tone: "error",
-          message: json.message ?? "Failed to update property",
-        });
-        return;
+  const filteredItems = useMemo(() => {
+    const normalizedQuery = query.trim().toLowerCase();
+    const nextItems = items.filter((item) => {
+      if (statusFilter !== "all" && item.status !== statusFilter) {
+        return false;
       }
+
+      if (!normalizedQuery) {
+        return true;
+      }
+
+      return (
+        item.display_name.toLowerCase().includes(normalizedQuery) ||
+        formatAddress(item).toLowerCase().includes(normalizedQuery) ||
+        (item.management_company ?? "").toLowerCase().includes(normalizedQuery)
+      );
+    });
+
+    return nextItems.toSorted((left, right) => {
+      switch (sortBy) {
+        case "updated_asc":
+          return left.updated_at.localeCompare(right.updated_at);
+        case "name_asc":
+          return left.display_name.localeCompare(right.display_name);
+        default:
+          return right.updated_at.localeCompare(left.updated_at);
+      }
+    });
+  }, [items, query, sortBy, statusFilter]);
+
+  const summary = useMemo(
+    () => ({
+      total: items.length,
+      active: items.filter((item) => item.status === "active").length,
+      inactive: items.filter((item) => item.status === "inactive").length,
+      visible: filteredItems.length,
+    }),
+    [filteredItems.length, items],
+  );
+
+  const toggleStatus = async (property: AdminPropertyListItem) => {
+    setStatusMessage(null);
+    setTogglingId(property.id);
+    try {
+      const nextStatus = property.status === "active" ? "inactive" : "active";
+      await adminFetch(`/api/admin/properties/${property.id}`, {
+        method: "PATCH",
+        body: JSON.stringify({ status: nextStatus }),
+      });
       await fetchList();
       setStatusMessage({
         tone: "success",
-        message: `${p.display_name} is now ${
-          p.status === "active" ? "inactive" : "active"
-        }.`,
+        message: `${property.display_name} is now ${nextStatus}.`,
+      });
+    } catch (err) {
+      setStatusMessage({
+        tone: "error",
+        message: err instanceof Error ? err.message : "Failed to update property.",
       });
     } finally {
       setTogglingId(null);
     }
   };
 
-  const deleteProperty = async (p: AdminPropertyListItem) => {
+  const deleteProperty = async (property: AdminPropertyListItem) => {
     const confirmed = window.confirm(
-      `Delete "${p.display_name}"? This also removes its reviews, aggregates, and related admin records.`
+      `Delete "${property.display_name}"? This also removes its reviews, aggregates, and related admin records.`,
     );
     if (!confirmed) return;
 
-    const supabase = getSupabaseBrowserClient();
-    if (!supabase?.auth) return;
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
-    if (!session?.access_token) return;
-
     setStatusMessage(null);
-    setDeletingId(p.id);
+    setDeletingId(property.id);
     try {
-      const res = await fetch(`/api/admin/properties/${p.id}`, {
+      await adminFetch(`/api/admin/properties/${property.id}`, {
         method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${session.access_token}`,
-        },
       });
-
-      if (!res.ok) {
-        const json = (await res.json().catch(() => ({}))) as { message?: string };
-        setStatusMessage({
-          tone: "error",
-          message: json.message ?? "Failed to delete property",
-        });
-        return;
-      }
-
       await fetchList();
       setStatusMessage({
         tone: "success",
-        message: `Deleted ${p.display_name}.`,
+        message: `Deleted ${property.display_name}.`,
+      });
+    } catch (err) {
+      setStatusMessage({
+        tone: "error",
+        message: err instanceof Error ? err.message : "Failed to delete property.",
       });
     } finally {
       setDeletingId(null);
@@ -159,129 +160,222 @@ export default function AdminPropertiesPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-semibold tracking-tight">Properties</h1>
-          <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-            Keep the property catalog easy to scan, update, and activate or deactivate.
-          </p>
+      <section className={`${sectionCardClass} p-6 sm:p-8`}>
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div className="max-w-3xl">
+            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-zinc-500 dark:text-zinc-400">
+              Admin console
+            </p>
+            <h1 className="mt-3 text-3xl font-semibold tracking-tight text-foreground">
+              Property catalog
+            </h1>
+            <p className="mt-3 text-sm leading-6 text-zinc-600 dark:text-zinc-400">
+              Search the catalog, manage visibility, and jump directly into photo
+              registration or record edits from one operational view.
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-3">
+            <Link href="/admin/audit" className={secondaryButtonClass}>
+              Audit history
+            </Link>
+            <Link href="/admin/properties/new" className={primaryButtonClass}>
+              New property
+            </Link>
+          </div>
         </div>
-        <Link
-          href="/admin/properties/new"
-          className={primaryButtonClass}
-        >
-          New property
-        </Link>
+      </section>
+
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <AdminSummaryCard
+          label="Total properties"
+          value={summary.total}
+          description="Every property record currently in the admin catalog."
+        />
+        <AdminSummaryCard
+          label="Active"
+          value={summary.active}
+          description="Properties that are visible on the public browse and detail pages."
+        />
+        <AdminSummaryCard
+          label="Inactive"
+          value={summary.inactive}
+          description="Properties hidden from public flows until an admin reactivates them."
+        />
+        <AdminSummaryCard
+          label="Filtered view"
+          value={summary.visible}
+          description="Rows visible after applying the current search and status filters."
+        />
       </div>
 
-      {loading && (
+      <section className={`${sectionCardClass} p-6`}>
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-[minmax(0,1fr)_220px_220px]">
+          <label className="block text-sm">
+            <span className="mb-2 block font-medium text-foreground">Search</span>
+            <input
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              className={inputClass}
+              placeholder="Property name, address, or management company"
+            />
+          </label>
+          <label className="block text-sm">
+            <span className="mb-2 block font-medium text-foreground">Status</span>
+            <select
+              value={statusFilter}
+              onChange={(event) =>
+                setStatusFilter(event.target.value as "all" | "active" | "inactive")
+              }
+              className={selectClass}
+            >
+              <option value="all">All statuses</option>
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
+            </select>
+          </label>
+          <label className="block text-sm">
+            <span className="mb-2 block font-medium text-foreground">Sort</span>
+            <select
+              value={sortBy}
+              onChange={(event) => setSortBy(event.target.value as SortOption)}
+              className={selectClass}
+            >
+              <option value="updated_desc">Recently updated</option>
+              <option value="updated_asc">Oldest updates</option>
+              <option value="name_asc">Name A-Z</option>
+            </select>
+          </label>
+        </div>
+      </section>
+
+      {loading ? (
         <div className="space-y-3">
-          {[1, 2, 3].map((i) => (
+          {[1, 2, 3].map((item) => (
             <div
-              key={i}
-              className="h-20 animate-pulse rounded-lg border border-zinc-200 bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-800"
+              key={item}
+              className="h-20 animate-pulse rounded-2xl border border-zinc-200 bg-zinc-100 dark:border-zinc-800 dark:bg-zinc-900"
               aria-hidden
             />
           ))}
         </div>
-      )}
+      ) : null}
 
-      {error && !loading && (
+      {error && !loading ? (
         <FeedbackPanel
           tone="error"
           description={error}
           primaryAction={{ label: "Retry", onClick: fetchList }}
         />
-      )}
+      ) : null}
 
-      {statusMessage && !loading && (
+      {statusMessage && !loading ? (
         <FeedbackPanel
           tone={statusMessage.tone}
           description={statusMessage.message}
         />
-      )}
+      ) : null}
 
-      {!loading && !error && items.length === 0 && (
+      {!loading && !error && items.length === 0 ? (
         <FeedbackPanel
           title="No properties yet"
           description="Create the first property so it can appear on the public site and in the review flow."
           primaryAction={{ label: "New property", href: "/admin/properties/new" }}
         />
-      )}
+      ) : null}
 
-      {!loading && !error && items.length > 0 && (
+      {!loading && !error && items.length > 0 ? (
         <div className={`${sectionCardClass} overflow-hidden`}>
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-zinc-200 dark:divide-zinc-700">
+            <table className="min-w-full divide-y divide-zinc-200 dark:divide-zinc-800">
               <thead className="bg-zinc-50 dark:bg-zinc-900">
                 <tr>
-                  <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-zinc-600 dark:text-zinc-400">
+                  <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-zinc-500">
                     Status
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-zinc-600 dark:text-zinc-400">
+                  <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-zinc-500">
                     Name
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-zinc-600 dark:text-zinc-400">
+                  <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-zinc-500">
                     Address
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-zinc-600 dark:text-zinc-400">
+                  <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-zinc-500">
                     Management
                   </th>
-                  <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-zinc-600 dark:text-zinc-400">
+                  <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-zinc-500">
+                    Updated
+                  </th>
+                  <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-zinc-500">
                     Actions
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-zinc-200 bg-white dark:divide-zinc-700 dark:bg-zinc-950">
-                {items.map((p) => (
-                  <tr key={p.id}>
-                    <td className="whitespace-nowrap px-4 py-3">
+              <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800">
+                {filteredItems.map((property) => (
+                  <tr key={property.id} className="bg-white dark:bg-zinc-950">
+                    <td className="px-4 py-3">
                       <span
-                        className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${
-                          p.status === "active"
-                            ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"
-                            : "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400"
-                        }`}
+                        className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${propertyStatusBadgeClass(property.status)}`}
                       >
-                        {p.status}
+                        {property.status}
                       </span>
                     </td>
-                    <td className="px-4 py-3 font-medium text-foreground">
-                      {p.display_name}
+                    <td className="px-4 py-3 text-sm font-medium text-foreground">
+                      {property.display_name}
                     </td>
                     <td className="px-4 py-3 text-sm text-zinc-600 dark:text-zinc-400">
-                      {formatAddress(p)}
+                      {formatAddress(property)}
                     </td>
                     <td className="px-4 py-3 text-sm text-zinc-600 dark:text-zinc-400">
-                      {p.management_company ?? "—"}
+                      {property.management_company ?? "—"}
                     </td>
-                    <td className="whitespace-nowrap px-4 py-3 text-right">
-                      <Link
-                        href={`/admin/properties/${p.id}/edit`}
-                        className="mr-2 inline-flex rounded-lg px-3 py-2 text-sm font-medium text-foreground hover:bg-zinc-100 dark:hover:bg-zinc-900"
-                      >
-                        Edit
-                      </Link>
-                      <button
-                        type="button"
-                        onClick={() => toggleStatus(p)}
-                        disabled={togglingId === p.id || deletingId === p.id}
-                        className={`${p.status === "active" ? "text-red-700 dark:text-red-300" : "text-foreground"} rounded-lg px-3 py-2 text-sm font-medium hover:bg-zinc-100 disabled:opacity-50 dark:hover:bg-zinc-900`}
-                      >
-                        {togglingId === p.id
-                          ? "…"
-                          : p.status === "active"
-                            ? "Deactivate"
-                            : "Activate"}
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => void deleteProperty(p)}
-                        disabled={deletingId === p.id || togglingId === p.id}
-                        className={`${destructiveButtonClass} ml-2 px-3 py-2`}
-                      >
-                        {deletingId === p.id ? "Deleting…" : "Delete"}
-                      </button>
+                    <td className="px-4 py-3 text-sm text-zinc-600 dark:text-zinc-400">
+                      {formatDateTime(property.updated_at)}
+                    </td>
+                    <td className="px-4 py-3 text-right">
+                      <div className="flex flex-wrap justify-end gap-2">
+                        <Link
+                          href={`/properties/${property.id}`}
+                          className={secondaryButtonClass}
+                        >
+                          View
+                        </Link>
+                        <Link
+                          href={`/admin/properties/${property.id}/photos`}
+                          className={secondaryButtonClass}
+                        >
+                          Photos
+                        </Link>
+                        <Link
+                          href={`/admin/properties/${property.id}/edit`}
+                          className={secondaryButtonClass}
+                        >
+                          Edit
+                        </Link>
+                        <button
+                          type="button"
+                          onClick={() => void toggleStatus(property)}
+                          disabled={
+                            togglingId === property.id || deletingId === property.id
+                          }
+                          className={secondaryButtonClass}
+                        >
+                          {togglingId === property.id
+                            ? "Saving…"
+                            : property.status === "active"
+                              ? "Deactivate"
+                              : "Activate"}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => void deleteProperty(property)}
+                          disabled={
+                            deletingId === property.id || togglingId === property.id
+                          }
+                          className={destructiveButtonClass}
+                        >
+                          {deletingId === property.id ? "Deleting…" : "Delete"}
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -289,7 +383,7 @@ export default function AdminPropertiesPage() {
             </table>
           </div>
         </div>
-      )}
+      ) : null}
     </div>
   );
 }

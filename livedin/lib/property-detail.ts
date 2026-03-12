@@ -1,6 +1,8 @@
 import { getSupabaseServerClient } from "./supabase-server";
+import { getPropertyPhotoDisplayUrl } from "./property-photos";
 import type {
   DistilledInsightPublic,
+  PropertyPhotoPublic,
   PropertyAggregatePublic,
   PropertyDetailPublic,
 } from "./types";
@@ -31,6 +33,15 @@ type AggregateRow = {
 type InsightRow = {
   insights_text: string;
   last_generated_at: string;
+};
+
+type PhotoRow = {
+  id: string;
+  r2_bucket: string;
+  r2_key: string;
+  content_type: string | null;
+  width: number | null;
+  height: number | null;
 };
 
 export async function getPropertyDetail(id: string): Promise<PropertyDetailPublic | null> {
@@ -132,6 +143,26 @@ export async function getPropertyDetail(id: string): Promise<PropertyDetailPubli
       }
     : null;
 
+  const { data: photoRows, error: photosError } = await supabase
+    .from("property_photos")
+    .select("id, r2_bucket, r2_key, content_type, width, height")
+    .eq("property_id", id)
+    .order("created_at", { ascending: true });
+
+  if (photosError) {
+    throw new Error("Failed to load property photos");
+  }
+
+  const photos: PropertyPhotoPublic[] = ((photoRows ?? []) as PhotoRow[]).map(
+    (photo) => ({
+      id: photo.id,
+      content_type: photo.content_type,
+      width: photo.width,
+      height: photo.height,
+      display_url: getPropertyPhotoDisplayUrl(photo),
+    }),
+  );
+
   return {
     property: {
       id: property.id,
@@ -145,5 +176,6 @@ export async function getPropertyDetail(id: string): Promise<PropertyDetailPubli
     },
     aggregates: aggregatesPublic,
     insights: insightPublic,
+    photos,
   };
 }

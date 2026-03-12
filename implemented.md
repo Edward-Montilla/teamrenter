@@ -1,17 +1,26 @@
-## Implementation Status from `docs/`
+## Repository Implementation Status
 
-This summary is based only on the files currently present under `docs/`:
-
-- `docs/db/slice04-manual-tests.md`
-- `docs/security/rls.md`
-
-Because these documents are mostly acceptance-test and security notes, the "pending" section below reflects items that still appear to need verification, smoke testing, or explicit completion confirmation in the docs.
+This summary reflects the current implemented state of the repository, including
+application code, API routes, database migrations, and admin UI flows.
 
 ### Implemented features
 
-#### Core review and property data model
+#### Core product and public experience
 
-- Core public tables are documented as part of the applied schema:
+- Public property browse and search are implemented on `/`.
+- Public property detail is implemented on `/properties/[id]`.
+- Property detail shows:
+  - trust score
+  - structured rating breakdown
+  - approved distilled insights only
+  - optional public property photos when photo metadata exists
+- Review submission is implemented on `/submit-review/[propertyId]`.
+- Auth flows are implemented on `/sign-in`, including sign-in, sign-up, sign-out,
+  and redirect handling.
+
+#### Core data model and Supabase integration
+
+- The main schema is implemented for:
   - `profiles`
   - `properties`
   - `reviews`
@@ -19,72 +28,158 @@ Because these documents are mostly acceptance-test and security notes, the "pend
   - `distilled_insights`
   - `admin_audit_log`
   - `property_photos`
-- Review metric validation is defined with database-level `CHECK` constraints for values in the `0..5` range.
-- Duplicate reviews are prevented with a uniqueness rule of one review per `(user_id, property_id)`.
-- A rolling submission limit is documented: max 3 reviews per user within 6 months.
+  - `admin_role_requests`
+- Review validation is enforced with database constraints.
+- Duplicate reviews per `(user_id, property_id)` are prevented.
+- Approved review moderation drives aggregate recomputation.
+- Public pages are wired to Supabase-backed property, aggregate, insight, and
+  photo reads.
 
-#### Aggregate scoring and derived property metrics
+#### Security, roles, and verification
 
-- `property_aggregates` is documented as being automatically maintained.
-- Approved review insertions update aggregate counts and averages.
-- Review status changes from pending to approved trigger recomputation of aggregates.
-- Deleting approved reviews also recomputes aggregate values.
-- Display-oriented normalized scores (`display_*_0_6`) and `last_updated` are part of the implemented aggregate behavior.
-
-#### Row Level Security and role-based access control
-
-- RLS is documented as enabled for the core Postgres tables.
-- Public read access is limited to safe data slices:
+- RLS is enabled on the core public and admin tables.
+- Public reads are limited to safe data:
   - active `properties`
-  - `property_aggregates` tied to active properties
-  - approved `distilled_insights` tied to active properties
-  - `property_photos` tied to active properties
-- `reviews` are not publicly readable.
-- Verified users can read only their own reviews and can insert their own reviews.
-- Admins can read all reviews for moderation.
-- `admin_audit_log` is admin-only for reads and inserts and is effectively immutable to app roles.
-- `profiles` access is scoped so users can read/update only their own row, while admins can manage all rows.
+  - matching `property_aggregates`
+  - approved `distilled_insights`
+  - `property_photos` for active properties
+- Raw review text remains admin-only.
+- Review submission is gated by authenticated and email-verified user state.
+- `profiles.role` is the source of truth for admin access.
+- Profile sync from `auth.users` is implemented to keep `email_verified` and
+  baseline role state in sync.
+- Trigger protections prevent non-admin users from changing their own `role` or
+  `email_verified` fields.
 
-#### Verification and admin helpers
+#### Admin access request workflow
 
-- Email verification is documented as the effective gate for review access via `public.profiles.email_verified`.
-- Helper functions `public.is_verified()` and `public.is_admin()` are documented as the database-level access checks.
-- A trigger is documented to prevent non-admin users from changing `role` or `email_verified` on their own profile.
+- Non-admin users can request admin access on `/signup/request-admin`.
+- Eligible users can submit and track admin-access requests.
+- Admins can review access requests in `/admin/access-requests`.
+- Request approval promotes the target user to `profiles.role = 'admin'`.
+- First-admin bootstrap is implemented with allowlist protections and audit
+  logging.
 
-#### Admin capabilities
+#### Admin console and operations
 
-- Admins are documented as having full or moderation-level access across the main platform data:
-  - full CRUD on `properties`
-  - select/update/delete on `reviews`
-  - full management of `distilled_insights`
-  - maintenance access to `property_aggregates`
-  - full CRUD on `property_photos`
-  - select/insert on `admin_audit_log`
-  - select/update on `profiles`
+- The admin area is implemented under `/admin` with guarded access via
+  `/api/admin/me`.
+- Admin navigation now includes:
+  - `Dashboard`
+  - `Properties`
+  - `Users`
+  - `Reviews`
+  - `Insights`
+  - `Access requests`
+  - `Audit`
+- `/admin` now acts as a real command center with dashboard summary cards for:
+  - pending reviews
+  - pending insights
+  - pending access requests
+  - inactive properties
 
-### Still pending or not yet confirmed
+#### Admin user and role management
 
-#### Acceptance verification still unchecked
+- A dedicated user-management screen is implemented at `/admin/users`.
+- Admins can:
+  - list users
+  - filter by role, verification state, and request status
+  - search by email or user ID
+  - change user role graphically
+  - repair `email_verified` state graphically
+- Guardrails are implemented for user management:
+  - self-demotion from admin is blocked
+  - removing the last remaining admin is blocked
+  - unverified users cannot be assigned the admin role
+- Supporting admin-user APIs are implemented at:
+  - `/api/admin/users`
+  - `/api/admin/users/[id]`
+- Supporting database RPC is implemented for admin user listing.
 
-The checklist in `docs/db/slice04-manual-tests.md` is still unchecked, so these items appear implemented in design but not explicitly confirmed as passed in the docs:
+#### Admin property management
 
-- Schema application without errors
-- Rejection of out-of-range review metrics
-- Rejection of duplicate user/property reviews
-- Enforcement of the 3-reviews-per-6-months rate limit
-- Automatic aggregate updates on insert/update/delete of approved reviews
+- Property CRUD is implemented in the admin area.
+- `/admin/properties` now supports:
+  - search
+  - sort
+  - status filtering
+  - direct view, edit, activate/deactivate, and delete actions
+- Property create and edit flows are implemented.
+- Property photo management UI is implemented at
+  `/admin/properties/[id]/photos`.
+- Photo metadata APIs are implemented at:
+  - `/api/admin/properties/[id]/photos`
+  - `/api/admin/properties/[id]/photos/[photoId]`
+- Public property pages can render registered photos when a photo base URL is
+  configured.
 
-#### RLS smoke-test execution not confirmed
+#### Admin moderation workflows
 
-`docs/security/rls.md` documents a smoke-test script and expected behavior, but the docs do not confirm that the script has been run successfully in the current environment. The following therefore remain pending verification:
+- `/admin/reviews` supports:
+  - status filtering
+  - search
+  - sort
+  - single-item moderation
+  - batch moderation
+  - selected-review history via audit log
+- `/admin/insights` supports:
+  - status filtering
+  - search
+  - sort
+  - single-item moderation
+  - batch moderation
+  - recompute action
+  - selected-insight history via audit log
+- Review moderation supports:
+  - approve
+  - reject
+  - remove
+  - reset to pending
+- Insight moderation supports:
+  - approve
+  - reject
+  - hide
+  - reset to pending
+  - recompute
 
-- Anonymous access restrictions
-- Non-verified user review insert denial
-- Verified user self-review read/write behavior
-- Admin CRUD and moderation flows
-- Admin audit log write behavior
+#### Audit and admin visibility
 
-#### Documentation-level gaps
+- Admin audit logging is implemented for:
+  - property create/update/delete
+  - property photo create/delete
+  - review moderation
+  - insight moderation and recompute
+  - admin-role request decisions
+  - user/profile admin updates
+- A dedicated audit page is implemented at `/admin/audit`.
+- Audit filtering now supports:
+  - target type
+  - target ID
+  - action type
+  - admin user ID
+- Shared audit widgets remain available through `AdminAuditFeed`.
 
-- The `docs/` directory does not include explicit pass/fail evidence, completion dates, or test results for the documented features.
-- No additional pending product features are listed in `docs/`; the main outstanding items are validation and confirmation rather than clearly undocumented feature work.
+### Still pending or partial
+
+#### Photo upload is metadata-first
+
+- Admin photo management currently registers and manages photo metadata plus
+  public display URLs.
+- Direct binary upload to Cloudflare R2 from the admin UI is not yet implemented.
+
+#### Moderation notes are still limited
+
+- Review and insight queues have better throughput tooling, but dedicated
+  internal moderation notes/history storage beyond the audit log is not yet
+  implemented.
+
+#### Remaining checklist items outside the admin-console expansion
+
+- Slice 11 is not fully complete because direct photo upload/storage flow is
+  still pending.
+- Slice 20 semantic renter feedback pipeline and UI are still pending.
+
+### Verification completed
+
+- `npm run lint` passes in `livedin/`.
+- `npm run build` passes in `livedin/`.

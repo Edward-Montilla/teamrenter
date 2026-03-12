@@ -64,6 +64,14 @@ export type DistilledInsightPublic = {
   last_generated_at: string; // ISO timestamp
 };
 
+export type PropertyPhotoPublic = {
+  id: string;
+  content_type: string | null;
+  width: number | null;
+  height: number | null;
+  display_url: string | null;
+};
+
 /** Property detail for public page (Slice 02). insights only when status === 'approved'. */
 export type PropertyDetailPublic = {
   property: {
@@ -78,6 +86,7 @@ export type PropertyDetailPublic = {
   };
   aggregates: PropertyAggregatePublic;
   insights: DistilledInsightPublic | null;
+  photos: PropertyPhotoPublic[];
 };
 
 // --- Slice 03: Review submission ---
@@ -214,6 +223,22 @@ export type AdminAuditLogItem = {
   created_at: string;
 };
 
+export type AdminOverviewCounts = {
+  pending_reviews: number;
+  approved_reviews: number;
+  pending_insights: number;
+  pending_access_requests: number;
+  active_properties: number;
+  inactive_properties: number;
+  admin_users: number;
+  verified_users: number;
+  public_users: number;
+};
+
+export type AdminOverviewResponse = {
+  counts: AdminOverviewCounts;
+};
+
 // --- Slice 14: Admin access requests ---
 
 export type CurrentUserRole = "public" | "verified" | "admin";
@@ -268,6 +293,47 @@ export type AdminRoleRequestQueueItem = {
   reviewed_at: string | null;
   created_at: string;
   updated_at: string;
+};
+
+export type AdminUserListItem = {
+  user_id: string;
+  email: string | null;
+  role: CurrentUserRole;
+  email_verified: boolean;
+  created_at: string;
+  updated_at: string;
+  latest_admin_request_id: string | null;
+  latest_admin_request_status: AdminRoleRequestState;
+  latest_admin_request_created_at: string | null;
+  latest_admin_request_email: string | null;
+};
+
+export type AdminUserUpdateInput = {
+  role?: CurrentUserRole;
+  email_verified?: boolean;
+};
+
+export type AdminPropertyPhotoItem = {
+  id: string;
+  property_id: string;
+  r2_bucket: string;
+  r2_key: string;
+  content_type: string | null;
+  bytes: number | null;
+  width: number | null;
+  height: number | null;
+  uploaded_by: string | null;
+  created_at: string;
+  display_url: string | null;
+};
+
+export type AdminPropertyPhotoCreateInput = {
+  r2_bucket: string;
+  r2_key: string;
+  content_type?: string | null;
+  bytes?: number | null;
+  width?: number | null;
+  height?: number | null;
 };
 
 export type AdminRoleRequestReviewInput = {

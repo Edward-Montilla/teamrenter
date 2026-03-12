@@ -26,6 +26,9 @@ export async function GET(req: NextRequest) {
         .map((value) => value.trim())
         .filter(Boolean)
     : [];
+  const targetId = req.nextUrl.searchParams.get("target_id")?.trim() ?? null;
+  const actionType = req.nextUrl.searchParams.get("action_type")?.trim() ?? null;
+  const adminUserId = req.nextUrl.searchParams.get("admin_user_id")?.trim() ?? null;
 
   let query = admin.supabase
     .from("admin_audit_log")
@@ -39,6 +42,18 @@ export async function GET(req: NextRequest) {
     query = query.eq("target_type", targetTypes[0]);
   } else if (targetTypes.length > 1) {
     query = query.in("target_type", targetTypes);
+  }
+
+  if (targetId) {
+    query = query.eq("target_id", targetId);
+  }
+
+  if (actionType) {
+    query = query.eq("action_type", actionType);
+  }
+
+  if (adminUserId) {
+    query = query.eq("admin_user_id", adminUserId);
   }
 
   const { data, error } = await query;
