@@ -149,7 +149,7 @@ export async function PATCH(
   const { data: requestRow, error: requestError } = await admin.supabase
     .from("admin_role_requests")
     .select(
-      "id, user_id, email_snapshot, reason, team_context, status, review_notes, reviewed_by, reviewed_at, created_at, updated_at",
+      "id, user_id, email_snapshot, full_name, role_title, reason, intended_actions, team_context, referral_contact, status, review_notes, reviewed_by, reviewed_at, created_at, updated_at",
     )
     .eq("id", reviewed.request_id)
     .maybeSingle<AdminRoleRequestQueueItem>();

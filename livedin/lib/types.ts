@@ -245,9 +245,36 @@ export type CurrentUserRole = "public" | "verified" | "admin";
 export type AdminRoleRequestState = "none" | "pending" | "approved" | "rejected";
 export type AdminRoleReviewStatus = Exclude<AdminRoleRequestState, "none" | "pending">;
 
+export type AdminIntendedAction =
+  | "moderate_reviews"
+  | "manage_properties"
+  | "manage_users"
+  | "moderate_insights"
+  | "review_access_requests";
+
+export const ADMIN_INTENDED_ACTION_LABELS: Record<AdminIntendedAction, string> = {
+  moderate_reviews: "Moderate property reviews",
+  manage_properties: "Manage property listings",
+  manage_users: "Manage user accounts",
+  moderate_insights: "Review AI-generated insights",
+  review_access_requests: "Review admin access requests",
+};
+
+export const ALL_INTENDED_ACTIONS: AdminIntendedAction[] = [
+  "moderate_reviews",
+  "manage_properties",
+  "manage_users",
+  "moderate_insights",
+  "review_access_requests",
+];
+
 export type AdminRoleRequestCreateInput = {
+  full_name: string;
+  role_title: string;
   reason: string;
+  intended_actions: AdminIntendedAction[];
   team_context?: string;
+  referral_contact?: string;
 };
 
 export type AdminRoleRequestCreateResponse =
@@ -262,8 +289,12 @@ export type AdminRoleRequestCreateResponse =
 
 export type AdminRoleRequestSummary = {
   id: string;
+  full_name: string;
+  role_title: string;
   reason: string;
+  intended_actions: AdminIntendedAction[];
   team_context: string | null;
+  referral_contact: string | null;
   status: Exclude<AdminRoleRequestState, "none">;
   review_notes: string | null;
   reviewed_at: string | null;
@@ -285,8 +316,12 @@ export type AdminRoleRequestQueueItem = {
   id: string;
   user_id: string;
   email_snapshot: string;
+  full_name: string;
+  role_title: string;
   reason: string;
+  intended_actions: AdminIntendedAction[];
   team_context: string | null;
+  referral_contact: string | null;
   status: Exclude<AdminRoleRequestState, "none">;
   review_notes: string | null;
   reviewed_by: string | null;

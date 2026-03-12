@@ -8,6 +8,7 @@ import type {
   AdminRoleRequestQueueItem,
   AdminRoleReviewStatus,
 } from "@/lib/types";
+import { ADMIN_INTENDED_ACTION_LABELS } from "@/lib/types";
 import {
   destructiveButtonClass,
   primaryButtonClass,
@@ -236,10 +237,10 @@ export default function AdminAccessRequestsPage() {
                       Status
                     </th>
                     <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-zinc-500">
-                      Email
+                      Requester
                     </th>
                     <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-zinc-500">
-                      User
+                      Role
                     </th>
                     <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-zinc-500">
                       Submitted
@@ -262,11 +263,12 @@ export default function AdminAccessRequestsPage() {
                           {item.status}
                         </span>
                       </td>
-                      <td className="px-4 py-3 text-sm font-medium text-foreground">
-                        {item.email_snapshot}
+                      <td className="px-4 py-3">
+                        <p className="text-sm font-medium text-foreground">{item.full_name}</p>
+                        <p className="text-xs text-zinc-500 dark:text-zinc-400">{item.email_snapshot}</p>
                       </td>
                       <td className="px-4 py-3 text-sm text-zinc-600 dark:text-zinc-400">
-                        {summarizeUser(item.user_id)}
+                        {item.role_title}
                       </td>
                       <td className="px-4 py-3 text-sm text-zinc-600 dark:text-zinc-400">
                         {formatDateTime(item.created_at)}
@@ -304,6 +306,18 @@ export default function AdminAccessRequestsPage() {
             <div className="mt-6 space-y-6">
               <div className="space-y-3">
                 <div>
+                  <p className="text-sm text-zinc-500 dark:text-zinc-400">Full name</p>
+                  <p className="mt-1 font-medium text-foreground">
+                    {selectedRequest.full_name}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm text-zinc-500 dark:text-zinc-400">Role / position</p>
+                  <p className="mt-1 text-foreground">
+                    {selectedRequest.role_title}
+                  </p>
+                </div>
+                <div>
                   <p className="text-sm text-zinc-500 dark:text-zinc-400">Email</p>
                   <p className="mt-1 font-medium text-foreground">
                     {selectedRequest.email_snapshot}
@@ -315,10 +329,31 @@ export default function AdminAccessRequestsPage() {
                     {selectedRequest.user_id}
                   </p>
                 </div>
+                {selectedRequest.intended_actions?.length > 0 ? (
+                  <div>
+                    <p className="text-sm text-zinc-500 dark:text-zinc-400">Requested capabilities</p>
+                    <div className="mt-2 flex flex-wrap gap-1.5">
+                      {selectedRequest.intended_actions.map((action) => (
+                        <span
+                          key={action}
+                          className="inline-flex rounded-full bg-zinc-100 px-2.5 py-1 text-xs font-medium text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300"
+                        >
+                          {ADMIN_INTENDED_ACTION_LABELS[action] ?? action}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                ) : null}
                 {selectedRequest.team_context ? (
                   <div>
-                    <p className="text-sm text-zinc-500 dark:text-zinc-400">Context</p>
+                    <p className="text-sm text-zinc-500 dark:text-zinc-400">Team / org context</p>
                     <p className="mt-1 text-foreground">{selectedRequest.team_context}</p>
+                  </div>
+                ) : null}
+                {selectedRequest.referral_contact ? (
+                  <div>
+                    <p className="text-sm text-zinc-500 dark:text-zinc-400">Referral / sponsor</p>
+                    <p className="mt-1 text-foreground">{selectedRequest.referral_contact}</p>
                   </div>
                 ) : null}
                 <div>

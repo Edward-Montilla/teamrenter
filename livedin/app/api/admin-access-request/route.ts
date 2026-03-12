@@ -2,11 +2,13 @@ import { NextResponse, type NextRequest } from "next/server";
 import { buildAdminRequestStatus, isEmailEligibleForAdminRequest } from "@/lib/admin-role-requests";
 import { createUserClient } from "@/lib/admin-auth";
 import type {
+  AdminIntendedAction,
   AdminRoleRequestCreateInput,
   AdminRoleRequestCreateResponse,
   AdminRoleRequestStatusResponse,
   CurrentUserRole,
 } from "@/lib/types";
+import { ALL_INTENDED_ACTIONS } from "@/lib/types";
 
 type ProfileRow = {
   role: CurrentUserRole;
@@ -102,14 +104,37 @@ function validateCreateBody(
     return { ok: false, message: "Invalid JSON body." };
   }
 
-  const rawReason = (body as Record<string, unknown>).reason;
-  const rawTeamContext = (body as Record<string, unknown>).team_context;
+  const raw = body as Record<string, unknown>;
 
-  if (typeof rawReason !== "string") {
-    return { ok: false, message: "reason is required." };
+  // full_name — required, max 100
+  if (typeof raw.full_name !== "string") {
+    return { ok: false, message: "full_name is required." };
+  }
+  const full_name = raw.full_name.trim();
+  if (!full_name) {
+    return { ok: false, message: "full_name is required." };
+  }
+  if (full_name.length > 100) {
+    return { ok: false, message: "full_name must be 100 characters or fewer." };
   }
 
-  const reason = rawReason.trim();
+  // role_title — required, max 100
+  if (typeof raw.role_title !== "string") {
+    return { ok: false, message: "role_title is required." };
+  }
+  const role_title = raw.role_title.trim();
+  if (!role_title) {
+    return { ok: false, message: "role_title is required." };
+  }
+  if (role_title.length > 100) {
+    return { ok: false, message: "role_title must be 100 characters or fewer." };
+  }
+
+  // reason — required, max 1000
+  if (typeof raw.reason !== "string") {
+    return { ok: false, message: "reason is required." };
+  }
+  const reason = raw.reason.trim();
   if (!reason) {
     return { ok: false, message: "reason is required." };
   }
@@ -117,23 +142,54 @@ function validateCreateBody(
     return { ok: false, message: "reason must be 1000 characters or fewer." };
   }
 
+  // intended_actions — required, non-empty array of valid action strings
+  if (!Array.isArray(raw.intended_actions) || raw.intended_actions.length === 0) {
+    return { ok: false, message: "Select at least one intended admin action." };
+  }
+  const validActions = new Set<string>(ALL_INTENDED_ACTIONS);
+  const intended_actions: AdminIntendedAction[] = [];
+  for (const action of raw.intended_actions) {
+    if (typeof action !== "string" || !validActions.has(action)) {
+      return { ok: false, message: `Invalid intended action: ${String(action)}` };
+    }
+    intended_actions.push(action as AdminIntendedAction);
+  }
+
+  // team_context — optional, max 160
   let team_context: string | undefined;
-  if (rawTeamContext != null) {
-    if (typeof rawTeamContext !== "string") {
+  if (raw.team_context != null) {
+    if (typeof raw.team_context !== "string") {
       return { ok: false, message: "team_context must be a string when provided." };
     }
-    const trimmed = rawTeamContext.trim();
+    const trimmed = raw.team_context.trim();
     if (trimmed.length > 160) {
       return { ok: false, message: "team_context must be 160 characters or fewer." };
     }
     team_context = trimmed || undefined;
   }
 
+  // referral_contact — optional, max 200
+  let referral_contact: string | undefined;
+  if (raw.referral_contact != null) {
+    if (typeof raw.referral_contact !== "string") {
+      return { ok: false, message: "referral_contact must be a string when provided." };
+    }
+    const trimmed = raw.referral_contact.trim();
+    if (trimmed.length > 200) {
+      return { ok: false, message: "referral_contact must be 200 characters or fewer." };
+    }
+    referral_contact = trimmed || undefined;
+  }
+
   return {
     ok: true,
     data: {
+      full_name,
+      role_title,
       reason,
+      intended_actions,
       team_context,
+      referral_contact,
     },
   };
 }
@@ -153,7 +209,7 @@ export async function GET(req: NextRequest) {
   const { data: latestRequest, error } = await supabase
     .from("admin_role_requests")
     .select(
-      "id, reason, team_context, status, review_notes, reviewed_at, created_at, updated_at",
+      "id, full_name, role_title, reason, intended_actions, team_context, referral_contact, status, review_notes, reviewed_at, created_at, updated_at",
     )
     .eq("user_id", user.id)
     .order("created_at", { ascending: false })
@@ -309,8 +365,12 @@ export async function POST(req: NextRequest) {
     .insert({
       user_id: user.id,
       email_snapshot: user.email,
+      full_name: validation.data.full_name,
+      role_title: validation.data.role_title,
       reason: validation.data.reason,
+      intended_actions: validation.data.intended_actions,
       team_context: validation.data.team_context ?? null,
+      referral_contact: validation.data.referral_contact ?? null,
       status: "pending",
     } as never)
     .select("status, created_at")
