@@ -123,6 +123,14 @@ export function PublicSiteHeader() {
             >
               Leave a review
             </Link>
+            {profile?.role === "admin" && (
+              <Link
+                href="/admin"
+                className="transition hover:text-zinc-950 dark:hover:text-zinc-100"
+              >
+                Admin
+              </Link>
+            )}
           </nav>
         </div>
         <div className="flex flex-wrap items-center gap-3 text-sm">
@@ -141,7 +149,7 @@ export function PublicSiteHeader() {
               {profile?.role === "admin" && (
                 <Link
                   href="/admin"
-                  className={secondaryButtonClass}
+                  className={`md:hidden ${secondaryButtonClass}`}
                 >
                   Admin
                 </Link>
