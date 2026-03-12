@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { getAdminFromRequest } from "@/lib/admin-auth";
+import { getAdminFromRequest, insertAdminAuditLog } from "@/lib/admin-auth";
 import { getPropertyPhotoDisplayUrl } from "@/lib/property-photos";
 import type {
   AdminPropertyPhotoCreateInput,
@@ -203,7 +203,7 @@ export async function POST(
     );
   }
 
-  await admin.supabase.from("admin_audit_log").insert({
+  await insertAdminAuditLog(admin, {
     admin_user_id: admin.user.id,
     action_type: "property_photo_create",
     target_type: "property_photo",
@@ -213,7 +213,7 @@ export async function POST(
       r2_bucket: data.r2_bucket,
       r2_key: data.r2_key,
     },
-  } as never);
+  });
 
   return NextResponse.json(toPhotoItem(data), { status: 201 });
 }

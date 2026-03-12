@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { getAdminFromRequest } from "@/lib/admin-auth";
+import { getAdminFromRequest, insertAdminAuditLog } from "@/lib/admin-auth";
 import type { AdminPropertyListItem, AdminPropertyCreateInput } from "@/lib/types";
 
 type DbRow = {
@@ -160,13 +160,13 @@ export async function POST(req: NextRequest) {
   }
 
   // Optional audit log (Slice 08)
-  await admin.supabase.from("admin_audit_log").insert({
+  await insertAdminAuditLog(admin, {
     admin_user_id: admin.user.id,
     action_type: "create",
     target_type: "property",
     target_id: property.id,
     details: { display_name: input.display_name },
-  } as never);
+  });
 
   return NextResponse.json({ id: property.id }, { status: 201 });
 }

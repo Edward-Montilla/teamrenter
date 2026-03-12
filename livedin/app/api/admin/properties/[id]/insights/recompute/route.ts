@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { getAdminFromRequest } from "@/lib/admin-auth";
+import { getAdminFromRequest, insertAdminAuditLog } from "@/lib/admin-auth";
 import { recomputeDistilledInsightForProperty } from "@/lib/distilled-insights";
 
 export async function POST(
@@ -27,7 +27,7 @@ export async function POST(
       return NextResponse.json({ message: result.message }, { status });
     }
 
-    await admin.supabase.from("admin_audit_log").insert({
+    await insertAdminAuditLog(admin, {
       admin_user_id: admin.user.id,
       action_type: "insight_recompute",
       target_type: "insight",
@@ -37,7 +37,7 @@ export async function POST(
         source_review_count: result.source_review_count,
         status: result.insight.status,
       },
-    } as never);
+    });
 
     return NextResponse.json({
       property_id: result.insight.property_id,

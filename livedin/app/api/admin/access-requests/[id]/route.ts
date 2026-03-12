@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { getAdminFromRequest } from "@/lib/admin-auth";
+import { getAdminFromRequest, insertAdminAuditLog } from "@/lib/admin-auth";
 import type {
   AdminRoleRequestQueueItem,
   AdminRoleRequestReviewInput,
@@ -132,7 +132,7 @@ export async function PATCH(
     );
   }
 
-  await admin.supabase.from("admin_audit_log").insert({
+  await insertAdminAuditLog(admin, {
     admin_user_id: admin.user.id,
     action_type: `admin_role_request_${validation.data.status}`,
     target_type: "admin_role_request",
@@ -144,7 +144,7 @@ export async function PATCH(
       review_notes: validation.data.review_notes ?? null,
       granted_role: reviewed.status === "approved" ? "admin" : null,
     },
-  } as never);
+  });
 
   const { data: requestRow, error: requestError } = await admin.supabase
     .from("admin_role_requests")

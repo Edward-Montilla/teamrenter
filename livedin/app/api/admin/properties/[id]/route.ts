@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { getAdminFromRequest } from "@/lib/admin-auth";
+import { getAdminFromRequest, insertAdminAuditLog } from "@/lib/admin-auth";
 import type { AdminPropertyUpdateInput, AdminPropertyListItem } from "@/lib/types";
 
 type DbRow = {
@@ -213,13 +213,13 @@ export async function PATCH(
     return NextResponse.json({ message: "Property not found." }, { status: 404 });
   }
 
-  await admin.supabase.from("admin_audit_log").insert({
+  await insertAdminAuditLog(admin, {
     admin_user_id: admin.user.id,
     action_type: "update",
     target_type: "property",
     target_id: id,
     details: updatePayload,
-  } as never);
+  });
 
   return NextResponse.json({ id: property.id });
 }
@@ -265,13 +265,13 @@ export async function DELETE(
     return NextResponse.json({ message: "Property not found." }, { status: 404 });
   }
 
-  await admin.supabase.from("admin_audit_log").insert({
+  await insertAdminAuditLog(admin, {
     admin_user_id: admin.user.id,
     action_type: "delete",
     target_type: "property",
     target_id: id,
     details: { display_name: property.display_name },
-  } as never);
+  });
 
   return NextResponse.json({ id: property.id });
 }

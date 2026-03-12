@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { getAdminFromRequest } from "@/lib/admin-auth";
+import { getAdminFromRequest, insertAdminAuditLog } from "@/lib/admin-auth";
 import type {
   AdminUserUpdateInput,
   CurrentUserRole,
@@ -164,7 +164,7 @@ export async function PATCH(
     );
   }
 
-  await admin.supabase.from("admin_audit_log").insert({
+  await insertAdminAuditLog(admin, {
     admin_user_id: admin.user.id,
     action_type: "user_profile_update",
     target_type: "profile",
@@ -175,7 +175,7 @@ export async function PATCH(
       previous_email_verified: currentProfile.email_verified,
       next_email_verified: nextEmailVerified,
     },
-  } as never);
+  });
 
   const { data: updatedProfile, error: reloadError } = await admin.supabase
     .from("profiles")

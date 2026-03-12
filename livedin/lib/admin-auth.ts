@@ -27,6 +27,22 @@ export type AdminContext = {
   user: { id: string };
 };
 
+export type AdminAuditLogInsert = {
+  admin_user_id: string;
+  action_type: string;
+  target_type: string;
+  target_id: string;
+  details?: Record<string, unknown> | null;
+};
+
+export async function insertAdminAuditLog(
+  admin: Pick<AdminContext, "supabase">,
+  entry: AdminAuditLogInsert
+) {
+  const payload = entry as never;
+  await admin.supabase.from("admin_audit_log").insert(payload);
+}
+
 /**
  * Returns admin context if request has valid Bearer token and user has role 'admin'.
  * Returns null otherwise (caller should respond with 401 or 403).

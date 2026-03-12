@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { getAdminFromRequest } from "@/lib/admin-auth";
+import { getAdminFromRequest, insertAdminAuditLog } from "@/lib/admin-auth";
 import { recomputeDistilledInsightForProperty } from "@/lib/distilled-insights";
 import type {
   AdminReviewStatusUpdateInput,
@@ -92,7 +92,7 @@ export async function PATCH(
     return NextResponse.json({ message: "Review not found." }, { status: 404 });
   }
 
-  await admin.supabase.from("admin_audit_log").insert({
+  await insertAdminAuditLog(admin, {
     admin_user_id: admin.user.id,
     action_type: `review_${validation.data.status}`,
     target_type: "review",
@@ -101,7 +101,7 @@ export async function PATCH(
       property_id: review.property_id,
       status: validation.data.status,
     },
-  } as never);
+  });
 
   let recomputeWarning: string | null = null;
 
@@ -123,7 +123,7 @@ export async function PATCH(
     }
 
     if (recomputeWarning) {
-      await admin.supabase.from("admin_audit_log").insert({
+      await insertAdminAuditLog(admin, {
         admin_user_id: admin.user.id,
         action_type: "insight_recompute_failed",
         target_type: "insight",
@@ -133,7 +133,7 @@ export async function PATCH(
           review_id: review.id,
           message: recomputeWarning,
         },
-      } as never);
+      });
     }
   }
 

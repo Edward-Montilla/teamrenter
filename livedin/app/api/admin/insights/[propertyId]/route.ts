@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { getAdminFromRequest } from "@/lib/admin-auth";
+import { getAdminFromRequest, insertAdminAuditLog } from "@/lib/admin-auth";
 import type {
   AdminInsightStatusUpdateInput,
   DistilledInsightStatus,
@@ -95,7 +95,7 @@ export async function PATCH(
     return NextResponse.json({ message: "Insight not found." }, { status: 404 });
   }
 
-  await admin.supabase.from("admin_audit_log").insert({
+  await insertAdminAuditLog(admin, {
     admin_user_id: admin.user.id,
     action_type: `insight_${validation.data.status}`,
     target_type: "insight",
@@ -104,7 +104,7 @@ export async function PATCH(
       property_id: propertyId,
       status: validation.data.status,
     },
-  } as never);
+  });
 
   return NextResponse.json({
     property_id: insight.property_id,
