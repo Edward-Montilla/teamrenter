@@ -49,6 +49,7 @@ Frontend-first (mock data) -> DB (Supabase) -> Integration (wire-up)
 15. `15` Gestalt-inspired UI system
 16. `16` Mobile-first UX polish
 17. `17` Admin command center
+20. `20` NLP semantic renter feedback
 
 ## Phase Grouping
 
@@ -60,6 +61,7 @@ Frontend-first (mock data) -> DB (Supabase) -> Integration (wire-up)
 - Access request / role elevation: `14` (best after `05`, `09`, and `12`)
 - UX refinements: `15-16`
 - Admin consolidation: `17` (best after `08`, `09`, `12`, and `14`)
+- AI enrichment: `20` (best after `07`, `09`, and `10`, when approved review text and insight moderation already exist)
 
 ## Dependency Chain
 
@@ -75,3 +77,4 @@ Frontend-first (mock data) -> DB (Supabase) -> Integration (wire-up)
 - `06-12` -> `13` (polish real public, auth, review, and admin journeys once they are wired)
 - `05` + `09` + `12` -> `14` (request flow depends on auth, role enforcement, and an admin review surface)
 - `08` + `09` + `12` + `14` -> `17` (consolidated admin workspace depends on working property CRUD, moderation, auth, and admin entry points)
+- `07` + `09` + `10` -> `20` (semantic renter feedback depends on approved review text, moderation, and the earlier distilled-insights pipeline)
