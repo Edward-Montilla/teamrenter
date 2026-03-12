@@ -37,12 +37,17 @@ export function isEmailEligibleForAdminRequest(email: string | null | undefined)
   }
 
   const exactEmails = parseCsvEnv(process.env.ADMIN_REQUEST_ALLOWLIST_EMAILS);
+  const allowedDomains = parseCsvEnv(process.env.ADMIN_REQUEST_ALLOWLIST_DOMAINS);
+
+  if (exactEmails.length === 0 && allowedDomains.length === 0) {
+    return true;
+  }
+
   if (exactEmails.includes(normalizedEmail)) {
     return true;
   }
 
   const domain = normalizedEmail.split("@")[1] ?? "";
-  const allowedDomains = parseCsvEnv(process.env.ADMIN_REQUEST_ALLOWLIST_DOMAINS);
   return allowedDomains.includes(domain);
 }
 
