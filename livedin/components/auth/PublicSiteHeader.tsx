@@ -34,8 +34,7 @@ export function PublicSiteHeader() {
   const [profile, setProfile] = useState<HeaderProfile | null>(null);
   const [adminRequestStatus, setAdminRequestStatus] =
     useState<AdminRoleRequestStatusResponse | null>(null);
-  const showAdminRequestLink =
-    profile?.role !== "admin" && Boolean(email) && adminRequestStatus !== null;
+  const showAdminRequestLink = profile?.role !== "admin" && Boolean(email);
   const adminRequestLabel = adminRequestStatus?.hasActiveRequest
     ? "Admin request"
     : "Request admin access";
