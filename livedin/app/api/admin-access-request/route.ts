@@ -2,13 +2,13 @@ import { NextResponse, type NextRequest } from "next/server";
 import { buildAdminRequestStatus, isEmailEligibleForAdminRequest } from "@/lib/admin-role-requests";
 import { createUserClient } from "@/lib/admin-auth";
 import type {
-  AdminIntendedAction,
+  AdminActivityKey,
   AdminRoleRequestCreateInput,
   AdminRoleRequestCreateResponse,
   AdminRoleRequestStatusResponse,
+  AdminRequestUrgency,
   CurrentUserRole,
 } from "@/lib/types";
-import { ALL_INTENDED_ACTIONS } from "@/lib/types";
 
 type ProfileRow = {
   role: CurrentUserRole;
@@ -97,6 +97,23 @@ async function getBootstrapStatus(supabase: ReturnType<typeof createUserClient>)
   };
 }
 
+const VALID_ACTIVITIES: AdminActivityKey[] = [
+  "property_management",
+  "review_moderation",
+  "user_management",
+  "insight_moderation",
+  "audit_reporting",
+];
+const VALID_URGENCIES: AdminRequestUrgency[] = ["low", "normal", "high"];
+
+function trimOrUndefined(raw: unknown, maxLen: number): string | undefined | { error: string } {
+  if (raw == null) return undefined;
+  if (typeof raw !== "string") return { error: "must be a string" };
+  const trimmed = raw.trim();
+  if (trimmed.length > maxLen) return { error: `must be ${maxLen} characters or fewer` };
+  return trimmed || undefined;
+}
+
 function validateCreateBody(
   body: unknown,
 ): { ok: true; data: AdminRoleRequestCreateInput } | { ok: false; message: string } {
@@ -104,92 +121,74 @@ function validateCreateBody(
     return { ok: false, message: "Invalid JSON body." };
   }
 
-  const raw = body as Record<string, unknown>;
+  const b = body as Record<string, unknown>;
 
-  // full_name — required, max 100
-  if (typeof raw.full_name !== "string") {
+  const rawFullName = b.full_name;
+  if (typeof rawFullName !== "string" || !rawFullName.trim()) {
     return { ok: false, message: "full_name is required." };
   }
-  const full_name = raw.full_name.trim();
-  if (!full_name) {
-    return { ok: false, message: "full_name is required." };
-  }
+  const full_name = rawFullName.trim();
   if (full_name.length > 100) {
     return { ok: false, message: "full_name must be 100 characters or fewer." };
   }
 
-  // role_title — required, max 100
-  if (typeof raw.role_title !== "string") {
-    return { ok: false, message: "role_title is required." };
-  }
-  const role_title = raw.role_title.trim();
-  if (!role_title) {
-    return { ok: false, message: "role_title is required." };
-  }
-  if (role_title.length > 100) {
-    return { ok: false, message: "role_title must be 100 characters or fewer." };
-  }
-
-  // reason — required, max 1000
-  if (typeof raw.reason !== "string") {
+  const rawReason = b.reason;
+  if (typeof rawReason !== "string" || !rawReason.trim()) {
     return { ok: false, message: "reason is required." };
   }
-  const reason = raw.reason.trim();
-  if (!reason) {
-    return { ok: false, message: "reason is required." };
-  }
+  const reason = rawReason.trim();
   if (reason.length > 1000) {
     return { ok: false, message: "reason must be 1000 characters or fewer." };
   }
 
-  // intended_actions — required, non-empty array of valid action strings
-  if (!Array.isArray(raw.intended_actions) || raw.intended_actions.length === 0) {
-    return { ok: false, message: "Select at least one intended admin action." };
-  }
-  const validActions = new Set<string>(ALL_INTENDED_ACTIONS);
-  const intended_actions: AdminIntendedAction[] = [];
-  for (const action of raw.intended_actions) {
-    if (typeof action !== "string" || !validActions.has(action)) {
-      return { ok: false, message: `Invalid intended action: ${String(action)}` };
-    }
-    intended_actions.push(action as AdminIntendedAction);
+  const team_context = trimOrUndefined(b.team_context, 160);
+  if (typeof team_context === "object" && team_context !== undefined) {
+    return { ok: false, message: `team_context ${team_context.error}.` };
   }
 
-  // team_context — optional, max 160
-  let team_context: string | undefined;
-  if (raw.team_context != null) {
-    if (typeof raw.team_context !== "string") {
-      return { ok: false, message: "team_context must be a string when provided." };
-    }
-    const trimmed = raw.team_context.trim();
-    if (trimmed.length > 160) {
-      return { ok: false, message: "team_context must be 160 characters or fewer." };
-    }
-    team_context = trimmed || undefined;
+  const role_title = trimOrUndefined(b.role_title, 100);
+  if (typeof role_title === "object" && role_title !== undefined) {
+    return { ok: false, message: `role_title ${role_title.error}.` };
   }
 
-  // referral_contact — optional, max 200
-  let referral_contact: string | undefined;
-  if (raw.referral_contact != null) {
-    if (typeof raw.referral_contact !== "string") {
-      return { ok: false, message: "referral_contact must be a string when provided." };
-    }
-    const trimmed = raw.referral_contact.trim();
-    if (trimmed.length > 200) {
-      return { ok: false, message: "referral_contact must be 200 characters or fewer." };
-    }
-    referral_contact = trimmed || undefined;
+  const rawActivities = b.intended_activities;
+  if (!Array.isArray(rawActivities) || rawActivities.length === 0) {
+    return { ok: false, message: "At least one intended activity is required." };
+  }
+  const intended_activities = rawActivities.filter(
+    (a): a is AdminActivityKey => VALID_ACTIVITIES.includes(a as AdminActivityKey),
+  );
+  if (intended_activities.length === 0) {
+    return { ok: false, message: "At least one valid intended activity is required." };
+  }
+
+  const rawUrgency = b.urgency;
+  if (!rawUrgency || !VALID_URGENCIES.includes(rawUrgency as AdminRequestUrgency)) {
+    return { ok: false, message: "urgency must be low, normal, or high." };
+  }
+  const urgency = rawUrgency as AdminRequestUrgency;
+
+  const experience = trimOrUndefined(b.experience, 500);
+  if (typeof experience === "object" && experience !== undefined) {
+    return { ok: false, message: `experience ${experience.error}.` };
+  }
+
+  const referral_admin_email = trimOrUndefined(b.referral_admin_email, 160);
+  if (typeof referral_admin_email === "object" && referral_admin_email !== undefined) {
+    return { ok: false, message: `referral_admin_email ${referral_admin_email.error}.` };
   }
 
   return {
     ok: true,
     data: {
       full_name,
-      role_title,
       reason,
-      intended_actions,
-      team_context,
-      referral_contact,
+      team_context: team_context as string | undefined,
+      role_title: role_title as string | undefined,
+      intended_activities,
+      experience: experience as string | undefined,
+      urgency,
+      referral_admin_email: referral_admin_email as string | undefined,
     },
   };
 }
@@ -209,7 +208,7 @@ export async function GET(req: NextRequest) {
   const { data: latestRequest, error } = await supabase
     .from("admin_role_requests")
     .select(
-      "id, full_name, role_title, reason, intended_actions, team_context, referral_contact, status, review_notes, reviewed_at, created_at, updated_at",
+      "id, full_name, reason, team_context, role_title, intended_activities, experience, urgency, referral_admin_email, status, review_notes, reviewed_at, created_at, updated_at",
     )
     .eq("user_id", user.id)
     .order("created_at", { ascending: false })
@@ -366,11 +365,13 @@ export async function POST(req: NextRequest) {
       user_id: user.id,
       email_snapshot: user.email,
       full_name: validation.data.full_name,
-      role_title: validation.data.role_title,
       reason: validation.data.reason,
-      intended_actions: validation.data.intended_actions,
       team_context: validation.data.team_context ?? null,
-      referral_contact: validation.data.referral_contact ?? null,
+      role_title: validation.data.role_title ?? null,
+      intended_activities: validation.data.intended_activities,
+      experience: validation.data.experience ?? null,
+      urgency: validation.data.urgency,
+      referral_admin_email: validation.data.referral_admin_email ?? null,
       status: "pending",
     } as never)
     .select("status, created_at")

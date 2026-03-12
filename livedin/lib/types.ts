@@ -245,36 +245,38 @@ export type CurrentUserRole = "public" | "verified" | "admin";
 export type AdminRoleRequestState = "none" | "pending" | "approved" | "rejected";
 export type AdminRoleReviewStatus = Exclude<AdminRoleRequestState, "none" | "pending">;
 
-export type AdminIntendedAction =
-  | "moderate_reviews"
-  | "manage_properties"
-  | "manage_users"
-  | "moderate_insights"
-  | "review_access_requests";
+export type AdminActivityKey =
+  | "property_management"
+  | "review_moderation"
+  | "user_management"
+  | "insight_moderation"
+  | "audit_reporting";
 
-export const ADMIN_INTENDED_ACTION_LABELS: Record<AdminIntendedAction, string> = {
-  moderate_reviews: "Moderate property reviews",
-  manage_properties: "Manage property listings",
-  manage_users: "Manage user accounts",
-  moderate_insights: "Review AI-generated insights",
-  review_access_requests: "Review admin access requests",
+export const ADMIN_ACTIVITY_LABELS: Record<AdminActivityKey, string> = {
+  property_management: "Property management (add/edit listings)",
+  review_moderation: "Review moderation (approve/reject tenant reviews)",
+  user_management: "User management (roles, verification)",
+  insight_moderation: "Insight moderation (approve/reject AI insights)",
+  audit_reporting: "Audit & reporting (view logs and analytics)",
 };
 
-export const ALL_INTENDED_ACTIONS: AdminIntendedAction[] = [
-  "moderate_reviews",
-  "manage_properties",
-  "manage_users",
-  "moderate_insights",
-  "review_access_requests",
-];
+export type AdminRequestUrgency = "low" | "normal" | "high";
+
+export const URGENCY_LABELS: Record<AdminRequestUrgency, string> = {
+  low: "Low — no rush, whenever convenient",
+  normal: "Normal — within a few days",
+  high: "High — needed for an active operational task",
+};
 
 export type AdminRoleRequestCreateInput = {
   full_name: string;
-  role_title: string;
   reason: string;
-  intended_actions: AdminIntendedAction[];
   team_context?: string;
-  referral_contact?: string;
+  role_title?: string;
+  intended_activities: AdminActivityKey[];
+  experience?: string;
+  urgency: AdminRequestUrgency;
+  referral_admin_email?: string;
 };
 
 export type AdminRoleRequestCreateResponse =
@@ -289,12 +291,14 @@ export type AdminRoleRequestCreateResponse =
 
 export type AdminRoleRequestSummary = {
   id: string;
-  full_name: string;
-  role_title: string;
+  full_name: string | null;
   reason: string;
-  intended_actions: AdminIntendedAction[];
   team_context: string | null;
-  referral_contact: string | null;
+  role_title: string | null;
+  intended_activities: AdminActivityKey[] | null;
+  experience: string | null;
+  urgency: AdminRequestUrgency | null;
+  referral_admin_email: string | null;
   status: Exclude<AdminRoleRequestState, "none">;
   review_notes: string | null;
   reviewed_at: string | null;
@@ -316,12 +320,14 @@ export type AdminRoleRequestQueueItem = {
   id: string;
   user_id: string;
   email_snapshot: string;
-  full_name: string;
-  role_title: string;
+  full_name: string | null;
   reason: string;
-  intended_actions: AdminIntendedAction[];
   team_context: string | null;
-  referral_contact: string | null;
+  role_title: string | null;
+  intended_activities: AdminActivityKey[] | null;
+  experience: string | null;
+  urgency: AdminRequestUrgency | null;
+  referral_admin_email: string | null;
   status: Exclude<AdminRoleRequestState, "none">;
   review_notes: string | null;
   reviewed_by: string | null;

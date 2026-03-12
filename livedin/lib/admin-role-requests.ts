@@ -1,5 +1,6 @@
 import type {
-  AdminIntendedAction,
+  AdminActivityKey,
+  AdminRequestUrgency,
   AdminRoleRequestState,
   AdminRoleRequestStatusResponse,
   CurrentUserRole,
@@ -7,12 +8,14 @@ import type {
 
 type StoredAdminRoleRequest = {
   id: string;
-  full_name: string;
-  role_title: string;
+  full_name: string | null;
   reason: string;
-  intended_actions: AdminIntendedAction[];
   team_context: string | null;
-  referral_contact: string | null;
+  role_title: string | null;
+  intended_activities: AdminActivityKey[] | null;
+  experience: string | null;
+  urgency: AdminRequestUrgency | null;
+  referral_admin_email: string | null;
   status: Exclude<AdminRoleRequestState, "none">;
   review_notes: string | null;
   reviewed_at: string | null;

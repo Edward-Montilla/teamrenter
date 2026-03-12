@@ -8,7 +8,7 @@ import type {
   AdminRoleRequestQueueItem,
   AdminRoleReviewStatus,
 } from "@/lib/types";
-import { ADMIN_INTENDED_ACTION_LABELS } from "@/lib/types";
+import { ADMIN_ACTIVITY_LABELS, URGENCY_LABELS } from "@/lib/types";
 import {
   destructiveButtonClass,
   primaryButtonClass,
@@ -39,6 +39,17 @@ function statusBadgeClass(status: AdminRoleRequestQueueItem["status"]): string {
       return "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300";
     default:
       return "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300";
+  }
+}
+
+function urgencyBadgeClass(urgency: string): string {
+  switch (urgency) {
+    case "high":
+      return "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300";
+    case "normal":
+      return "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300";
+    default:
+      return "bg-zinc-100 text-zinc-600 dark:bg-zinc-800/50 dark:text-zinc-400";
   }
 }
 
@@ -237,10 +248,13 @@ export default function AdminAccessRequestsPage() {
                       Status
                     </th>
                     <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-zinc-500">
-                      Requester
+                      Name
                     </th>
                     <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-zinc-500">
-                      Role
+                      Email
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-zinc-500">
+                      Urgency
                     </th>
                     <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-zinc-500">
                       Submitted
@@ -263,12 +277,22 @@ export default function AdminAccessRequestsPage() {
                           {item.status}
                         </span>
                       </td>
-                      <td className="px-4 py-3">
-                        <p className="text-sm font-medium text-foreground">{item.full_name}</p>
-                        <p className="text-xs text-zinc-500 dark:text-zinc-400">{item.email_snapshot}</p>
+                      <td className="px-4 py-3 text-sm font-medium text-foreground">
+                        {item.full_name ?? summarizeUser(item.user_id)}
                       </td>
                       <td className="px-4 py-3 text-sm text-zinc-600 dark:text-zinc-400">
-                        {item.role_title}
+                        {item.email_snapshot}
+                      </td>
+                      <td className="px-4 py-3">
+                        {item.urgency ? (
+                          <span
+                            className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${urgencyBadgeClass(item.urgency)}`}
+                          >
+                            {item.urgency}
+                          </span>
+                        ) : (
+                          <span className="text-xs text-zinc-400">—</span>
+                        )}
                       </td>
                       <td className="px-4 py-3 text-sm text-zinc-600 dark:text-zinc-400">
                         {formatDateTime(item.created_at)}
@@ -304,75 +328,129 @@ export default function AdminAccessRequestsPage() {
             </p>
           ) : (
             <div className="mt-6 space-y-6">
-              <div className="space-y-3">
-                <div>
-                  <p className="text-sm text-zinc-500 dark:text-zinc-400">Full name</p>
-                  <p className="mt-1 font-medium text-foreground">
-                    {selectedRequest.full_name}
-                  </p>
+              <div className="space-y-4">
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div>
+                    <p className="text-xs uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+                      Full name
+                    </p>
+                    <p className="mt-1 font-medium text-foreground">
+                      {selectedRequest.full_name ?? "Not provided"}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+                      Email
+                    </p>
+                    <p className="mt-1 font-medium text-foreground">
+                      {selectedRequest.email_snapshot}
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-sm text-zinc-500 dark:text-zinc-400">Role / position</p>
-                  <p className="mt-1 text-foreground">
-                    {selectedRequest.role_title}
-                  </p>
+
+                <div className="grid gap-3 sm:grid-cols-2">
+                  {selectedRequest.role_title ? (
+                    <div>
+                      <p className="text-xs uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+                        Position / role
+                      </p>
+                      <p className="mt-1 text-foreground">{selectedRequest.role_title}</p>
+                    </div>
+                  ) : null}
+                  {selectedRequest.team_context ? (
+                    <div>
+                      <p className="text-xs uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+                        Team / organization
+                      </p>
+                      <p className="mt-1 text-foreground">{selectedRequest.team_context}</p>
+                    </div>
+                  ) : null}
                 </div>
+
                 <div>
-                  <p className="text-sm text-zinc-500 dark:text-zinc-400">Email</p>
-                  <p className="mt-1 font-medium text-foreground">
-                    {selectedRequest.email_snapshot}
+                  <p className="text-xs uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+                    User ID
                   </p>
-                </div>
-                <div>
-                  <p className="text-sm text-zinc-500 dark:text-zinc-400">User ID</p>
                   <p className="mt-1 font-mono text-xs text-foreground">
                     {selectedRequest.user_id}
                   </p>
                 </div>
-                {selectedRequest.intended_actions?.length > 0 ? (
-                  <div>
-                    <p className="text-sm text-zinc-500 dark:text-zinc-400">Requested capabilities</p>
-                    <div className="mt-2 flex flex-wrap gap-1.5">
-                      {selectedRequest.intended_actions.map((action) => (
-                        <span
-                          key={action}
-                          className="inline-flex rounded-full bg-zinc-100 px-2.5 py-1 text-xs font-medium text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300"
-                        >
-                          {ADMIN_INTENDED_ACTION_LABELS[action] ?? action}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                ) : null}
-                {selectedRequest.team_context ? (
-                  <div>
-                    <p className="text-sm text-zinc-500 dark:text-zinc-400">Team / org context</p>
-                    <p className="mt-1 text-foreground">{selectedRequest.team_context}</p>
-                  </div>
-                ) : null}
-                {selectedRequest.referral_contact ? (
-                  <div>
-                    <p className="text-sm text-zinc-500 dark:text-zinc-400">Referral / sponsor</p>
-                    <p className="mt-1 text-foreground">{selectedRequest.referral_contact}</p>
-                  </div>
-                ) : null}
+              </div>
+
+              {selectedRequest.intended_activities &&
+              selectedRequest.intended_activities.length > 0 ? (
+                <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4 dark:border-zinc-800 dark:bg-zinc-900">
+                  <p className="text-xs font-medium uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+                    Intended admin activities
+                  </p>
+                  <ul className="mt-2 space-y-1.5">
+                    {selectedRequest.intended_activities.map((key) => (
+                      <li
+                        key={key}
+                        className="flex items-center gap-2 text-sm text-foreground"
+                      >
+                        <span className="inline-block h-1.5 w-1.5 rounded-full bg-zinc-400 dark:bg-zinc-500" />
+                        {ADMIN_ACTIVITY_LABELS[key] ?? key}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ) : null}
+
+              <div>
+                <p className="text-xs font-medium uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+                  Reason for access
+                </p>
+                <p className="mt-2 whitespace-pre-wrap text-sm leading-7 text-foreground">
+                  {selectedRequest.reason}
+                </p>
+              </div>
+
+              {selectedRequest.experience ? (
                 <div>
-                  <p className="text-sm text-zinc-500 dark:text-zinc-400">Reason</p>
-                  <p className="mt-1 whitespace-pre-wrap text-sm leading-7 text-foreground">
-                    {selectedRequest.reason}
+                  <p className="text-xs font-medium uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+                    Relevant experience
+                  </p>
+                  <p className="mt-2 whitespace-pre-wrap text-sm leading-7 text-foreground">
+                    {selectedRequest.experience}
+                  </p>
+                </div>
+              ) : null}
+
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div className="rounded-2xl border border-zinc-200 p-4 dark:border-zinc-800">
+                  <p className="text-xs text-zinc-500 dark:text-zinc-400">Urgency</p>
+                  <p className="mt-1 text-sm font-medium text-foreground">
+                    {selectedRequest.urgency ? (
+                      <span
+                        className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${urgencyBadgeClass(selectedRequest.urgency)}`}
+                      >
+                        {URGENCY_LABELS[selectedRequest.urgency] ?? selectedRequest.urgency}
+                      </span>
+                    ) : (
+                      "Not specified"
+                    )}
+                  </p>
+                </div>
+                <div className="rounded-2xl border border-zinc-200 p-4 dark:border-zinc-800">
+                  <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                    Referral / sponsor
+                  </p>
+                  <p className="mt-1 text-sm font-medium text-foreground">
+                    {selectedRequest.referral_admin_email ?? "None provided"}
                   </p>
                 </div>
               </div>
 
               <div className="grid gap-3 sm:grid-cols-2">
                 <div className="rounded-2xl border border-zinc-200 p-4 dark:border-zinc-800">
-                  <p className="text-sm text-zinc-500 dark:text-zinc-400">Submitted</p>
+                  <p className="text-xs text-zinc-500 dark:text-zinc-400">Submitted</p>
                   <p className="mt-1 text-sm font-medium text-foreground">
                     {formatDateTime(selectedRequest.created_at)}
                   </p>
                 </div>
                 <div className="rounded-2xl border border-zinc-200 p-4 dark:border-zinc-800">
-                  <p className="text-sm text-zinc-500 dark:text-zinc-400">Reviewed</p>
+                  <p className="text-xs text-zinc-500 dark:text-zinc-400">Reviewed</p>
                   <p className="mt-1 text-sm font-medium text-foreground">
                     {formatDateTime(selectedRequest.reviewed_at)}
                   </p>

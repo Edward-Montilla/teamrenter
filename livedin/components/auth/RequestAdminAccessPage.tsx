@@ -6,22 +6,24 @@ import { AuthPromptCard } from "@/components/auth/AuthPromptCard";
 import { FeedbackPanel } from "@/components/ui/FeedbackPanel";
 import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
 import type {
-  AdminIntendedAction,
+  AdminActivityKey,
+  AdminRequestUrgency,
   AdminRoleRequestStatusResponse,
 } from "@/lib/types";
-import {
-  ADMIN_INTENDED_ACTION_LABELS,
-  ALL_INTENDED_ACTIONS,
-} from "@/lib/types";
+import { ADMIN_ACTIVITY_LABELS, URGENCY_LABELS } from "@/lib/types";
 import {
   inputClass,
   primaryButtonClass,
   secondaryButtonClass,
   sectionCardClass,
+  selectClass,
   textareaClass,
 } from "@/lib/ui";
 
 type PageState = "loading" | "ready" | "unauthenticated" | "error";
+
+const ALL_ACTIVITIES = Object.keys(ADMIN_ACTIVITY_LABELS) as AdminActivityKey[];
+const ALL_URGENCIES = Object.keys(URGENCY_LABELS) as AdminRequestUrgency[];
 
 function formatDateTime(value: string | null | undefined): string {
   if (!value) {
@@ -53,11 +55,13 @@ export function RequestAdminAccessPage() {
   const [status, setStatus] = useState<AdminRoleRequestStatusResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [fullName, setFullName] = useState("");
-  const [roleTitle, setRoleTitle] = useState("");
   const [reason, setReason] = useState("");
-  const [intendedActions, setIntendedActions] = useState<Set<AdminIntendedAction>>(new Set());
   const [teamContext, setTeamContext] = useState("");
-  const [referralContact, setReferralContact] = useState("");
+  const [roleTitle, setRoleTitle] = useState("");
+  const [intendedActivities, setIntendedActivities] = useState<AdminActivityKey[]>([]);
+  const [experience, setExperience] = useState("");
+  const [urgency, setUrgency] = useState<AdminRequestUrgency>("normal");
+  const [referralAdminEmail, setReferralAdminEmail] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
   const loadStatus = async () => {
@@ -86,11 +90,13 @@ export function RequestAdminAccessPage() {
       const data = (await res.json()) as AdminRoleRequestStatusResponse;
       setStatus(data);
       setFullName("");
-      setRoleTitle("");
       setReason("");
-      setIntendedActions(new Set());
       setTeamContext("");
-      setReferralContact("");
+      setRoleTitle("");
+      setIntendedActivities([]);
+      setExperience("");
+      setUrgency("normal");
+      setReferralAdminEmail("");
       setPageState("ready");
     } catch (err) {
       setStatus(null);
@@ -118,27 +124,6 @@ export function RequestAdminAccessPage() {
       status.requestStatus !== "approved"
     );
   }, [status]);
-
-  const formValid = useMemo(
-    () =>
-      fullName.trim().length > 0 &&
-      roleTitle.trim().length > 0 &&
-      reason.trim().length > 0 &&
-      intendedActions.size > 0,
-    [fullName, roleTitle, reason, intendedActions],
-  );
-
-  const toggleAction = (action: AdminIntendedAction) => {
-    setIntendedActions((prev) => {
-      const next = new Set(prev);
-      if (next.has(action)) {
-        next.delete(action);
-      } else {
-        next.add(action);
-      }
-      return next;
-    });
-  };
 
   const canClaimBootstrap = useMemo(() => {
     if (!status) {
@@ -176,11 +161,13 @@ export function RequestAdminAccessPage() {
         },
         body: JSON.stringify({
           full_name: fullName,
-          role_title: roleTitle,
           reason,
-          intended_actions: Array.from(intendedActions),
           team_context: teamContext || undefined,
-          referral_contact: referralContact || undefined,
+          role_title: roleTitle || undefined,
+          intended_activities: intendedActivities,
+          experience: experience || undefined,
+          urgency,
+          referral_admin_email: referralAdminEmail || undefined,
         }),
       });
 
@@ -434,7 +421,7 @@ export function RequestAdminAccessPage() {
                       value={fullName}
                       onChange={(event) => setFullName(event.target.value)}
                       className={`${inputClass} mt-1`}
-                      placeholder="Jane Smith"
+                      placeholder="Your full name"
                       maxLength={100}
                     />
                   </div>
@@ -444,54 +431,65 @@ export function RequestAdminAccessPage() {
                       htmlFor="admin-request-role-title"
                       className="block text-sm font-medium text-foreground"
                     >
-                      Role or position <span className="text-red-500">*</span>
+                      Position / role title
                     </label>
                     <input
                       id="admin-request-role-title"
-                      required
                       value={roleTitle}
                       onChange={(event) => setRoleTitle(event.target.value)}
                       className={`${inputClass} mt-1`}
-                      placeholder="Property Manager, Support Lead, Team Admin"
+                      placeholder="e.g. Community Manager, Operations Lead"
                       maxLength={100}
                     />
                   </div>
                 </div>
 
+                <div>
+                  <label
+                    htmlFor="admin-request-team-context"
+                    className="block text-sm font-medium text-foreground"
+                  >
+                    Team or organization
+                  </label>
+                  <input
+                    id="admin-request-team-context"
+                    value={teamContext}
+                    onChange={(event) => setTeamContext(event.target.value)}
+                    className={`${inputClass} mt-1`}
+                    placeholder="e.g. Support ops, moderation team, partner org"
+                    maxLength={160}
+                  />
+                </div>
+
                 <fieldset>
                   <legend className="block text-sm font-medium text-foreground">
-                    What admin capabilities do you need? <span className="text-red-500">*</span>
+                    What admin tasks will you perform? <span className="text-red-500">*</span>
                   </legend>
                   <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
-                    Select all that apply. This helps reviewers scope the request.
+                    Select all that apply. This helps reviewers understand the scope of
+                    access you need.
                   </p>
-                  <div className="mt-3 grid gap-2 sm:grid-cols-2">
-                    {ALL_INTENDED_ACTIONS.map((action) => (
+                  <div className="mt-3 space-y-2">
+                    {ALL_ACTIVITIES.map((key) => (
                       <label
-                        key={action}
-                        className={`flex cursor-pointer items-center gap-3 rounded-xl border px-4 py-3 text-sm transition ${
-                          intendedActions.has(action)
-                            ? "border-zinc-950 bg-zinc-950/5 font-medium text-foreground dark:border-zinc-100 dark:bg-zinc-100/5"
-                            : "border-zinc-200 text-zinc-600 hover:border-zinc-300 dark:border-zinc-800 dark:text-zinc-400 dark:hover:border-zinc-700"
-                        }`}
+                        key={key}
+                        className="flex items-start gap-3 rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-3 text-sm transition hover:border-zinc-300 dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-zinc-700"
                       >
                         <input
                           type="checkbox"
-                          checked={intendedActions.has(action)}
-                          onChange={() => toggleAction(action)}
-                          className="sr-only"
+                          checked={intendedActivities.includes(key)}
+                          onChange={(event) => {
+                            setIntendedActivities((prev) =>
+                              event.target.checked
+                                ? [...prev, key]
+                                : prev.filter((a) => a !== key),
+                            );
+                          }}
+                          className="mt-0.5 h-4 w-4 rounded border-zinc-300 text-zinc-950 dark:border-zinc-600"
                         />
-                        <span
-                          aria-hidden
-                          className={`flex h-4 w-4 shrink-0 items-center justify-center rounded border text-[10px] ${
-                            intendedActions.has(action)
-                              ? "border-zinc-950 bg-zinc-950 text-white dark:border-zinc-100 dark:bg-zinc-100 dark:text-zinc-950"
-                              : "border-zinc-300 dark:border-zinc-700"
-                          }`}
-                        >
-                          {intendedActions.has(action) ? "✓" : ""}
+                        <span className="text-foreground">
+                          {ADMIN_ACTIVITY_LABELS[key]}
                         </span>
-                        {ADMIN_INTENDED_ACTION_LABELS[action]}
                       </label>
                     ))}
                   </div>
@@ -510,49 +508,78 @@ export function RequestAdminAccessPage() {
                     value={reason}
                     onChange={(event) => setReason(event.target.value)}
                     className={`${textareaClass} mt-1`}
-                    placeholder="Describe the moderation, support, or data-management work you need to do and why admin-level access is required for it."
+                    placeholder="Describe the specific moderation, support, or data-management work you need to perform and why existing access is insufficient."
                     maxLength={1000}
                   />
                   <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
-                    Focus on the operational work you need to perform. Be specific about the tasks.
+                    Be specific about the operational work you need to perform.
                   </p>
                 </div>
 
                 <div>
                   <label
-                    htmlFor="admin-request-team-context"
+                    htmlFor="admin-request-experience"
                     className="block text-sm font-medium text-foreground"
                   >
-                    Team or organization context
+                    Relevant experience
                   </label>
-                  <input
-                    id="admin-request-team-context"
-                    value={teamContext}
-                    onChange={(event) => setTeamContext(event.target.value)}
-                    className={`${inputClass} mt-1`}
-                    placeholder="e.g. Support ops, moderation team, partner org"
-                    maxLength={160}
+                  <textarea
+                    id="admin-request-experience"
+                    value={experience}
+                    onChange={(event) => setExperience(event.target.value)}
+                    className={`${textareaClass} mt-1 !min-h-20`}
+                    placeholder="Any previous admin, moderation, or platform management experience relevant to this request."
+                    maxLength={500}
                   />
                 </div>
 
-                <div>
-                  <label
-                    htmlFor="admin-request-referral"
-                    className="block text-sm font-medium text-foreground"
-                  >
-                    Referral or sponsor
-                  </label>
-                  <input
-                    id="admin-request-referral"
-                    value={referralContact}
-                    onChange={(event) => setReferralContact(event.target.value)}
-                    className={`${inputClass} mt-1`}
-                    placeholder="Name or email of an existing admin who can vouch for you"
-                    maxLength={200}
-                  />
-                  <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
-                    Optional. Listing a known admin or team lead speeds up the review.
-                  </p>
+                <div className="grid gap-5 sm:grid-cols-2">
+                  <div>
+                    <label
+                      htmlFor="admin-request-urgency"
+                      className="block text-sm font-medium text-foreground"
+                    >
+                      How urgently is this needed? <span className="text-red-500">*</span>
+                    </label>
+                    <select
+                      id="admin-request-urgency"
+                      value={urgency}
+                      onChange={(event) =>
+                        setUrgency(event.target.value as AdminRequestUrgency)
+                      }
+                      className={`${selectClass} mt-1 w-full py-3`}
+                    >
+                      {ALL_URGENCIES.map((key) => (
+                        <option key={key} value={key}>
+                          {URGENCY_LABELS[key]}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label
+                      htmlFor="admin-request-referral"
+                      className="block text-sm font-medium text-foreground"
+                    >
+                      Referral / sponsor email
+                    </label>
+                    <input
+                      id="admin-request-referral"
+                      type="email"
+                      value={referralAdminEmail}
+                      onChange={(event) =>
+                        setReferralAdminEmail(event.target.value)
+                      }
+                      className={`${inputClass} mt-1`}
+                      placeholder="Email of an existing admin who can vouch for you"
+                      maxLength={160}
+                    />
+                    <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
+                      If another admin can confirm your need for access, include
+                      their email here.
+                    </p>
+                  </div>
                 </div>
 
                 {error ? <FeedbackPanel tone="error" description={error} /> : null}
@@ -560,7 +587,7 @@ export function RequestAdminAccessPage() {
                 <div className="flex flex-wrap gap-3 pt-2">
                   <button
                     type="submit"
-                    disabled={submitting || !formValid}
+                    disabled={submitting || intendedActivities.length === 0}
                     className={primaryButtonClass}
                   >
                     {submitting ? "Submitting…" : "Submit request"}
@@ -578,29 +605,18 @@ export function RequestAdminAccessPage() {
       <aside className={`${sectionCardClass} p-6`}>
         <h2 className="text-lg font-semibold text-foreground">What admins review</h2>
         <ul className="mt-4 space-y-3 text-sm leading-6 text-zinc-600 dark:text-zinc-400">
-          <li>Your full name and role within the team or organization.</li>
-          <li>Which admin capabilities you need and why.</li>
-          <li>Your reason for access and any team context you provide.</li>
-          <li>Whether an existing admin or team lead can vouch for you.</li>
+          <li>Your identity and position within the team or organization.</li>
+          <li>Which admin tasks you intend to perform and why existing access is insufficient.</li>
+          <li>Relevant experience with platform operations, moderation, or admin tools.</li>
           <li>Whether your account matches the current restricted allowlist.</li>
+          <li>Any referral from an existing admin who can vouch for your access.</li>
+          <li>How urgently the access is needed and the operational context.</li>
         </ul>
 
         {latestRequest ? (
           <div className="mt-6 rounded-2xl border border-zinc-200 bg-zinc-50 p-4 dark:border-zinc-800 dark:bg-zinc-900">
             <h3 className="text-sm font-semibold text-foreground">Latest request</h3>
             <dl className="mt-3 space-y-3 text-sm">
-              <div>
-                <dt className="text-zinc-500 dark:text-zinc-400">Name</dt>
-                <dd className="mt-1 text-foreground">
-                  {latestRequest.full_name}
-                </dd>
-              </div>
-              <div>
-                <dt className="text-zinc-500 dark:text-zinc-400">Role</dt>
-                <dd className="mt-1 text-foreground">
-                  {latestRequest.role_title}
-                </dd>
-              </div>
               <div>
                 <dt className="text-zinc-500 dark:text-zinc-400">Submitted</dt>
                 <dd className="mt-1 text-foreground">
@@ -613,31 +629,34 @@ export function RequestAdminAccessPage() {
                   {latestRequest.status}
                 </dd>
               </div>
-              {latestRequest.intended_actions?.length > 0 ? (
+              {latestRequest.full_name ? (
                 <div>
-                  <dt className="text-zinc-500 dark:text-zinc-400">Requested capabilities</dt>
-                  <dd className="mt-1 flex flex-wrap gap-1">
-                    {latestRequest.intended_actions.map((action) => (
-                      <span
-                        key={action}
-                        className="inline-flex rounded-full bg-zinc-200 px-2 py-0.5 text-xs font-medium text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300"
-                      >
-                        {ADMIN_INTENDED_ACTION_LABELS[action] ?? action}
-                      </span>
-                    ))}
-                  </dd>
+                  <dt className="text-zinc-500 dark:text-zinc-400">Name</dt>
+                  <dd className="mt-1 text-foreground">{latestRequest.full_name}</dd>
                 </div>
               ) : null}
               {latestRequest.team_context ? (
                 <div>
-                  <dt className="text-zinc-500 dark:text-zinc-400">Context</dt>
+                  <dt className="text-zinc-500 dark:text-zinc-400">Team / org</dt>
                   <dd className="mt-1 text-foreground">{latestRequest.team_context}</dd>
                 </div>
               ) : null}
-              {latestRequest.referral_contact ? (
+              {latestRequest.role_title ? (
                 <div>
-                  <dt className="text-zinc-500 dark:text-zinc-400">Referral</dt>
-                  <dd className="mt-1 text-foreground">{latestRequest.referral_contact}</dd>
+                  <dt className="text-zinc-500 dark:text-zinc-400">Position</dt>
+                  <dd className="mt-1 text-foreground">{latestRequest.role_title}</dd>
+                </div>
+              ) : null}
+              {latestRequest.intended_activities && latestRequest.intended_activities.length > 0 ? (
+                <div>
+                  <dt className="text-zinc-500 dark:text-zinc-400">Intended activities</dt>
+                  <dd className="mt-1 text-foreground">
+                    <ul className="list-disc pl-4 space-y-0.5">
+                      {latestRequest.intended_activities.map((a) => (
+                        <li key={a}>{ADMIN_ACTIVITY_LABELS[a] ?? a}</li>
+                      ))}
+                    </ul>
+                  </dd>
                 </div>
               ) : null}
               <div>
@@ -646,6 +665,14 @@ export function RequestAdminAccessPage() {
                   {latestRequest.reason}
                 </dd>
               </div>
+              {latestRequest.urgency ? (
+                <div>
+                  <dt className="text-zinc-500 dark:text-zinc-400">Urgency</dt>
+                  <dd className="mt-1 capitalize text-foreground">
+                    {URGENCY_LABELS[latestRequest.urgency] ?? latestRequest.urgency}
+                  </dd>
+                </div>
+              ) : null}
               <div>
                 <dt className="text-zinc-500 dark:text-zinc-400">Reviewed</dt>
                 <dd className="mt-1 text-foreground">

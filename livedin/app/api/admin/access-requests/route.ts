@@ -22,7 +22,7 @@ export async function GET(req: NextRequest) {
   let query = admin.supabase
     .from("admin_role_requests")
     .select(
-      "id, user_id, email_snapshot, full_name, role_title, reason, intended_actions, team_context, referral_contact, status, review_notes, reviewed_by, reviewed_at, created_at, updated_at",
+      "id, user_id, email_snapshot, full_name, reason, team_context, role_title, intended_activities, experience, urgency, referral_admin_email, status, review_notes, reviewed_by, reviewed_at, created_at, updated_at",
     )
     .order("created_at", { ascending: false })
     .limit(limit);
