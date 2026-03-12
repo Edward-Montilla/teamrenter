@@ -82,7 +82,7 @@ Checked items are already implemented or documented in the repo. Unchecked items
 ### Slice 12 — Authentication
 
 [x] Add `/sign-in` with Google OAuth and email/password auth flows
-[x] Support sign-up, sign-in, sign-out, and redirect back to the user’s target flow
+[x] Support sign-up, sign-in, sign-out, and redirect back to the user's target flow
 [x] Sync authenticated users into `public.profiles`
 [x] Use real auth state in gated review and admin flows
 
@@ -120,9 +120,26 @@ Checked items are already implemented or documented in the repo. Unchecked items
 [x] Let admins create, manage, and delete properties from the command center
 [x] Surface recent admin audit activity in the command center
 
+### Slice 18 — UI design improvements
+
+[ ] Add a PageHeader component with consistent h1, subtitle, and badge on every page
+[ ] Set matching browser title tags in "Page Name -- Livedin" format across all routes
+[ ] Build a Breadcrumbs component and wire it to all non-root routes
+[ ] Add mobile-truncated breadcrumb behavior (immediate parent + current page only)
+[ ] Build /settings/profile with read-only account info, editable display name, and embedded theme panel
+[ ] Add a settings entry point (link or avatar menu) in the signed-in header
+
+### Slice 19 — Mobile UX: hamburger menu
+
+[ ] Build HamburgerButton with 44x44 px touch target and bar-to-x morph animation
+[ ] Build MobileNavDrawer with role-aware links, focus trap, and close-on-navigate behavior
+[ ] Make PublicSiteHeader fully responsive: hamburger on mobile/tablet, links on desktop
+[ ] Apply the same hamburger-first pattern to the admin header
+[ ] Audit and fix touch targets across key flows to meet 44x44 px minimum
+
 ### Slice 20 — NLP semantic renter feedback
 
-[ ] Add `semantic_property_feedback` storage and moderation status flow
+[ ] Add semantic_property_feedback storage and moderation status flow
 [ ] Generate neutralized semantic feedback from approved renter review text
 [ ] Add admin review, approval, hide, and regenerate controls for semantic feedback
 [ ] Show approved semantic renter feedback on public property pages
@@ -131,4 +148,6 @@ Checked items are already implemented or documented in the repo. Unchecked items
 ## Remaining Work Summary
 
 [ ] Finish Slice 11 photo upload and public photo display
+[ ] Build Slice 18 UI design improvements (page headers, breadcrumbs, profile settings)
+[ ] Build Slice 19 mobile hamburger menu and navigation drawer
 [ ] Build Slice 20 semantic renter feedback pipeline and UI
