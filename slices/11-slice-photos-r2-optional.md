@@ -1,5 +1,9 @@
 # Slice 11 — Optional: Property Photos via Cloudflare R2 + Metadata
 
+> **Status: Partial.** DB schema for `property_photos` is complete (Slice 04). Upload to R2 and public photo display remain outstanding.
+>
+> **V2 note:** This slice is independent of Slice 50 but affects Phase 4 consumer UX (property detail enhancements) and Phase 5 portal screens that display property cards. Completing photo upload/display is listed as a standing obstacle in `proj_docs/obstaclesV2.md` §2.
+
 ## Goal (demo in 1–3 minutes)
 Admin uploads a photo to R2; metadata stored in Postgres; property page displays photos via signed or proxied URLs.
 

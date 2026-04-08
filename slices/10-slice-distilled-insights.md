@@ -1,5 +1,9 @@
 # Slice 10 — Distilled Insights Pipeline + Screening/Approval Flow
 
+> **Status: Complete.** Distilled insights pipeline with screening, approval, and public display is implemented. Admin moderation controls (approve, reject, hide, recompute) are available via `/admin/insights` and the admin command center.
+>
+> **V2 note:** Slice 20 (NLP semantic renter feedback) builds on this pipeline with a more structured, category-based feedback system. Slice 50 Phase 5 exposes approved insights to landlords in the portal analytics views. The existing insights infrastructure carries forward.
+
 ## Goal (demo in 1–3 minutes)
 After new approved review text_input (or when approved reviews have text), system can generate or refresh a pending distilled insight; it is not public until screened/approved; once approved, it appears on property page.
 
@@ -30,10 +34,10 @@ As a visitor, I want a short objective summary of aggregated reviewer context wi
 - Public SELECT only approved insights. Admin can read all and update status.
 
 ## Acceptance criteria checklist
-- [ ] New or updated approved review text_input can trigger recompute; pending insight created or updated (`INS-01`, `INS-02`, `TST-09`)
-- [ ] Pending insight does not appear on public property page (`INS-03`, `INS-04`, `TST-06`)
-- [ ] Approved insight appears on property page (`AC-02`, `AC-05`)
-- [ ] No raw user text is exposed publicly; only distilled summary (`NFR-PRIV-01`, `NFR-PRIV-02`)
+- [x] New or updated approved review text_input can trigger recompute; pending insight created or updated (`INS-01`, `INS-02`, `TST-09`)
+- [x] Pending insight does not appear on public property page (`INS-03`, `INS-04`, `TST-06`)
+- [x] Approved insight appears on property page (`AC-02`, `AC-05`)
+- [x] No raw user text is exposed publicly; only distilled summary (`NFR-PRIV-01`, `NFR-PRIV-02`)
 
 ## Test notes (manual smoke steps)
 - Add approved review with text_input; run recompute; verify pending insight in admin. Approve insight; verify public property page shows it. Reject or hide; verify it no longer shows on public page.

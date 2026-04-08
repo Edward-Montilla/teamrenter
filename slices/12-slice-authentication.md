@@ -1,5 +1,9 @@
 # Slice 12 — Authentication (Sign-in / Sign-up + Google OAuth)
 
+> **Status: Complete.** Email/password and Google OAuth sign-in are implemented. Profile sync on first sign-in is working. Session-based gating replaces mock auth throughout the app.
+>
+> **V2 note:** Slice 50 Phase 3 adds a `landlord` role alongside the existing `public`, `verified`, and `admin` roles. Phase 5 creates a `getLandlordFromRequest` auth helper modeled after `getAdminFromRequest`. The existing auth infrastructure (session management, profile sync, role gating) carries forward unchanged.
+
 ## Goal (demo in 1–3 minutes)
 Users can sign in with Google (and optionally with email/password); a session is established and the app creates or updates their `profiles` row; gated flows (Slice 03, 07) use real session instead of mocks.
 
@@ -42,11 +46,11 @@ As a renter, I want to sign in with my Google account so I can submit reviews wi
 - `is_verified()` gates review INSERT; setting `profiles.email_verified = true` for OAuth users (when `email_confirmed_at` is set) keeps behavior consistent with Slice 07.
 
 ## Acceptance criteria checklist
-- [ ] User can sign in with Google and is redirected back to the app with an active session
-- [ ] After first Google sign-in, a `profiles` row exists with `email_verified = true` (so they can submit reviews per Slice 07)
-- [ ] Sign-out clears session and UI reflects unauthenticated state
-- [ ] Review submission flow (Slice 03/07) uses real session; unauthenticated users see sign-in prompt and cannot submit; verified users can submit
-- [ ] Public browse and property detail (Slice 06) still work for anonymous users with anon key
+- [x] User can sign in with Google and is redirected back to the app with an active session
+- [x] After first Google sign-in, a `profiles` row exists with `email_verified = true` (so they can submit reviews per Slice 07)
+- [x] Sign-out clears session and UI reflects unauthenticated state
+- [x] Review submission flow (Slice 03/07) uses real session; unauthenticated users see sign-in prompt and cannot submit; verified users can submit
+- [x] Public browse and property detail (Slice 06) still work for anonymous users with anon key
 
 ## Test notes (manual smoke steps)
 1. Sign in with Google from the sign-in page; confirm redirect and that header/UI shows signed-in state.

@@ -1,5 +1,9 @@
 # Slice 03 — Review Submission Form (Gated UI)
 
+> **Status: Complete.** All tasks in this slice are implemented and integrated. Mock auth has been replaced by real Supabase auth (Slice 12). Review submission is wired to the backend (Slice 07). The five-metric model (0–5 half-star scale) is confirmed canonical per SRS §2.6.
+>
+> **V2 note:** Slice 50 Phase 4 enhances this flow with step progress indicators and `motion` transitions. Existing validation, gating, and rate-limit logic carry forward unchanged.
+
 ## Goal (demo in 1–3 minutes)
 User can complete the structured review flow (address select + form + confirmation) and see gated states (not logged in, not verified, limit reached, already reviewed) using mocks.
 
@@ -69,12 +73,12 @@ type ReviewSubmitResult =
 - UI gating is UX only; RLS and constraints are authoritative.
 
 ## Acceptance criteria checklist
-- [ ] Form cannot submit with missing required metrics (`UI-REV-01`, `REV-02`, `REV-03`)
-- [ ] Text input capped and validated at 500 chars (`UI-REV-02`, `REV-05`)
-- [ ] Tenancy dates validated (start <= end) (`REV-05`)
-- [ ] All gated states render correctly via mocks (`UI-REV-03`, `UI-REV-04`, `AUTH-02`, `AC-03`, `AC-04`)
-- [ ] Confirmation screen matches mock (Review Submitted, verification message) (`Frame 6`)
-- [ ] Error contract aligns with 401/403/409/429 for integration (`POST /api/properties/:id/reviews`)
+- [x] Form cannot submit with missing required metrics (`UI-REV-01`, `REV-02`, `REV-03`)
+- [x] Text input capped and validated at 500 chars (`UI-REV-02`, `REV-05`)
+- [x] Tenancy dates validated (start <= end) (`REV-05`)
+- [x] All gated states render correctly via mocks (`UI-REV-03`, `UI-REV-04`, `AUTH-02`, `AC-03`, `AC-04`)
+- [x] Confirmation screen matches mock (Review Submitted, verification message) (`Frame 6`)
+- [x] Error contract aligns with 401/403/409/429 for integration (`POST /api/properties/:id/reviews`)
 
 ## Test notes (manual smoke steps)
 1. Toggle mock state to unauthenticated; verify sign-in prompt.

@@ -1,5 +1,9 @@
 # Slice 20 — NLP Semantic Renter Feedback
 
+> **Status: Pending.** This slice is independent of Slice 50 and can be implemented at any time after Slices 07, 09, and 10 (all complete).
+>
+> **V2 note:** This slice extends the distilled-insights pipeline (Slice 10) with structured, category-based AI feedback. It is separate from the Business Portal analytics (Slice 50 Phase 5), which surfaces aggregate data and approved insights to landlords. The `semantic_property_feedback` table proposed here is not part of the Slice 50 Phase 3 migration set — it would be added as an independent migration. The five-metric model is canonical (SRS §2.6); the feedback categories in this slice (maintenance, noise, cleanliness, safety, management communication, value) are output categories from the NLP model, not rating inputs.
+
 ## Goal (demo in 1–3 minutes)
 
 After a property has enough approved renter reviews with text, the system can call an NLP/AI service to convert those reviews into neutral, structured, evidence-oriented feedback that highlights recurring lived-experience signals without exposing raw reviewer wording publicly.

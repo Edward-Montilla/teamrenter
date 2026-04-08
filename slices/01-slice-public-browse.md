@@ -1,5 +1,9 @@
 # Slice 01 — Public Browse/Search Results
 
+> **Status: Complete.** All tasks in this slice are implemented and integrated. Mock data has been replaced by live Supabase reads (Slice 06). The `trustscore_display_0_6` type in the original data contract below was superseded by `trustscore_display_0_5` (migration `20260311123000_scale_public_scores_to_5.sql`); production uses the 0–5 half-star scale.
+>
+> **V2 note:** Slice 50 Phase 4 enhances this page with filter sidebar, sort options, and neighbourhood filtering. The existing `SearchBar` and `PropertyCard` components carry forward.
+
 ## Goal (demo in 1–3 minutes)
 Demo `/` with mocked data: search text, results list cards, empty/loading/error states, and navigation to property detail.
 
@@ -66,11 +70,11 @@ type UiListState = "loading" | "ready" | "empty" | "error";
 - Public response may include only safe fields from properties + aggregates.
 
 ## Acceptance criteria checklist
-- [ ] `/` renders mocked property cards and search input (`UI-PUB-01`, `FD-01`)
-- [ ] Query filters mocked results by address/company text (`FD-01`)
-- [ ] Card click navigates to `/properties/[id]` (`AC-01`)
-- [ ] Loading/empty/error states are implemented and demo-able (`UI-PUB-03`)
-- [ ] Public list contract excludes private review fields by design (`NFR-SEC-02`, `TST-04`)
+- [x] `/` renders mocked property cards and search input (`UI-PUB-01`, `FD-01`)
+- [x] Query filters mocked results by address/company text (`FD-01`)
+- [x] Card click navigates to `/properties/[id]` (`AC-01`)
+- [x] Loading/empty/error states are implemented and demo-able (`UI-PUB-03`)
+- [x] Public list contract excludes private review fields by design (`NFR-SEC-02`, `TST-04`)
 
 ## Test notes (manual smoke steps)
 1. Open `/` and confirm initial result cards render.

@@ -108,6 +108,14 @@ Frontend-first (mock data) -> DB (Supabase) -> Integration (wire-up)
 - `50` internal: Phase 1 (done) → Phase 2 → Phase 3 → Phase 4 + Phase 5 (parallel) → Phase 6 → Phase 7
 - `18` and `19` are folded into Slice 50 Phases 2, 4, and 6 respectively
 
+## Related Documents
+
+- `slices/business/` — Business reporting PRD, SRS, and technical spec (predates PRD v2; see reconciliation notes in each file for mapping to Slice 50 Phase 5)
+- `slices/beta/01A-slice-alpha-readiness.md` — Alpha readiness direction covering CI, testing, and deployment (applies to baseline and V2 features)
+- `slices/50-slice-new-fe-integration-plan.md` — Full Slice 50 integration plan with 7 phases
+- `proj_docs/obstaclesV2.md` — Standing obstacles analysis for V2 implementation
+- `proj_docs/mermaidV2.md` — Dependency graph visualization
+
 ## Bootstrappable Assets (Do NOT Reimplement)
 
 The following implemented features and infrastructure carry forward into PRD v2 without modification:

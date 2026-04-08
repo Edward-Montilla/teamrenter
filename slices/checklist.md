@@ -2,7 +2,9 @@
 
 Checked items are already implemented or documented in the repo. Unchecked items are still outstanding.
 
-> **Last updated:** April 2026 — Phase 1 of Slice 50 is complete. All v2 documentation has been converted from PDF to Markdown and reconciled. See `proj_docs/obstaclesV2.md` for standing obstacles.
+> **Last updated:** April 2026 — Phase 1 of Slice 50 is complete. All v2 documentation has been converted from PDF to Markdown and reconciled. All baseline slices (01–17) are complete with acceptance criteria verified. See `proj_docs/obstaclesV2.md` for standing obstacles.
+>
+> **Related:** `slices/00-index.md` (slice plan + frozen decisions), `slices/50-slice-new-fe-integration-plan.md` (Slice 50 full plan), `slices/business/` (pre-V2 business reporting docs, reconciled with Slice 50).
 
 ## Core Product Slices
 

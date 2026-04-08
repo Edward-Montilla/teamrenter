@@ -119,6 +119,9 @@ The drawer must include all routes a user may need to access on mobile:
 - Profile Settings (`/settings/profile`)
 - Sign Out
 
+**Signed-in (landlord role, shown below a separator):**
+- Business Portal (`/portal`)
+
 **Signed-in (admin role only, shown below a separator):**
 - Admin Command Center (`/admin`)
 - Manage Properties (`/admin/properties`)

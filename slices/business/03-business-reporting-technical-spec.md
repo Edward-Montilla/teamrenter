@@ -1,5 +1,15 @@
 # Business Reporting Technical Specification
 
+> **V2 Reconciliation Note:** This technical specification predates the PRD v2 expansion. The canonical technical plan for business-facing features is `slices/50-slice-new-fe-integration-plan.md` Phase 5, with schema details in `proj_docs/Schema & ERD.md` Part 2 and API contracts in `proj_docs/Tech Specs.md` §8.2.
+>
+> **Key schema differences:**
+> - This spec proposes `organizations`, `organization_members`, `organization_properties` tables. Slice 50 uses `company_profiles`, `portfolio_properties`, `team_members` instead (different naming, same scoping concept).
+> - This spec proposes `/api/business/reports/*` routes. Slice 50 uses `/api/portal/*` routes.
+> - The derived reporting views proposed here (§5) are conceptually aligned with the `v_portfolio_overview`, `v_neighbourhood_browse`, and `v_review_with_response` views in Slice 50.
+> - The calculation rules (§9), low-sample thresholds, and watchlist logic remain relevant and should inform the `/portal/performance` and `/portal/benchmarks` implementations.
+>
+> **Resolution:** Use Slice 50 Phase 5 as the implementation plan. This spec's calculation rules, watchlist thresholds, and reporting view designs are reference material.
+
 ## 1. Overview
 This specification describes a practical implementation path for business reporting built on the current TeamRenter data model. The goal is to turn approved review data into organization-scoped portfolio reporting without breaking the platform's privacy model.
 

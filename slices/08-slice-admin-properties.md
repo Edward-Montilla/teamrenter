@@ -1,5 +1,9 @@
 # Slice 08 — Admin UI: Property CRUD
 
+> **Status: Complete.** Admin property CRUD is fully implemented with audit logging. The admin command center (Slice 17) consolidates property management alongside review moderation.
+>
+> **V2 note:** Slice 50 Phase 3 adds a `neighbourhood_id` FK to the `properties` table. Phase 5 adds `portfolio_properties` linking landlords to properties. The existing admin property CRUD carries forward; neighbourhood assignment may be added to the edit form in Phase 4.
+
 ## Goal (demo in 1–3 minutes)
 Admin can list, create, edit, and deactivate properties; public browse shows only active properties.
 
@@ -32,10 +36,10 @@ As an admin, I need to manage the canonical list of valid rental properties.
 - Only admin can INSERT/UPDATE/DELETE properties (`ADM-01`, `DATA-IC-04`).
 
 ## Acceptance criteria checklist
-- [ ] Non-admin cannot access admin property routes (`UI-ADM-01`, `TST-07`)
-- [ ] Admin can create property and see it in list; after activation it appears on public browse (`AC-06`)
-- [ ] Admin can edit property (name, address, company, status).
-- [ ] Deactivating property removes it from public browse (`FD-02`)
+- [x] Non-admin cannot access admin property routes (`UI-ADM-01`, `TST-07`)
+- [x] Admin can create property and see it in list; after activation it appears on public browse (`AC-06`)
+- [x] Admin can edit property (name, address, company, status).
+- [x] Deactivating property removes it from public browse (`FD-02`)
 
 ## Test notes (manual smoke steps)
 - As non-admin, open `/admin/properties` → forbidden or redirect. As admin, create property, set active → verify on `/`. Deactivate → verify it no longer appears on `/`.

@@ -1,5 +1,9 @@
 # Slice 01A — Alpha Readiness Direction
 
+> **V2 note:** This alpha readiness plan covers the baseline product (Slices 01–17). With the PRD v2 expansion (Slice 50), the alpha-critical path expands to eventually include the Business Portal (`/portal`) and consumer UX features (`/neighbourhoods`, `/comparison`, `/dashboard`). However, the core alpha journey defined here (public browse → sign-in → review submission → admin moderation) remains the foundation and should be fully stable before V2 features are layered on.
+>
+> The workstreams defined below (lock core journey, replace ambiguity, raise confidence, stabilize setup, operational readiness, documentation) apply equally to V2 features as they are built in Slice 50 Phases 2–7.
+
 ## Goal (demo in 1–3 minutes)
 Show an internally usable alpha build where a new user can browse properties, open a property detail page, sign in, submit a verified review, and an admin can moderate the review with confidence using stable seeded environments and repeatable smoke tests.
 

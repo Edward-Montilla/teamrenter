@@ -1,7 +1,11 @@
 # Slice 07 — Integration: Review Submission + Aggregates Refresh
 
+> **Status: Complete.** Review submission is wired to Supabase with constraint and RLS enforcement. Aggregate recompute runs on status transitions. The original `0–6` rating display was superseded by the `0–5` half-star scale.
+>
+> **V2 note:** This slice's review submission pipeline is a prerequisite for Slice 20 (NLP semantic feedback) and Slice 50 Phase 5 (landlord review response drafts). The five-metric model is confirmed canonical per SRS §2.6.
+
 ## Goal (demo in 1–3 minutes)
-A verified user submits a review; it is stored with status pending; after admin approval, aggregates update and property detail reflects new 0–6 ratings and review count.
+A verified user submits a review; it is stored with status pending; after admin approval, aggregates update and property detail reflects new 0–5 ratings and review count.
 
 ## User story
 As a verified renter, I want my review to be saved and, once approved, contribute to the property's trust signals.
@@ -33,11 +37,11 @@ As a verified renter, I want my review to be saved and, once approved, contribut
 - Insert must satisfy RLS (verified) and DB constraints (unique user+property, rate limit); app handles errors and surfaces correct status codes.
 
 ## Acceptance criteria checklist
-- [ ] Verified user can submit review successfully; stored as pending (`REV-01`, `REV-02`, `REV-03`, `AC-03`)
-- [ ] Duplicate review (same user+property) returns 409 (`REV-04`, `AC-04`)
-- [ ] Fourth review within 6 months returns 429 (`REV-04`, `AC-04`)
-- [ ] Unverified or unauthenticated receive 403/401 (`AUTH-02`)
-- [ ] After admin approval, property aggregates and detail page show updated 0–6 and review_count (`AGG-06`, `TST-08`)
+- [x] Verified user can submit review successfully; stored as pending (`REV-01`, `REV-02`, `REV-03`, `AC-03`)
+- [x] Duplicate review (same user+property) returns 409 (`REV-04`, `AC-04`)
+- [x] Fourth review within 6 months returns 429 (`REV-04`, `AC-04`)
+- [x] Unverified or unauthenticated receive 403/401 (`AUTH-02`)
+- [x] After admin approval, property aggregates and detail page show updated 0–5 and review_count (`AGG-06`, `TST-08`) — updated from original 0–6 spec
 
 ## Test notes (manual smoke steps)
 - As verified user: submit one review; verify pending and confirmation. Attempt second review same property → 409. As same user submit reviews for two other properties (3 total in 6 months); then attempt 4th → 429. As admin approve a pending review; reload property page and verify updated scores.

@@ -1,5 +1,9 @@
 # Slice 09 — Admin UI: Moderation (Reviews + Insights) + Audit
 
+> **Status: Complete.** Admin moderation for reviews and insights is fully implemented with audit logging and aggregate recompute on status transitions.
+>
+> **V2 note:** Slice 50 Phase 5 adds a `/portal/moderation` surface for landlords to see flagged reviews within their own portfolio. Admin moderation remains separate and authoritative — landlords cannot approve/reject reviews, only respond to them (subject to admin approval). This slice's moderation infrastructure is a prerequisite for the landlord review response workflow.
+
 ## Goal (demo in 1–3 minutes)
 Admin can view pending reviews, see private text_input, approve/reject/remove reviews; approve/reject/hide distilled insights; actions recorded in audit log; aggregate recompute runs on approval/removal.
 
@@ -33,11 +37,11 @@ As an admin, I need to keep content safe and maintain trust signal integrity.
 - Public never sees reviews or text_input; only admin (and own user for own reviews per Slice 05) can read reviews with text_input.
 
 ## Acceptance criteria checklist
-- [ ] Admin can view pending reviews and their private text_input (`UI-ADM-02`, `UI-ADM-03`, `ADM-02`, `NFR-PRIV-03`)
-- [ ] Approving a pending review updates property_aggregates and property page shows new scores (`AGG-06`, `TST-08`)
-- [ ] Removing/rejecting a review updates aggregates (count and scores) (`AGG-06`)
-- [ ] Admin can approve/reject/hide distilled insights (`ADM-02`, `INS-03`)
-- [ ] Audit log records actions with timestamp and admin id (`ADM-03`)
+- [x] Admin can view pending reviews and their private text_input (`UI-ADM-02`, `UI-ADM-03`, `ADM-02`, `NFR-PRIV-03`)
+- [x] Approving a pending review updates property_aggregates and property page shows new scores (`AGG-06`, `TST-08`)
+- [x] Removing/rejecting a review updates aggregates (count and scores) (`AGG-06`)
+- [x] Admin can approve/reject/hide distilled insights (`ADM-02`, `INS-03`)
+- [x] Audit log records actions with timestamp and admin id (`ADM-03`)
 
 ## Test notes (manual smoke steps)
 - Submit review as verified user (pending). As admin open moderation queue, view review and text_input, approve. Reload property detail and verify updated TrustScore and review count. Reject or remove another review; verify aggregates update.
