@@ -11,6 +11,13 @@ through an admin UI.
 - Admin property CRUD backed by bearer-token auth
 - Supabase schema, seed data, and smoke-test scripts
 
+### Planned (Slice 50 — PRD v2 Expansion)
+
+- Consumer UX: neighbourhood browsing, property comparison, renter dashboard, shortlist, trust score badges
+- Business Portal: 10-screen landlord portal with portfolio analytics, benchmarks, review responses, team management
+- Schema evolution: 8 new tables, `landlord` role, portfolio-scoped RLS policies
+- See `slices/50-slice-new-fe-integration-plan.md` for the full phased plan
+
 ## Prerequisites
 
 - Node.js 20+
@@ -95,6 +102,8 @@ More detail is documented in `../supabase/README.md`.
 - Admin access is controlled by `profiles.role = 'admin'`
 - The first admin is controlled by `public.admin_bootstrap_allowlist` and must be
   claimed by an exact matching signed-in email before any review workflow exists
+- The `landlord` role provides portfolio-scoped access to the Business Portal (`/portal/*`)
+- Team members inherit the landlord's portfolio scope with role-based permissions
 
 ## Scripts
 

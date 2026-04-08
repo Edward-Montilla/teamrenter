@@ -1,5 +1,9 @@
 # Slice 18 — UI Design Improvements: Page Content Labels, Breadcrumbs, and Profile Settings
 
+> **Status: Absorbed into Slice 50.** This slice's scope is folded into Slice 50 Phase 2 (PageHeader, Breadcrumbs, component inventory) and Phase 4 (profile settings integration with consumer UX). The requirements below remain the authoritative specification for these features — Slice 50 implements them, not this slice independently.
+>
+> See: `slices/50-slice-new-fe-integration-plan.md` Phase 2 tasks 5–6, `slices/checklist.md` Phase 2 checklist.
+
 ## Goal (demo in 1–3 minutes)
 
 Every page communicates where the user is and what it contains before they scroll: breadcrumbs give a persistent location trail on nested routes, page-level headings clearly label what each screen does, and users can open a dedicated profile settings page to manage their account details and preferences.

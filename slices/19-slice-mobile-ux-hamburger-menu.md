@@ -1,5 +1,11 @@
 # Slice 19 — Mobile UX: Hamburger Menu and Mobile Navigation
 
+> **Status: Absorbed into Slice 50.** This slice's scope is folded into Slice 50 Phase 6 (shared infrastructure — HamburgerButton, MobileNavDrawer, header responsiveness, touch-target audit). The requirements below remain the authoritative specification for these features — Slice 50 implements them, not this slice independently.
+>
+> Phase 6 extends this spec to also cover the Business Portal sidebar collapse on mobile and the `/portal` header pattern.
+>
+> See: `slices/50-slice-new-fe-integration-plan.md` Phase 6 task 6, `slices/checklist.md` Phase 6 checklist.
+
 ## Goal (demo in 1–3 minutes)
 
 The app is fully navigable on small screens without horizontal scrolling, overflowing navbars, or tapping tiny targets. A hamburger menu replaces the desktop header link row on mobile and gives every signed-in or signed-out user an accessible, thumb-friendly way to reach any primary route.

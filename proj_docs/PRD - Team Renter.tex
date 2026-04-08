@@ -1,0 +1,784 @@
+\documentclass[11pt,letterpaper]{article}
+
+\usepackage[margin=1in]{geometry}
+\usepackage{titlesec}
+\usepackage{enumitem}
+\usepackage{tabularx}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{fancyhdr}
+\usepackage{graphicx}
+\usepackage{longtable}
+\usepackage{parskip}
+\usepackage{amssymb}
+
+\definecolor{brandpurple}{HTML}{8B5CF6}
+\definecolor{brandteal}{HTML}{14B8A6}
+\definecolor{textprimary}{HTML}{1F2937}
+\definecolor{linkblue}{HTML}{2563EB}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=brandpurple,
+    urlcolor=linkblue,
+    citecolor=brandpurple,
+}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\textcolor{textprimary}{\small Tech LiftOff --- Team Renter}}
+\fancyhead[R]{\textcolor{textprimary}{\small Product Requirements Document}}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+\titleformat{\section}{\Large\bfseries\color{brandpurple}}{}{0em}{}
+\titleformat{\subsection}{\large\bfseries\color{textprimary}}{}{0em}{}
+\titleformat{\subsubsection}{\normalsize\bfseries\color{textprimary}}{}{0em}{}
+
+\begin{document}
+
+% ──────────────────────────────────────────────
+% TITLE PAGE
+% ──────────────────────────────────────────────
+\begin{titlepage}
+\centering
+\vspace*{2cm}
+
+{\Huge\bfseries\textcolor{brandpurple}{LivedIn}\par}
+\vspace{0.5cm}
+{\Large\textcolor{textprimary}{Verified Rental Review Platform}\par}
+\vspace{2cm}
+
+{\LARGE\bfseries Product Requirements Document\par}
+\vspace{0.5cm}
+{\large Updated Edition --- April 2026\par}
+\vspace{3cm}
+
+\begin{tabular}{r l}
+\textbf{Team:}     & Team Renter \\
+\textbf{Course:}   & Tech LiftOff \\
+\textbf{Version:}  & 2.0 \\
+\textbf{Status:}   & Expanded scope (Business Portal + Consumer UX) \\
+\end{tabular}
+
+\vfill
+{\small Customer Discovery \textbar{} Idea Brief \textbar{} Team Agreement\par}
+\end{titlepage}
+
+% ──────────────────────────────────────────────
+% TABLE OF CONTENTS
+% ──────────────────────────────────────────────
+\tableofcontents
+\newpage
+
+% ══════════════════════════════════════════════
+\section{Product Overview}
+% ══════════════════════════════════════════════
+
+\subsection{Description}
+
+LivedIn is a \textbf{two-sided verified review platform} for rental properties that reduces risk for tenants pre-lease signing and gives landlords actionable insight into their portfolio reputation.
+
+\textbf{For renters}, the platform scores rental properties on an objective scale using five structured metrics. By enforcing structure and verification, the platform minimises fake or retaliatory reviews and gives tenants reliable, comparable signals when evaluating rental properties before signing a lease.
+
+\textbf{For landlords and property managers}, the platform provides a Business Portal with portfolio analytics, benchmark comparisons, review response capabilities, renter sentiment tracking, and team access management. Landlords can monitor and improve their reputation through data-driven insights rather than guesswork.
+
+\subsection{Two-Sided Marketplace Model}
+
+LivedIn operates as a two-sided trust marketplace:
+
+\begin{itemize}
+    \item \textbf{Renters} browse properties, read trust scores and category breakdowns, compare options, and submit verified reviews.
+    \item \textbf{Landlords/Property Managers} monitor portfolio performance, track renter sentiment, respond to reviews (subject to admin approval), identify review gaps, and manage team access.
+\end{itemize}
+
+Both sides benefit from the same underlying data: verified, structured reviews aggregated into trust scores. Renters produce the data; landlords consume and act on it.
+
+\subsection{User Problem}
+
+Existing tenant screening practices focus on financial and legal eligibility, but tenants currently have no reliable way to evaluate the \emph{lived experience} of a rental property before committing to a lease.
+
+\begin{itemize}
+    \item Renters---especially first-time renters---rely on subjective ``vibes'' during showings and word-of-mouth, with no structured comparison tool.
+    \item Landlords have no visibility into how their properties are perceived relative to competitors, and no channel to address tenant concerns proactively.
+    \item Market scarcity pressures tenants to commit quickly to properties they are unsure of.
+\end{itemize}
+
+LivedIn addresses both sides:
+\begin{itemize}
+    \item \textbf{Renters} get verified, experience-based insights to make informed decisions.
+    \item \textbf{Landlords} get a reputation management tool to monitor, benchmark, and improve.
+\end{itemize}
+
+% ══════════════════════════════════════════════
+\section{End Users}
+% ══════════════════════════════════════════════
+
+\subsection{Primary Persona: Renter (Review Searcher)}
+
+Renters who browse the platform to screen properties based on verified reviews and trust scores before signing a lease. This includes:
+\begin{itemize}
+    \item First-time renters without prior experience to rely on
+    \item Renters relocating to a new city or neighbourhood
+    \item Renters comparing multiple properties simultaneously
+\end{itemize}
+
+\subsection{Secondary Persona: Renter (Review Leaver)}
+
+Renters who submit structured reviews about their living experience at a property, contributing to the platform's data layer.
+
+\subsection{Tertiary Persona: Landlord / Property Manager}
+
+\textbf{(New in v2.0)} Landlords and property managers who use the Business Portal to:
+\begin{itemize}
+    \item Monitor portfolio trust scores and review volume across their properties
+    \item View category-level performance analytics and trend data
+    \item Benchmark their properties against city and neighbourhood averages
+    \item Track renter sentiment signals (common themes, sentiment trends)
+    \item Respond to reviews (subject to admin moderation)
+    \item Identify review gaps and generate tenant invite links
+    \item Manage team access with role-based permissions (viewer, editor, admin)
+    \item Maintain company profile and notification preferences
+\end{itemize}
+
+\subsubsection{Landlord Jobs-to-Be-Done}
+
+\begin{enumerate}
+    \item \textbf{Understand reputation}: ``How do my properties score relative to the market?''
+    \item \textbf{Identify weaknesses}: ``Which categories are dragging my trust score down?''
+    \item \textbf{Respond to feedback}: ``A renter flagged maintenance delays---I want to acknowledge and address it.''
+    \item \textbf{Fill review gaps}: ``My newest property has zero reviews---I need to encourage tenants to contribute.''
+    \item \textbf{Track trends}: ``Is my portfolio improving or declining over time?''
+    \item \textbf{Delegate}: ``My property manager needs access to review data but not team settings.''
+\end{enumerate}
+
+% ══════════════════════════════════════════════
+\section{Customer Discovery Highlights}
+% ══════════════════════════════════════════════
+
+\begin{enumerate}
+    \item \textbf{Renters want trust signals before committing}: responsiveness, professionalism, maintenance reliability, safety/security. They value predictability---clear rules, costs, fewer surprises.
+    \item \textbf{Living experience is unknown until after move-in}: decisions rely on subjective impressions during showings. Market scarcity leads tenants to commit faster to properties they are unsure of.
+    \item \textbf{Walk-throughs take significant time for landlords}: they want serious, informed interest from tenants, not tyre-kickers.
+    \item \textbf{Landlords want visibility into their reputation}: property managers expressed interest in understanding how their properties are perceived and how to improve.
+\end{enumerate}
+
+% ══════════════════════════════════════════════
+\section{Scope}
+% ══════════════════════════════════════════════
+
+This project delivers a rental trust platform that enables landlords and renters to exchange verified, non-financial trust signals alongside standard screening practices.
+
+\subsection{In Scope}
+
+\begin{itemize}
+    \item Verified review submission with structured five-metric scoring
+    \item Public property browsing, search, and trust score display
+    \item Property detail pages with category breakdowns and distilled insights
+    \item \textbf{Neighbourhood browsing and detail pages} (new)
+    \item \textbf{Property comparison tool} (new)
+    \item \textbf{Renter dashboard with shortlist and review history} (new)
+    \item \textbf{Business Portal for landlords/property managers} (new)
+    \item Admin moderation, audit, and property management
+    \item Authentication (email/password + Google OAuth)
+    \item Anti-abuse controls (rate limits, one review per property per user, moderation)
+\end{itemize}
+
+\subsection{Out of Scope}
+
+\begin{itemize}
+    \item Residency verification (identity documents, proof of address) --- still out of scope
+    \item Payment processing for landlord subscriptions (business model, not technical scope)
+    \item Real-time notification delivery system (email/push infrastructure)
+    \item Map-based property search with geolocation pins
+    \item Implementing the New FE prototypes as standalone Vite SPAs
+    \item Adopting the seven-category rating model from the prototype mock data
+\end{itemize}
+
+\subsection{Constraints}
+
+\begin{itemize}
+    \item RentFaster is the established go-to platform for rental needs in the target market
+    \item Building credibility from scratch remains a major constraint
+    \item Focus on mitigation of abuse instead of inability
+\end{itemize}
+
+\subsection{Assumptions}
+
+\begin{itemize}
+    \item Renters will engage with external platforms if it saves time and reduces risk
+    \item Landlords will want to push the platform to their tenants for reputation visibility
+    \item The market is difficult and current information asymmetry is sufficient motivation
+\end{itemize}
+
+% ══════════════════════════════════════════════
+\section{Rating Model (Canonical)}
+% ══════════════════════════════════════════════
+
+The platform uses a \textbf{five-metric structured scoring model}. Each metric is rated on a 0--5 scale in half-star increments (0, 0.5, 1, 1.5, \ldots, 5). An overall \textbf{TrustScore} is computed as a weighted aggregate of the five metrics.
+
+\begin{longtable}{p{4.5cm} p{8.5cm}}
+\toprule
+\textbf{Metric} & \textbf{Prompt / Definition} \\
+\midrule
+\endhead
+Management Responsiveness &
+``After you reported an issue, how quickly did the landlord or property manager typically respond?'' \\
+\addlinespace
+Maintenance Timeliness &
+``If there were maintenance issues, were they resolved within a reasonable timeframe?'' \\
+\addlinespace
+Listing Accuracy &
+``When you moved in, did the property match what was advertised?'' \\
+\addlinespace
+Fee Transparency &
+``Were all fees, charges, and financial obligations communicated clearly and applied consistently?'' \\
+\addlinespace
+Lease Clarity &
+``Were expectations, rules, and processes for tenancy communicated clearly and followed reliably?'' \\
+\bottomrule
+\end{longtable}
+
+\subsubsection{Decision Record: Seven-Category Alternative Rejected}
+
+The New FE prototypes proposed a seven-category model (\texttt{maintenance}, \texttt{responsiveness}, \texttt{value}, \texttt{safety}, \texttt{noise}, \texttt{moveInOut}, \texttt{cleanliness}). This model is \textbf{rejected} because:
+\begin{itemize}
+    \item It is incompatible with the existing database schema, validation logic, and aggregate pipeline
+    \item It introduces subjective categories (``noise'', ``cleanliness'') that overlap with existing metrics or fall outside the platform's structured-trust focus
+    \item Changing the metric model at this stage would require rewriting migrations, RLS policies, validation schemas, and all public aggregate display logic
+\end{itemize}
+
+The five-metric model remains canonical for all surfaces (public, portal, admin).
+
+% ══════════════════════════════════════════════
+\section{Features}
+% ══════════════════════════════════════════════
+
+\subsection{Core Features (Existing)}
+
+\begin{longtable}{p{3.5cm} p{4cm} p{2cm} p{4cm}}
+\toprule
+\textbf{Feature} & \textbf{Description} & \textbf{User} & \textbf{Key Benefit} \\
+\midrule
+\endhead
+Compiled Property Score (TrustScore) &
+Aggregated score based on structured renter inputs &
+Renter &
+Fast, comparable signal before signing a lease \\
+\addlinespace
+Category Breakdown &
+Per-dimension performance display &
+Renter &
+Prevents ``black box'' score; helps match priorities \\
+\addlinespace
+Structured Review Submission &
+Mandatory standardised categories, half-star precision &
+Renter &
+Consistent inputs for meaningful compiled scores \\
+\addlinespace
+Account Verification &
+Email verification required; optional 2FA &
+Platform &
+Reduces spam and repeat submissions \\
+\addlinespace
+Self-Reported Tenancy Period &
+Required tenancy timeframe (no proof required) &
+Renter &
+Adds temporal context to reviews \\
+\addlinespace
+Private Context Field &
+Character-capped (500) private comments for moderation &
+Platform &
+Captures nuance without becoming a complaint forum \\
+\addlinespace
+Anti-Abuse Controls &
+Rate limits, duplicate detection, admin moderation tools &
+Platform &
+Protects score integrity \\
+\addlinespace
+Distilled Insights &
+AI-generated, admin-approved neutral summaries from approved review text &
+Renter &
+Accessible summary without exposing private text \\
+\bottomrule
+\end{longtable}
+
+\subsection{Consumer UX Features (New)}
+
+\begin{longtable}{p{3.5cm} p{4cm} p{2cm} p{4cm}}
+\toprule
+\textbf{Feature ID} & \textbf{Feature} & \textbf{User} & \textbf{Description} \\
+\midrule
+\endhead
+FR-CX-01 &
+Neighbourhood Browsing &
+Renter &
+Browse and explore neighbourhood detail pages with property counts, average scores, and featured properties \\
+\addlinespace
+FR-CX-02 &
+Property Comparison &
+Renter &
+Side-by-side comparison of up to 3 properties across all five trust metrics \\
+\addlinespace
+FR-CX-03 &
+Multi-Step Review Wizard &
+Renter &
+Animated step progress with motion transitions; preserves existing validation and gating \\
+\addlinespace
+FR-CX-04 &
+Renter Dashboard &
+Renter &
+Auth-gated dashboard showing submitted reviews, statuses, and shortlisted properties \\
+\addlinespace
+FR-CX-05 &
+Trust Score Badges &
+Renter &
+Visual trust score badges with category breakdowns and confidence indicators based on review count \\
+\bottomrule
+\end{longtable}
+
+\subsection{Business Portal Features (New)}
+
+\begin{longtable}{p{3.5cm} p{4cm} p{2.5cm} p{3.5cm}}
+\toprule
+\textbf{Feature ID} & \textbf{Feature} & \textbf{User} & \textbf{Description} \\
+\midrule
+\endhead
+FR-BP-01 &
+Portfolio Dashboard &
+Landlord &
+Property cards with trust scores, funnel metrics, and trend indicators \\
+\addlinespace
+FR-BP-02 &
+Review Feed &
+Landlord &
+Filterable review feed with flagging and response actions \\
+\addlinespace
+FR-BP-03 &
+Moderation Queue &
+Landlord &
+Queue for flagged reviews within the landlord's portfolio \\
+\addlinespace
+FR-BP-04 &
+Category Performance &
+Landlord &
+Analytics charts showing per-category scores over time \\
+\addlinespace
+FR-BP-05 &
+Benchmark Comparison &
+Landlord &
+Side-by-side comparison against city/neighbourhood averages \\
+\addlinespace
+FR-BP-06 &
+Renter Signal Tracking &
+Landlord &
+Sentiment trends and common theme analysis \\
+\addlinespace
+FR-BP-07 &
+Review Gap Alerts &
+Landlord &
+Identifies properties with low review counts; generates tenant invite links \\
+\addlinespace
+FR-BP-08 &
+Team Access Management &
+Landlord &
+Role-based access (viewer, editor, admin) for team members \\
+\addlinespace
+FR-BP-09 &
+Company Profile &
+Landlord &
+Editable public-facing company profile \\
+\addlinespace
+FR-BP-10 &
+Notification Preferences &
+Landlord &
+Per-user notification settings for review alerts, reports, and team activity \\
+\bottomrule
+\end{longtable}
+
+% ══════════════════════════════════════════════
+\section{Technical Specifications}
+% ══════════════════════════════════════════════
+
+\subsection{Stack}
+
+\begin{tabularx}{\textwidth}{l X}
+\toprule
+\textbf{Layer} & \textbf{Technology} \\
+\midrule
+Framework      & Next.js 16 (App Router) --- single framework for all surfaces \\
+Runtime        & React 19, TypeScript 5 \\
+Styling        & Tailwind CSS 4, semantic design tokens, shadcn/ui primitives \\
+Database       & Supabase Postgres with Row Level Security \\
+Auth           & Supabase Auth (email/password + Google OAuth) \\
+Storage        & Cloudflare R2 for property photos \\
+Hosting        & Vercel (continuous integration and deployment) \\
+Charts         & Recharts (Business Portal analytics) \\
+\bottomrule
+\end{tabularx}
+
+\subsection{Framework Decision Record}
+
+\textbf{Decision}: Next.js App Router is the single framework for all surfaces---public, Business Portal, and admin.
+
+\textbf{Rationale}: The New FE prototypes (Facelift and Business Portal) were built as Vite + React Router SPAs with mock data. Adopting them as parallel stacks would create:
+\begin{itemize}
+    \item Framework fragmentation (Next.js vs.\ Vite)
+    \item Duplicated auth, data fetching, and type systems
+    \item Two deployment pipelines
+    \item Loss of SSR, ISR, and server components
+\end{itemize}
+
+Instead, the UX patterns and feature ideas from the prototypes are adopted into the existing Next.js architecture. The prototypes serve as design references, not production code.
+
+\subsection{Architecture}
+
+\begin{verbatim}
++--------------------+     +----------------------------------+
+| Browser / Client   |<--->| Next.js App (UI + API Routes)    |
+| - Public browsing  |     | - Server Components (pages)      |
+| - Renter dashboard |     | - Client Components (interactive)|
+| - Business Portal  |     | - API routes (/api/*)            |
+| - Admin console    |     | - Auth guards per route group    |
++---------+----------+     +-----------+----------------------+
+          |                             |
+          | (A) public reads            | (B) auth + writes
+          v                             v
++--------------------+     +-------------------------------+
+| Supabase Postgres  |<--->| Supabase Auth                 |
+| - properties       | JWT | - signup/login                |
+| - reviews          | RLS | - email verification          |
+| - aggregates       |     | - roles: public/verified/     |
+| - insights         |     |   admin/landlord              |
+| - portfolios       |     +-------------------------------+
+| - neighbourhoods   |
+| - team_members     |
+| - shortlists       |
+| - benchmarks       |
++---------+----------+
+          |
+          | (C) triggers on review/moderation
+          v
++-------------------------------+
+| AI Insight Pipeline           |
+| - generate distilled insights |
+| - screen for harm/slander    |
++-------------------------------+
+
+(D) photos                    (E) metadata
+Browser -----> Cloudflare R2 -----> Postgres
+\end{verbatim}
+
+\subsection{Route Groups}
+
+\begin{longtable}{l l l}
+\toprule
+\textbf{Group} & \textbf{Path Prefix} & \textbf{Auth Requirement} \\
+\midrule
+\endhead
+Public     & \texttt{/}           & None (browsing), verified (review submission) \\
+Dashboard  & \texttt{/dashboard}  & Authenticated renter \\
+Portal     & \texttt{/portal/*}   & \texttt{landlord} or \texttt{admin} role \\
+Admin      & \texttt{/admin/*}    & \texttt{admin} role \\
+Auth       & \texttt{/sign-in}, \texttt{/sign-up} & None \\
+\bottomrule
+\end{longtable}
+
+\subsection{Data Layer}
+
+\begin{itemize}
+    \item Supabase Postgres is the single source of truth for all data
+    \item All tables have RLS enabled from creation
+    \item No direct client-side Supabase access from the Business Portal---all data flows through Next.js API routes
+    \item Server components fetch data server-side; client components use auth-aware fetch wrappers
+    \item The \texttt{landlord} role is portfolio-scoped: landlords can only access properties linked to them via \texttt{portfolio\_properties}
+\end{itemize}
+
+% ══════════════════════════════════════════════
+\section{Database Evolution (New Tables)}
+% ══════════════════════════════════════════════
+
+The following tables extend the existing schema. All migrations are \textbf{additive only}---no destructive changes to existing tables, RLS policies, triggers, or aggregate pipelines.
+
+\begin{longtable}{p{4.5cm} p{9cm}}
+\toprule
+\textbf{Table / View} & \textbf{Purpose} \\
+\midrule
+\endhead
+\texttt{neighbourhoods} &
+Neighbourhood metadata for browsing (name, city, property count, avg trust score) \\
+\addlinespace
+\texttt{user\_shortlists} &
+Saved/shortlisted properties per user \\
+\addlinespace
+\texttt{portfolio\_properties} &
+Links landlord accounts to properties they manage \\
+\addlinespace
+\texttt{team\_members} &
+Business portal team members with role-based access (viewer, editor, admin) \\
+\addlinespace
+\texttt{notification\_preferences} &
+Per-user notification settings for the Business Portal \\
+\addlinespace
+\texttt{review\_response\_drafts} &
+Landlord responses to reviews, subject to admin approval before publication \\
+\addlinespace
+\texttt{benchmark\_averages} &
+City/neighbourhood aggregate baselines for comparison \\
+\bottomrule
+\end{longtable}
+
+\subsection{New Role: \texttt{landlord}}
+
+\begin{itemize}
+    \item Added to the \texttt{profiles.role} check constraint alongside existing roles (\texttt{public}, \texttt{verified}, \texttt{admin})
+    \item RLS policies enforce portfolio-scoped reads: landlords can read only their own portfolio properties and associated review/aggregate data
+    \item Landlords \textbf{cannot} moderate reviews (admin-only)
+    \item Landlords \textbf{can} create review response drafts (subject to admin approval)
+    \item Team member access inherits the landlord's portfolio scope
+\end{itemize}
+
+% ══════════════════════════════════════════════
+\section{API Contracts (New)}
+% ══════════════════════════════════════════════
+
+\subsection{Business Portal APIs}
+
+\begin{longtable}{l l p{6cm}}
+\toprule
+\textbf{Method} & \textbf{Endpoint} & \textbf{Description} \\
+\midrule
+\endhead
+GET  & \texttt{/api/portal/properties}               & Landlord's portfolio property list \\
+GET  & \texttt{/api/portal/properties/[id]/analytics} & Funnel metrics + category performance \\
+GET  & \texttt{/api/portal/properties/[id]/reviews}   & Reviews for a specific property (landlord view) \\
+GET  & \texttt{/api/portal/benchmarks}                & City/neighbourhood averages \\
+GET  & \texttt{/api/portal/signals}                   & Renter sentiment trends \\
+POST & \texttt{/api/portal/reviews/[id]/respond}       & Draft a response to a review \\
+\bottomrule
+\end{longtable}
+
+\subsection{Consumer APIs}
+
+\begin{longtable}{l l p{6cm}}
+\toprule
+\textbf{Method} & \textbf{Endpoint} & \textbf{Description} \\
+\midrule
+\endhead
+GET  & \texttt{/api/neighbourhoods}      & Public neighbourhood list \\
+GET  & \texttt{/api/neighbourhoods/[id]}  & Neighbourhood detail with properties \\
+POST & \texttt{/api/user/shortlist}       & Add/remove shortlisted property \\
+GET  & \texttt{/api/user/shortlist}       & Get user's shortlist \\
+\bottomrule
+\end{longtable}
+
+% ══════════════════════════════════════════════
+\section{Competitive Positioning}
+% ══════════════════════════════════════════════
+
+\begin{longtable}{p{3cm} p{3.5cm} p{3.5cm} p{3.5cm}}
+\toprule
+\textbf{Dimension} & \textbf{RentFaster} & \textbf{RateMyLandlord / Google Reviews} & \textbf{LivedIn} \\
+\midrule
+\endhead
+Focus &
+Listings and availability &
+Unstructured reviews &
+Structured trust scores \\
+\addlinespace
+Review structure &
+N/A &
+Free-text, unstructured &
+Five mandatory metrics, half-star precision \\
+\addlinespace
+Abuse mitigation &
+Minimal &
+Varies &
+Verified accounts, rate limits, admin moderation, no public free-text \\
+\addlinespace
+Landlord tools &
+Listing management &
+None &
+Portfolio analytics, benchmarks, review responses, team management \\
+\addlinespace
+Data quality &
+Listing data only &
+Low---fake/retaliatory risk &
+High---structured, moderated, aggregated \\
+\bottomrule
+\end{longtable}
+
+% ══════════════════════════════════════════════
+\section{Risks and Mitigations}
+% ══════════════════════════════════════════════
+
+\begin{longtable}{p{5cm} p{8.5cm}}
+\toprule
+\textbf{Risk} & \textbf{Mitigation} \\
+\midrule
+\endhead
+Privacy / access control errors &
+Strict RLS policies, role-based permissions, automated access tests \\
+\addlinespace
+Review manipulation / gaming &
+Email-verified accounts, one review per property per account, rate limits, device/IP monitoring, admin moderation \\
+\addlinespace
+Defamation risk &
+No public free-text reviews, structured scoring only, private context field for moderation, rapid flagged-content removal \\
+\addlinespace
+Cold start / low review volume &
+Focus rollout on concentrated renter segments (students), allow browsing before signup, display review counts transparently, minimum thresholds before emphasising scores \\
+\addlinespace
+Score misinterpretation &
+Category breakdowns, review volume indicators, clear explanations of score computation \\
+\addlinespace
+Schema drift (New FE types vs.\ DB) &
+Five-metric model frozen in documentation before any code changes \\
+\addlinespace
+Design system fragmentation &
+Palette/typography conflicts resolved in design-token unification phase before building screens \\
+\addlinespace
+Framework divergence &
+Decision to stay on Next.js documented; no Vite/React Router code ported \\
+\addlinespace
+Scope creep from porting prototypes &
+Features adopted by UX pattern, not by file copy; explicit acceptance criteria per phase \\
+\addlinespace
+Breaking existing functionality &
+All new migrations are additive only; existing tables, RLS, and triggers untouched \\
+\bottomrule
+\end{longtable}
+
+% ══════════════════════════════════════════════
+\section{User Interface Design}
+% ══════════════════════════════════════════════
+
+\subsection{Public Screens}
+
+\begin{itemize}
+    \item \textbf{Landing / Home}: Hero content, search input, ``Leave a review'' CTA, featured neighbourhoods
+    \item \textbf{Search Results}: Property cards with trust score badges, filter sidebar (neighbourhood, score range, property type), sort options (highest trust, most reviewed, recently added), URL-persisted state
+    \item \textbf{Property Detail}: Trust score, category breakdown, confidence indicator, distilled insights, photos, review CTA
+    \item \textbf{Neighbourhood List}: Grid of neighbourhood cards with property counts and average scores
+    \item \textbf{Neighbourhood Detail}: Featured properties, area statistics, average category scores
+    \item \textbf{Comparison}: Side-by-side view of up to 3 properties across all five metrics
+    \item \textbf{Review Form}: Multi-step wizard with animated transitions, structured ratings, private context field
+    \item \textbf{Renter Dashboard}: Submitted reviews with statuses, shortlisted properties, review history
+\end{itemize}
+
+\subsection{Business Portal Screens}
+
+\begin{itemize}
+    \item \textbf{Portal Dashboard}: Portfolio overview with property cards, trust scores, trend indicators, funnel metrics
+    \item \textbf{Review Feed}: Filterable by property, date range, rating; response drafting
+    \item \textbf{Moderation Queue}: Flagged reviews within the landlord's portfolio
+    \item \textbf{Category Performance}: Charts showing per-category score trends over time
+    \item \textbf{Benchmark Comparison}: Portfolio properties vs.\ city/neighbourhood averages
+    \item \textbf{Renter Signals}: Sentiment trends and common themes
+    \item \textbf{Review Gap Alerts}: Properties with low coverage; tenant invite link generation
+    \item \textbf{Team Management}: Invite, role assignment (viewer/editor/admin), removal
+    \item \textbf{Company Profile}: Editable company information
+    \item \textbf{Notification Settings}: Per-user alert preferences
+\end{itemize}
+
+% ══════════════════════════════════════════════
+\section{User Flows}
+% ══════════════════════════════════════════════
+
+\subsection{User A: Searching Reviews}
+
+\begin{enumerate}
+    \item Landing / Home page
+    \item Enter address, property name, or browse by neighbourhood
+    \item Filter and sort results
+    \item Select property to view detail
+    \item Review trust score, category breakdown, and distilled insights
+    \item Optionally compare with other properties
+    \item Optionally shortlist properties for later review
+    \item Decide whether to pursue the rental
+\end{enumerate}
+
+\subsection{User B: Leaving a Review}
+
+\begin{enumerate}
+    \item Landing / Home page $\rightarrow$ ``Leave a Review'' CTA
+    \item Search for and select the property
+    \item Complete structured rating form (five metrics, half-star precision)
+    \item Optionally add private context (500 character cap)
+    \item Provide tenancy period
+    \item Submit review (enters \texttt{pending} moderation queue)
+    \item Receive submission confirmation
+\end{enumerate}
+
+\subsection{User C: Landlord Managing Portfolio (New)}
+
+\begin{enumerate}
+    \item Sign in with landlord account
+    \item Access Business Portal from header navigation
+    \item View portfolio dashboard with property cards and trust scores
+    \item Drill into a specific property for category performance analytics
+    \item View benchmark comparison against city/neighbourhood averages
+    \item Review and respond to tenant reviews (draft enters admin approval queue)
+    \item Check review gap alerts; generate invite links for under-reviewed properties
+    \item Manage team members and notification preferences
+\end{enumerate}
+
+% ══════════════════════════════════════════════
+\section{Project Timeline and Roadmap}
+% ══════════════════════════════════════════════
+
+\subsection{Phase 1 (Jan--Feb): Discovery + Prototype}
+\begin{itemize}
+    \item Finalise MVP scope and flows
+    \item Build wireframes and high-fidelity prototype in Figma
+    \item Run usability tests and iterate
+    \item \textbf{Deliverable}: Polished clickable prototype (Demo Day 1, Feb 26)
+\end{itemize}
+
+\subsection{Phase 2 (March--April): MVP Build}
+\begin{itemize}
+    \item Set up authentication, database, and core schema
+    \item Build public browsing, property detail, review submission
+    \item Build admin console (properties CRUD, moderation, audit)
+    \item Implement distilled insights pipeline
+    \item \textbf{Deliverable}: Functional core product
+\end{itemize}
+
+\subsection{Phase 3 (April--May): Expansion + Business Portal}
+\begin{itemize}
+    \item Documentation reconciliation and design-system unification
+    \item Schema evolution (new tables, landlord role, RLS policies)
+    \item Consumer UX adoption (neighbourhoods, comparison, dashboard, shortlist)
+    \item Business Portal implementation (all 10 portal screens)
+    \item Shared infrastructure (API client, a11y, mobile responsiveness)
+    \item Cleanup and deprecation of prototype code
+    \item \textbf{Deliverable}: Functional MVP with two-sided marketplace (Demo Day 2, May 27)
+\end{itemize}
+
+% ══════════════════════════════════════════════
+\section{Validation Plan}
+% ══════════════════════════════════════════════
+
+\begin{itemize}
+    \item Conduct 10--15 follow-up usability tests on the clickable prototype with renters
+    \item Validate: onboarding clarity, trust signal comprehension, category coverage adequacy
+    \item Measure engagement with new features: neighbourhood browsing, comparison tool, shortlist usage
+    \item Gather landlord feedback on Business Portal usability and value proposition
+    \item Track: ``How much additional engagement do landlord tools create?''
+\end{itemize}
+
+% ══════════════════════════════════════════════
+\section{Dependencies}
+% ══════════════════════════════════════════════
+
+\begin{itemize}
+    \item \textbf{User adoption}: Initial data collection depends on ability to pitch to building companies. Renter participation depends on emphasising value.
+    \item \textbf{Data quality}: Honest, consistent structured inputs to ensure scoring integrity.
+    \item \textbf{Legal and policy}: Compliance with Canadian and provincial housing, privacy, and anti-discrimination laws. Building-focused, not individual-focused.
+    \item \textbf{Trust and safety}: Email verification, abuse mitigation, and moderation to prevent misuse.
+    \item \textbf{Clear value proposition}: Renters need enough data to keep using the platform. Landlords must receive measurable benefits to remain engaged.
+    \item \textbf{Slices 01--17}: Core product must be complete before Business Portal and consumer UX expansion (Slice 50).
+\end{itemize}
+
+\end{document}
