@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
+import { getPropertyPhotoDisplayUrl } from "@/lib/property-photos";
 import { getSupabaseServerClient } from "@/lib/supabase-server";
 import type {
   NeighbourhoodDetail,
@@ -26,6 +27,11 @@ type PropertyRow = {
   property_aggregates: Array<{
     review_count: number;
     display_trustscore_0_5: number;
+  }> | null;
+  property_photos: Array<{
+    r2_bucket: string;
+    r2_key: string;
+    created_at: string;
   }> | null;
 };
 
@@ -62,7 +68,8 @@ export async function GET(
     .from("properties")
     .select(
       `id, display_name, address_line1, city, province, management_company,
-       property_aggregates (review_count, display_trustscore_0_5)`,
+       property_aggregates (review_count, display_trustscore_0_5),
+       property_photos (r2_bucket, r2_key, created_at)`,
     )
     .eq("neighbourhood_id", id)
     .eq("status", "active")
@@ -78,6 +85,18 @@ export async function GET(
   const properties: PropertyListItem[] = ((propData ?? []) as unknown as PropertyRow[]).map(
     (row) => {
       const agg = row.property_aggregates?.[0] ?? null;
+      const photos = row.property_photos ?? [];
+      const sortedPhotos = [...photos].sort(
+        (a, b) =>
+          new Date(a.created_at).getTime() - new Date(b.created_at).getTime(),
+      );
+      const firstPhoto = sortedPhotos[0];
+      const primary_image_url = firstPhoto
+        ? getPropertyPhotoDisplayUrl({
+            r2_bucket: firstPhoto.r2_bucket,
+            r2_key: firstPhoto.r2_key,
+          })
+        : null;
       return {
         id: row.id,
         display_name: row.display_name,
@@ -87,6 +106,7 @@ export async function GET(
         management_company: row.management_company,
         trustscore_display_0_5: (agg?.display_trustscore_0_5 ?? 0) as PropertyListItem["trustscore_display_0_5"],
         review_count: agg?.review_count ?? 0,
+        primary_image_url,
       };
     },
   );

@@ -61,6 +61,16 @@ values ('owner@example.com');
 The browser variables must point at the same Supabase project as the server
 variables.
 
+Optional property listing photos (public cards use the first photo per property
+when set):
+
+- `PROPERTY_PHOTO_BASE_URL` or `NEXT_PUBLIC_PROPERTY_PHOTO_BASE_URL` — base URL
+  for building display URLs from `property_photos` metadata (see
+  `lib/property-photos.ts`).
+
+**Vercel:** set the project **Root Directory** to `livedin`, then add the same
+variables for Production and Preview.
+
 ## Local Development
 
 From `livedin/`:

@@ -12,6 +12,7 @@ import { cn, inputClass, primaryButtonClass, secondaryButtonClass } from "@/lib/
 type PropertySelectStepProps = {
   initialPropertyId: string;
   onContinue: (property: ReviewableProperty) => void;
+  variant?: "default" | "facelift";
 };
 
 function formatAddress(p: ReviewableProperty): string {
@@ -48,7 +49,9 @@ function mapDetailToReviewableProperty(
 export function PropertySelectStep({
   initialPropertyId,
   onContinue,
+  variant = "default",
 }: PropertySelectStepProps) {
+  const fx = variant === "facelift";
   const [searchQuery, setSearchQuery] = useState("");
   const [selected, setSelected] = useState<ReviewableProperty | null>(null);
   const [preselected, setPreselected] = useState<ReviewableProperty | null>(null);
@@ -172,9 +175,13 @@ export function PropertySelectStep({
         onClick={() => setSelected(property)}
         className={cn(
           "block w-full rounded-3xl border p-4 text-left transition",
-          isSelected
-            ? "border-zinc-950 bg-zinc-950 text-white shadow-sm dark:border-zinc-100 dark:bg-zinc-100 dark:text-zinc-950"
-            : "border-zinc-200 bg-white hover:border-zinc-300 hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-950 dark:hover:border-zinc-700 dark:hover:bg-zinc-900",
+          fx
+            ? isSelected
+              ? "border-[#0F1F38] bg-[#0F1F38] text-white shadow-sm"
+              : "border-[#E2DDD6] bg-white hover:border-[#E8913A]/40 hover:bg-[#F7F4EF]"
+            : isSelected
+              ? "border-zinc-950 bg-zinc-950 text-white shadow-sm dark:border-zinc-100 dark:bg-zinc-100 dark:text-zinc-950"
+              : "border-zinc-200 bg-white hover:border-zinc-300 hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-950 dark:hover:border-zinc-700 dark:hover:bg-zinc-900",
         )}
         aria-pressed={isSelected}
       >
@@ -184,7 +191,13 @@ export function PropertySelectStep({
             <p
               className={cn(
                 "mt-1 text-sm leading-6",
-                isSelected ? "text-white/85 dark:text-zinc-700" : "text-zinc-600 dark:text-zinc-400",
+                fx
+                  ? isSelected
+                    ? "text-white/90"
+                    : "text-[#717182]"
+                  : isSelected
+                    ? "text-white/85 dark:text-zinc-700"
+                    : "text-zinc-600 dark:text-zinc-400",
               )}
             >
               {formatAddress(property)}
@@ -193,7 +206,13 @@ export function PropertySelectStep({
               <p
                 className={cn(
                   "mt-2 text-xs font-medium uppercase tracking-[0.18em]",
-                  isSelected ? "text-white/75 dark:text-zinc-600" : "text-zinc-500 dark:text-zinc-500",
+                  fx
+                    ? isSelected
+                      ? "text-white/75"
+                      : "text-[#717182]"
+                    : isSelected
+                      ? "text-white/75 dark:text-zinc-600"
+                      : "text-zinc-500 dark:text-zinc-500",
                 )}
               >
                 {property.management_company}
@@ -203,9 +222,13 @@ export function PropertySelectStep({
           <span
             className={cn(
               "rounded-full px-3 py-1 text-xs font-medium",
-              isSelected
-                ? "bg-white/15 text-white dark:bg-zinc-200 dark:text-zinc-900"
-                : "bg-zinc-100 text-zinc-600 dark:bg-zinc-900 dark:text-zinc-300",
+              fx
+                ? isSelected
+                  ? "bg-white/15 text-white"
+                  : "bg-[#F7F4EF] text-[#0F1F38]"
+                : isSelected
+                  ? "bg-white/15 text-white dark:bg-zinc-200 dark:text-zinc-900"
+                  : "bg-zinc-100 text-zinc-600 dark:bg-zinc-900 dark:text-zinc-300",
             )}
           >
             {isSelected ? "Selected" : "Choose"}
@@ -222,11 +245,19 @@ export function PropertySelectStep({
           <div>
             <label
               htmlFor="review-property-search"
-              className="block text-sm font-medium text-foreground"
+              className={cn(
+                "block text-sm font-medium",
+                fx ? "text-[#0F1F38]" : "text-foreground",
+              )}
             >
               Search by address or management company
             </label>
-            <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
+            <p
+              className={cn(
+                "mt-1 text-sm",
+                fx ? "text-[#717182]" : "text-zinc-600 dark:text-zinc-400",
+              )}
+            >
               Pick the exact location first so the rest of the review stays tied to the right property.
             </p>
           </div>
@@ -237,12 +268,29 @@ export function PropertySelectStep({
               description="Checking the property you selected before opening the review form."
             />
           ) : preselected ? (
-            <div className="rounded-3xl border border-zinc-200 bg-white p-5 shadow-sm dark:border-zinc-800 dark:bg-zinc-950">
+            <div
+              className={cn(
+                "rounded-3xl border bg-white p-5 shadow-sm",
+                fx ? "border-[#E2DDD6]" : "border-zinc-200 dark:border-zinc-800 dark:bg-zinc-950",
+              )}
+            >
               <div className="flex items-center justify-between gap-3">
-                <h2 className="text-lg font-semibold text-foreground">
+                <h2
+                  className={cn(
+                    "text-lg font-semibold",
+                    fx ? "text-[#0F1F38]" : "text-foreground",
+                  )}
+                >
                   Selected property
                 </h2>
-                <span className="rounded-full bg-zinc-100 px-3 py-1 text-xs font-medium text-zinc-700 dark:bg-zinc-900 dark:text-zinc-300">
+                <span
+                  className={cn(
+                    "rounded-full px-3 py-1 text-xs font-medium",
+                    fx
+                      ? "bg-[#F7F4EF] text-[#0F1F38]"
+                      : "bg-zinc-100 text-zinc-700 dark:bg-zinc-900 dark:text-zinc-300",
+                  )}
+                >
                   Confirmed from link
                 </span>
               </div>
@@ -257,7 +305,11 @@ export function PropertySelectStep({
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Start typing an address or management company"
-                  className={inputClass}
+                  className={cn(
+                    inputClass,
+                    fx &&
+                      "rounded-[12px] border-[#E2DDD6] focus:ring-[#E8913A]/40",
+                  )}
                   aria-label="Search properties"
                 />
                 {searchQuery ? (
@@ -280,8 +332,21 @@ export function PropertySelectStep({
 
               <div className="space-y-3">
                 <div className="flex items-center justify-between gap-3">
-                  <h2 className="text-lg font-semibold text-foreground">Matching properties</h2>
-                  <p className="text-sm text-zinc-500 dark:text-zinc-400" aria-live="polite">
+                  <h2
+                    className={cn(
+                      "text-lg font-semibold",
+                      fx ? "text-[#0F1F38]" : "text-foreground",
+                    )}
+                  >
+                    Matching properties
+                  </h2>
+                  <p
+                    className={cn(
+                      "text-sm",
+                      fx ? "text-[#717182]" : "text-zinc-500 dark:text-zinc-400",
+                    )}
+                    aria-live="polite"
+                  >
                     {loadingList ? "Searching…" : `${items.length} shown`}
                   </p>
                 </div>
@@ -316,26 +381,65 @@ export function PropertySelectStep({
           )}
         </div>
 
-        <aside className="rounded-3xl border border-zinc-200 bg-zinc-50 p-5 dark:border-zinc-800 dark:bg-zinc-900 lg:sticky lg:top-6 lg:self-start">
-          <p className="text-sm font-medium uppercase tracking-[0.22em] text-zinc-500 dark:text-zinc-400">
+        <aside
+          className={cn(
+            "rounded-3xl border p-5 lg:sticky lg:top-6 lg:self-start",
+            fx
+              ? "border-[#E2DDD6] bg-[#F7F4EF]"
+              : "border-zinc-200 bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900",
+          )}
+        >
+          <p
+            className={cn(
+              "text-sm font-medium uppercase tracking-[0.22em]",
+              fx ? "text-[#717182]" : "text-zinc-500 dark:text-zinc-400",
+            )}
+          >
             Is this the correct location?
           </p>
           {currentSelection ? (
-            <div className="mt-4 rounded-3xl border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-950">
-              <h3 className="text-lg font-semibold text-foreground">
+            <div
+              className={cn(
+                "mt-4 rounded-3xl border bg-white p-5",
+                fx ? "border-[#E2DDD6]" : "border-zinc-200 dark:border-zinc-800 dark:bg-zinc-950",
+              )}
+            >
+              <h3
+                className={cn(
+                  "text-lg font-semibold",
+                  fx ? "text-[#0F1F38]" : "text-foreground",
+                )}
+              >
                 {currentSelection.display_name}
               </h3>
-              <p className="mt-2 text-sm leading-6 text-zinc-600 dark:text-zinc-400">
+              <p
+                className={cn(
+                  "mt-2 text-sm leading-6",
+                  fx ? "text-[#717182]" : "text-zinc-600 dark:text-zinc-400",
+                )}
+              >
                 {formatAddress(currentSelection)}
               </p>
               {currentSelection.management_company ? (
-                <p className="mt-3 text-sm text-zinc-500 dark:text-zinc-400">
+                <p
+                  className={cn(
+                    "mt-3 text-sm",
+                    fx ? "text-[#717182]" : "text-zinc-500 dark:text-zinc-400",
+                  )}
+                >
                   Managed by {currentSelection.management_company}
                 </p>
               ) : null}
             </div>
           ) : (
-            <p className="mt-4 rounded-3xl border border-dashed border-zinc-300 px-4 py-6 text-sm leading-6 text-zinc-600 dark:border-zinc-700 dark:text-zinc-400">
+            <p
+              className={cn(
+                "mt-4 rounded-3xl border border-dashed px-4 py-6 text-sm leading-6",
+                fx
+                  ? "border-[#E2DDD6] text-[#717182]"
+                  : "border-zinc-300 text-zinc-600 dark:border-zinc-700 dark:text-zinc-400",
+              )}
+            >
               Choose a property from the results list to confirm it here before continuing.
             </p>
           )}
@@ -345,7 +449,11 @@ export function PropertySelectStep({
               type="button"
               disabled={!canContinue}
               onClick={() => currentSelection && onContinue(currentSelection)}
-              className={`${primaryButtonClass} w-full`}
+              className={
+                fx
+                  ? "w-full rounded-[12px] bg-[#E8913A] py-3 font-semibold text-white transition-colors hover:bg-[#d17f2f] disabled:cursor-not-allowed disabled:opacity-40"
+                  : `${primaryButtonClass} w-full`
+              }
             >
               Continue
             </button>
@@ -356,7 +464,11 @@ export function PropertySelectStep({
                   setSelected(null);
                   setSearchQuery("");
                 }}
-                className={`${secondaryButtonClass} w-full`}
+                className={
+                  fx
+                    ? "w-full rounded-[12px] border border-[#E2DDD6] bg-white py-3 font-semibold text-[#0F1F38] transition-colors hover:bg-[#F7F4EF]"
+                    : `${secondaryButtonClass} w-full`
+                }
               >
                 Reset selection
               </button>

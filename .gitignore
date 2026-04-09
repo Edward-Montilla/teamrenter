@@ -2,6 +2,10 @@
 
 # dependencies
 /node_modules
+New FE/Business Portal/node_modules/
+New FE/Business Portal/.vite/
+New FE/Facelift/node_modules/
+New FE/Facelift/.vite/
 /.pnp
 .pnp.js
 

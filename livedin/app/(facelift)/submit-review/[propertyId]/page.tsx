@@ -7,5 +7,5 @@ type Props = {
 export default async function SubmitReviewPage({ params }: Props) {
   const { propertyId } = await params;
 
-  return <SubmitReviewPageClient propertyId={propertyId} />;
+  return <SubmitReviewPageClient propertyId={propertyId} variant="facelift" />;
 }
