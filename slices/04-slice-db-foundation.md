@@ -1,5 +1,9 @@
 # Slice 04 — Supabase DB Foundation (Schema + Constraints + Aggregates)
 
+> **Status: Complete.** All schema, constraints, triggers, and aggregate functions are applied across 13 migrations. The original `display_*_0_6` mapping was superseded by `display_*_0_5` (migration `20260311123000_scale_public_scores_to_5.sql`).
+>
+> **V2 note:** Slice 50 Phase 3 adds 8 new tables (`neighbourhoods`, `user_shortlists`, `portfolio_properties`, `team_members`, `notification_preferences`, `review_response_drafts`, `benchmark_averages`, `company_profiles`) and alters 2 existing tables (`profiles` role constraint, `properties` neighbourhood FK). All Phase 3 migrations are additive — no destructive changes to this slice's schema.
+
 ## Goal (demo in 1–3 minutes)
 Supabase project has schema applied; inserting/updating/deleting approved reviews updates property_aggregates; invalid inserts are rejected by constraints and triggers.
 
@@ -45,11 +49,11 @@ As the system, I need a single source of truth with enforced rules and fast publ
 - All critical business rules (one review per user per property, 3 per 6 months, 0..5 metrics, tenancy order) must be enforced by DB.
 
 ## Acceptance criteria checklist
-- [ ] Schema applied without errors (`DATA-01`–`DATA-06`, `DATA-IC-01`–`04`)
-- [ ] Insert review with metric outside 0..5 is rejected (`TST-01`, `DATA-IC-02`)
-- [ ] Second review same user+property is rejected (unique constraint) (`TST-02`, `DATA-IC-01`)
-- [ ] Fourth review within rolling 6 months for same user is rejected by trigger (`TST-03`, `DATA-IC-03`)
-- [ ] After approved review insert/update/delete, property_aggregates row is updated with correct review_count and display_*_0_6 (`AGG-01`, `AGG-02`, `AGG-04`, `AGG-06`, `TST-05`)
+- [x] Schema applied without errors (`DATA-01`–`DATA-06`, `DATA-IC-01`–`04`)
+- [x] Insert review with metric outside 0..5 is rejected (`TST-01`, `DATA-IC-02`)
+- [x] Second review same user+property is rejected (unique constraint) (`TST-02`, `DATA-IC-01`)
+- [x] Fourth review within rolling 6 months for same user is rejected by trigger (`TST-03`, `DATA-IC-03`)
+- [x] After approved review insert/update/delete, property_aggregates row is updated with correct review_count and display_*_0_5 (`AGG-01`, `AGG-02`, `AGG-04`, `AGG-06`, `TST-05`) — updated from original 0–6 spec
 
 ## Test notes (manual smoke steps)
 - In Supabase SQL editor: insert property, insert profile, insert 1–3 approved reviews; verify property_aggregates. Insert duplicate (user, property); expect error. Insert 4th review within 6 months; expect trigger error. Delete a review; verify aggregates recompute.

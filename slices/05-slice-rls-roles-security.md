@@ -1,5 +1,9 @@
 # Slice 05 — Supabase RLS + Roles + Public Exposure Strategy
 
+> **Status: Complete.** All RLS policies for baseline roles (`public`, `verified`, `admin`) are applied and tested via `rls:test` smoke test.
+>
+> **V2 note:** Slice 50 Phase 3 adds a `landlord` role to the `profiles.role` check constraint and ~25 new RLS policies for the 8 new tables. All new policies are additive — existing `public`, `verified`, and `admin` policies are unchanged. See `docs/security/rls.md` for the full policy inventory.
+
 ## Goal (demo in 1–3 minutes)
 Public can read only safe data; verified users can insert their own reviews subject to constraints; admins can manage properties and moderation; anonymous cannot read reviews or text_input.
 
@@ -38,11 +42,11 @@ As the platform, I must prevent unauthorized reads/writes and never expose priva
 - Admin capabilities: full CRUD properties; read/update reviews and insights; read/insert audit_log.
 
 ## Acceptance criteria checklist
-- [ ] Anonymous SELECT from reviews fails (`NFR-SEC-02`, `TST-04`)
-- [ ] Anonymous can read active properties and their aggregates (`FD-02`, `NFR-SEC-02`)
-- [ ] Anonymous can read distilled_insights only when status = 'approved' (`INS-04`, `TST-06`, `NFR-PRIV-01`)
-- [ ] Verified user (email_verified = true) can INSERT review subject to constraints (`REV-01`, `AUTH-02`, `NFR-SEC-03`)
-- [ ] Admin can CRUD properties and moderate reviews/insights (`ADM-01`, `ADM-02`, `ADM-03`, `NFR-SEC-04`, `TST-07`)
+- [x] Anonymous SELECT from reviews fails (`NFR-SEC-02`, `TST-04`)
+- [x] Anonymous can read active properties and their aggregates (`FD-02`, `NFR-SEC-02`)
+- [x] Anonymous can read distilled_insights only when status = 'approved' (`INS-04`, `TST-06`, `NFR-PRIV-01`)
+- [x] Verified user (email_verified = true) can INSERT review subject to constraints (`REV-01`, `AUTH-02`, `NFR-SEC-03`)
+- [x] Admin can CRUD properties and moderate reviews/insights (`ADM-01`, `ADM-02`, `ADM-03`, `NFR-SEC-04`, `TST-07`)
 
 ## Test notes (manual smoke steps)
 - Use Supabase client with anon key: try SELECT from reviews → expect empty or error per RLS. SELECT from properties where active, property_aggregates, approved insights → expect success.

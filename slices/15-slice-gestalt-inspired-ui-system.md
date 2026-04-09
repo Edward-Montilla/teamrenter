@@ -1,5 +1,9 @@
 # Slice 15 — Gestalt-Inspired UI System + Screen-by-Screen UX Plan
 
+> **Status: Complete (docs only).** This is a planning-and-specification slice. The Gestalt-inspired design principles documented here inform all future UI work.
+>
+> **V2 note:** Slice 50 Phase 2 (design-system unification) implements the token consolidation and component inventory informed by this spec. The Gestalt principles here apply equally to new portal and consumer UX screens built in Phases 4–5.
+
 ## Goal (demo in 1–3 minutes)
 
 The app keeps its current product behavior but feels more trustworthy, more guided, and easier to scan across public, auth, review, theme, and admin flows by adopting a small Gestalt-inspired design system: clearer hierarchy, more consistent states, stronger trust signaling, and reusable semantic UI patterns.

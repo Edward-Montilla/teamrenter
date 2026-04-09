@@ -9,6 +9,8 @@ type ListRow = {
   city: string;
   province: string;
   management_company: string | null;
+  created_at: string;
+  neighbourhood_id: string | null;
   property_aggregates: Array<{
     review_count: number;
     display_trustscore_0_5: 0 | 1 | 2 | 3 | 4 | 5;
@@ -19,6 +21,13 @@ export async function GET(req: NextRequest) {
   const url = new URL(req.url);
   const q = url.searchParams.get("q") ?? "";
   const query = q.trim();
+  const neighbourhoodId = url.searchParams.get("neighbourhood")?.trim() || null;
+  const minScoreRaw = url.searchParams.get("minScore");
+  const minScore =
+    minScoreRaw !== null && minScoreRaw !== ""
+      ? Math.min(5, Math.max(0, Number.parseInt(minScoreRaw, 10)))
+      : null;
+  const sort = url.searchParams.get("sort")?.trim() || "reviews";
 
   const supabase = getSupabaseServerClient();
 
@@ -34,6 +43,8 @@ export async function GET(req: NextRequest) {
       city,
       province,
       management_company,
+      created_at,
+      neighbourhood_id,
       property_aggregates (
         review_count,
         display_trustscore_0_5
@@ -41,6 +52,10 @@ export async function GET(req: NextRequest) {
     `,
     )
     .eq("status", "active");
+
+  if (neighbourhoodId) {
+    dbQuery = dbQuery.eq("neighbourhood_id", neighbourhoodId);
+  }
 
   if (pattern) {
     dbQuery = dbQuery.or(
@@ -54,9 +69,20 @@ export async function GET(req: NextRequest) {
     );
   }
 
-  dbQuery = dbQuery
-    .order("review_count", { foreignTable: "property_aggregates", ascending: false })
-    .order("display_name", { ascending: true });
+  if (sort === "trust") {
+    dbQuery = dbQuery
+      .order("display_trustscore_0_5", {
+        foreignTable: "property_aggregates",
+        ascending: false,
+      })
+      .order("display_name", { ascending: true });
+  } else if (sort === "recent") {
+    dbQuery = dbQuery.order("created_at", { ascending: false });
+  } else {
+    dbQuery = dbQuery
+      .order("review_count", { foreignTable: "property_aggregates", ascending: false })
+      .order("display_name", { ascending: true });
+  }
 
   const { data, error } = await dbQuery;
 
@@ -67,7 +93,14 @@ export async function GET(req: NextRequest) {
     );
   }
 
-  const rows = (data ?? []) as unknown as ListRow[];
+  let rows = (data ?? []) as unknown as ListRow[];
+
+  if (minScore !== null && !Number.isNaN(minScore)) {
+    rows = rows.filter((row) => {
+      const trust = row.property_aggregates?.[0]?.display_trustscore_0_5 ?? 0;
+      return trust >= minScore;
+    });
+  }
 
   const items: PropertyListItem[] = rows.map((row) => {
     const aggregates = row.property_aggregates?.[0] ?? null;

@@ -39,3 +39,14 @@ The slice docs already contain detailed "Test notes (manual smoke steps)" sectio
     - Submit reviews as a verified user.
     - Exercise duplicate and rate-limit scenarios.
     - Approve reviews as an admin and confirm aggregate updates on the property detail page.
+
+---
+
+## PRD v2 Expansion
+
+The project is expanding from a renter-only review platform to a **two-sided marketplace** with a Business Portal for landlords and enhanced consumer UX features. See:
+
+- **PRD v2**: `proj_docs/PRD - Team Renter.pdf`
+- **Integration plan**: `slices/50-slice-new-fe-integration-plan.md`
+- **Schema evolution**: `proj_docs/Schema & ERD.md`
+- **Obstacles analysis**: `proj_docs/obstaclesV2.md`

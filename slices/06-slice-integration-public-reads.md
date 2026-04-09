@@ -1,5 +1,9 @@
 # Slice 06 — Integration: Public Reads Wired to Supabase
 
+> **Status: Complete.** All public reads are wired to Supabase with RLS enforcement. Mock data providers have been removed.
+>
+> **V2 note:** Slice 50 Phase 4 adds new public API routes (`GET /api/neighbourhoods`, `GET /api/neighbourhoods/[id]`) and enhances existing search with filter/sort params. Existing public read routes carry forward unchanged.
+
 ## Goal (demo in 1–3 minutes)
 Home/search and property detail pages load from Supabase (no mocks); safe public exposure preserved; loading/empty/error states retained.
 
@@ -34,10 +38,10 @@ As a visitor, I want real data from the database powering browse and detail view
 - Public must never receive reviews or text_input.
 
 ## Acceptance criteria checklist
-- [ ] `/` search returns DB-backed results (`FD-01`, `AC-01`, `GET /api/properties` or equivalent)
-- [ ] `/properties/[id]` returns DB-backed property + aggregates + approved insights only (`FD-02`, `AC-02`, `GET /api/properties/:id`, `TST-04`, `TST-06`)
-- [ ] "No reviews" state when review_count = 0 (`UI-PUB-03`, `TST-05`)
-- [ ] Loading and error states still work (`UI-PUB-03`)
+- [x] `/` search returns DB-backed results (`FD-01`, `AC-01`, `GET /api/properties` or equivalent)
+- [x] `/properties/[id]` returns DB-backed property + aggregates + approved insights only (`FD-02`, `AC-02`, `GET /api/properties/:id`, `TST-04`, `TST-06`)
+- [x] "No reviews" state when review_count = 0 (`UI-PUB-03`, `TST-05`)
+- [x] Loading and error states still work (`UI-PUB-03`)
 
 ## Test notes (manual smoke steps)
 - Run app with anon (public) session; load `/` and search; open a property; confirm no private data (no review text, no pending insights). Verify empty state when no results.

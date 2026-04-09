@@ -1,5 +1,9 @@
 # Slice 17 — Admin Command Center
 
+> **Status: Complete.** The `/admin` command center is implemented with review moderation, property CRUD, and audit activity feed. Admin entry point is in the signed-in public header.
+>
+> **V2 note:** The admin command center remains separate from the Business Portal (`/portal`). Landlords do not access `/admin`; they access `/portal` (Slice 50 Phase 5). The admin area may gain new capabilities as V2 features are added (e.g., review response approval, landlord portfolio assignment) but its core structure is stable.
+
 ## Goal (demo in 1–3 minutes)
 Admins can open a single admin landing page from the public navbar, audit reviews, create properties, and delete properties without bouncing between disconnected screens.
 
@@ -31,11 +35,11 @@ As an admin, I need one clear workspace where I can exercise core admin privileg
 - Private `reviews.text_input` remains admin-only and must never be exposed in public UI or APIs.
 
 ## Acceptance criteria checklist
-- [ ] Signed-in admins see an `Admin` button in the public header that opens `/admin`.
-- [ ] `/admin` lets admins moderate reviews from the page itself.
-- [ ] `/admin` lets admins create a property from the page itself.
-- [ ] `/admin` lets admins delete a property from the page itself.
-- [ ] Property deletion is audited and non-admins remain blocked from the route and API actions.
+- [x] Signed-in admins see an `Admin` button in the public header that opens `/admin`.
+- [x] `/admin` lets admins moderate reviews from the page itself.
+- [x] `/admin` lets admins create a property from the page itself.
+- [x] `/admin` lets admins delete a property from the page itself.
+- [x] Property deletion is audited and non-admins remain blocked from the route and API actions.
 
 ## Test notes (manual smoke steps)
 - Sign in as admin and verify the public header shows `Admin`.

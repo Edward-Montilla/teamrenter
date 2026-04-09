@@ -183,3 +183,34 @@ application code, API routes, database migrations, and admin UI flows.
 
 - `npm run lint` passes in `livedin/`.
 - `npm run build` passes in `livedin/`.
+
+### Planned (Slice 50 — PRD v2 Expansion)
+
+The following features are documented and planned but not yet implemented:
+
+#### Business Portal (10 screens)
+- Portfolio dashboard with property cards, trust scores, and trend indicators
+- Review feed with filtering and response drafting
+- Category performance analytics with Recharts charts
+- Benchmark comparison against city/neighbourhood averages
+- Renter signal tracking (sentiment trends)
+- Review gap alerts with tenant invite links
+- Team access management (viewer, editor, admin roles)
+- Company profile management
+- Notification preferences
+
+#### Consumer UX Features (7 features)
+- Neighbourhood browsing and detail pages
+- Property comparison tool (up to 3 properties)
+- Enhanced search with filter sidebar and sort options
+- Trust score badges and category score bars
+- Multi-step review wizard improvements (motion transitions)
+- Renter dashboard with review history and shortlist
+- Shortlist/bookmark functionality
+
+#### Schema Evolution
+- 8 new tables: neighbourhoods, user_shortlists, portfolio_properties, team_members, notification_preferences, review_response_drafts, benchmark_averages, company_profiles
+- 2 altered tables: profiles (+ landlord role), properties (+ neighbourhood_id FK)
+- ~25 new RLS policies for portfolio-scoped landlord access
+- 4 new helper functions: is_landlord(), is_portfolio_member(), recompute_neighbourhood_aggregates(), recompute_benchmark_averages()
+- 3 new views: v_portfolio_overview, v_neighbourhood_browse, v_review_with_response

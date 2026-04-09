@@ -1157,4 +1157,92 @@ Never cross-import between them.
 
 ---
 
+## 11. Business Portal Architecture (Planned — Slice 50)
+
+The Business Portal is a new product surface for landlords and property managers, built as a `/portal/*` route group within the existing Next.js app.
+
+### Route group and layout
+
+The portal lives under `app/portal/` with its own `layout.tsx` that provides:
+- A sidebar navigation (collapsible to a drawer on mobile)
+- Auth gating: only users with `profiles.role = 'landlord'` or `profiles.role = 'admin'` can access portal pages
+- A `portalFetch` helper (analogous to `adminFetch`) that attaches the user's Bearer token to all portal API requests
+
+### Portal pages (planned)
+
+| Route | Purpose |
+|-------|---------|
+| `/portal` | Portfolio dashboard — property cards with trust scores, review counts, trend indicators |
+| `/portal/reviews` | Review feed — filterable by property, date, rating; response drafting |
+| `/portal/moderation` | Flagged reviews within the landlord's portfolio |
+| `/portal/performance` | Category performance analytics (Recharts charts) |
+| `/portal/benchmarks` | Benchmark comparison against city/neighbourhood averages |
+| `/portal/signals` | Renter sentiment trends and common themes |
+| `/portal/alerts` | Review gap alerts with tenant invite link generation |
+| `/portal/team` | Team management — invite, role assignment (viewer/editor/admin), removal |
+| `/portal/profile` | Company profile management |
+| `/portal/settings` | Notification preferences |
+
+### Auth pattern
+
+The landlord auth pattern mirrors the existing admin pattern:
+
+1. `app/portal/layout.tsx` calls `getSupabaseBrowserClient()` to get the session
+2. Sends the access token to `GET /api/portal/me` (or equivalent)
+3. Server-side: `getLandlordFromRequest()` verifies the token and checks for `landlord` or `admin` role
+4. If the check passes, the portal layout renders; otherwise, it shows an access-denied screen
+
+### Data scoping
+
+All portal data is **portfolio-scoped**. The `portfolio_properties` table links landlords to the properties they manage. Every portal query filters through this table — a landlord can only see properties, reviews, aggregates, and insights for properties in their portfolio.
+
+Team members (via `team_members`) inherit the landlord's portfolio scope with role-based permissions (viewer, editor, admin).
+
+### API routes (planned)
+
+All portal API routes live under `app/api/portal/`:
+- `GET /api/portal/properties` — portfolio property list
+- `GET /api/portal/properties/[id]/analytics` — funnel metrics + category performance
+- `GET /api/portal/properties/[id]/reviews` — reviews for a specific property
+- `GET /api/portal/benchmarks` — city/neighbourhood averages
+- `GET /api/portal/signals` — renter sentiment trends
+- `POST /api/portal/reviews/[id]/respond` — draft a response to a review
+
+---
+
+## 12. Consumer UX Expansion (Planned — Slice 50)
+
+Slice 50 adds several new consumer-facing features to the existing public app.
+
+### New routes
+
+| Route | Purpose |
+|-------|---------|
+| `/neighbourhoods` | Grid of neighbourhood cards with property counts and average trust scores |
+| `/neighbourhoods/[id]` | Neighbourhood detail with featured properties and area statistics |
+| `/comparison` | Side-by-side comparison of up to 3 properties across all five trust metrics |
+| `/dashboard` | Auth-gated renter dashboard showing submitted reviews and shortlisted properties |
+
+### New components
+
+- **TrustScoreBadge** — visual trust score display with category breakdowns and confidence indicators based on review count
+- **CategoryScoreBar** — horizontal bar showing a single metric score with label
+
+### Shortlist functionality
+
+Signed-in users can bookmark/shortlist properties:
+- Heart/bookmark button on `PropertyCard` components
+- Persisted in the `user_shortlists` table via `POST /api/user/shortlist`
+- Displayed on the renter `/dashboard`
+- Uses optimistic UI updates with error rollback
+
+### New API routes
+
+- `GET /api/neighbourhoods` — public neighbourhood list
+- `GET /api/neighbourhoods/[id]` — neighbourhood detail with properties
+- `POST /api/user/shortlist` — add/remove shortlisted property
+- `GET /api/user/shortlist` — get user's shortlist
+
+---
+
 That's it! You now have a full map of how this project works. Don't worry if it feels like a lot — no one memorizes all of this at once. Bookmark this file and come back to the relevant sections when you get stuck. And if something isn't explained here, ask the team. Good luck, and welcome aboard! 🎉

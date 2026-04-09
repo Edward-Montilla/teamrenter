@@ -1,5 +1,9 @@
 # Slice 13 — Site-wide UI/UX Polish + Accessibility
 
+> **Status: Complete.** UI/UX polish pass applied across public, auth, review, and admin pages. Consistent layout, CTA hierarchy, feedback surfaces, and keyboard accessibility are in place.
+>
+> **V2 note:** Slice 50 Phase 2 extends this work with a unified design-token system (Palette 6, Playfair Display + Inter typography). Phase 6 adds a WCAG 2.1 AA audit and mobile hamburger navigation. The shared UI patterns and `UiSurfaceState` / `UiFeedbackTone` types from this slice are reused throughout V2.
+
 ## Goal (demo in 1–3 minutes)
 Public, auth, review, and admin flows feel cohesive and easier to use: navigation is clearer, key actions are easier to find, loading/empty/error/success states are consistent, layouts work better on small screens, and critical interactions are keyboard- and screen-reader-friendly. In particular, the property rating flow should move closer to the provided review-address mockup so the "pick a property, confirm it, then continue" journey feels more guided and trustworthy.
 
@@ -89,13 +93,13 @@ type BreadcrumbItem = {
 - UX improvements may explain gated states more clearly, but existing authorization and DB enforcement remain authoritative.
 
 ## Acceptance criteria checklist
-- [ ] Public pages use a more consistent layout and CTA hierarchy without changing core behavior
-- [ ] Search, property detail, sign-in, review submission, and admin pages all show consistent loading/empty/error/success treatment
-- [ ] Mobile and narrow-width layouts remain usable for key public and admin flows
-- [ ] The review property-selection step visually and structurally follows the `Review - Address` mockup more closely: focused shell, prominent search, obvious selected state, confirmation summary, and primary `Continue` action
-- [ ] Gated review states give users a clear next step instead of a dead end
-- [ ] Keyboard navigation and visible focus states work for primary interactive flows
-- [ ] No new backend endpoints, schema changes, or permission changes are required for the polish work
+- [x] Public pages use a more consistent layout and CTA hierarchy without changing core behavior
+- [x] Search, property detail, sign-in, review submission, and admin pages all show consistent loading/empty/error/success treatment
+- [x] Mobile and narrow-width layouts remain usable for key public and admin flows
+- [x] The review property-selection step visually and structurally follows the `Review - Address` mockup more closely: focused shell, prominent search, obvious selected state, confirmation summary, and primary `Continue` action
+- [x] Gated review states give users a clear next step instead of a dead end
+- [x] Keyboard navigation and visible focus states work for primary interactive flows
+- [x] No new backend endpoints, schema changes, or permission changes are required for the polish work
 
 ## Test notes (manual smoke steps)
 1. Browse `/`, run a search, clear it, and verify the page communicates loading, empty, and retry states consistently.

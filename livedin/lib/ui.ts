@@ -4,6 +4,12 @@ export function cn(...values: Array<string | false | null | undefined>) {
   return values.filter(Boolean).join(" ");
 }
 
+export const headingClass =
+  "font-[family-name:var(--font-playfair)] font-semibold";
+export const h1Class = `${headingClass} text-3xl sm:text-4xl`;
+export const h2Class = `${headingClass} text-2xl sm:text-3xl`;
+export const h3Class = `${headingClass} text-xl sm:text-2xl`;
+
 export const pageContainerClass = "mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8";
 export const sectionCardClass =
   "rounded-3xl border border-zinc-200 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-950";

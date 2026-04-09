@@ -160,7 +160,118 @@ A more branded, distinctive, design-forward option.
 
 ---
 
+## Palette 6: Navy + Amber (New FE Prototype Direction)
+
+Derived from the Facelift and Business Portal prototypes. A trust-first direction with warm accent energy — navy conveys authority and reliability, amber adds approachability and visual warmth. This palette is particularly well-suited for the Business Portal sidebar and analytics surfaces.
+
+### Core Colors
+
+
+| Token             | Hex       | Intended Target                                              |
+| ----------------- | --------- | ------------------------------------------------------------ |
+| `primary-text`    | `#0F1F38` | Main headings, body text, navigation, strong labels          |
+| `page-bg`         | `#F7F4EF` | Main app background (warm cream)                             |
+| `surface-card`    | `#FFFFFF` | Cards, modals, panels, tables                                |
+| `primary-accent`  | `#E8913A` | Primary buttons, active tabs, links, key CTA actions         |
+| `soft-accent`     | `#F7F4EF` | Hover fills, highlighted sections, supporting accent areas   |
+| `secondary-accent`| `#F59E0B` | Secondary highlights, chart accents, status indicators       |
+| `neutral-support` | `#E2DDD6` | Borders, muted surfaces, dividers                            |
+| `muted-text`      | `#717182` | Secondary text, captions, muted labels                       |
+
+
+### UI Targets
+
+
+| UI Element                    | Color     |
+| ----------------------------- | --------- |
+| App background                | `#F7F4EF` |
+| Card background               | `#FFFFFF` |
+| Main heading text             | `#0F1F38` |
+| Secondary text                | `#717182` |
+| Primary button                | `#E8913A` |
+| Primary button text           | `#FFFFFF` |
+| Primary button hover          | `#D17F2F` |
+| Secondary button background   | `#F7F4EF` |
+| Secondary button text         | `#0F1F38` |
+| Active tab / selected nav     | `#E8913A` |
+| Hover state fill              | `#F7F4EF` |
+| Positive metric / trust score | `#E8913A` |
+| Chart accent                  | `#F59E0B` |
+| Tag / chip selected state     | `#E8913A` |
+| Border / divider              | `#E2DDD6` |
+
+
+### Navy Scale (for Business Portal sidebar and gradients)
+
+
+| Token       | Hex       | Target                                    |
+| ----------- | --------- | ----------------------------------------- |
+| `navy-950`  | `#0A1628` | Deepest sidebar background, foreground    |
+| `navy-900`  | `#0F1F3A` | Sidebar background, primary dark surface  |
+| `navy-800`  | `#1A2F52` | Sidebar hover, gradient endpoints         |
+| `navy-700`  | `#2A4266` | Sidebar borders, chart secondary          |
+| `navy-600`  | `#3B5580` | Chart tertiary, muted navy                |
+| `navy-500`  | `#4D6899` | Muted navy for inactive elements          |
+
+
+### Amber Scale (for CTA and chart accents)
+
+
+| Token        | Hex       | Target                              |
+| ------------ | --------- | ----------------------------------- |
+| `amber-600`  | `#D97706` | Button hover, strong amber accents  |
+| `amber-500`  | `#F59E0B` | Primary amber CTA, chart accent     |
+| `amber-400`  | `#FBBF24` | Light amber, chart highlight        |
+
+
+---
+
+# Typography
+
+## Canonical Typography Pairing
+
+**Decision**: Playfair Display (headings) + Inter (body) is the canonical typography pairing for all surfaces.
+
+| Role          | Font Family       | Weight Range | Usage                                           |
+| ------------- | ----------------- | ------------ | ----------------------------------------------- |
+| Headings      | Playfair Display  | 600–700      | Page titles, section headings, brand elements   |
+| Body          | Inter             | 400–600      | Body text, labels, form inputs, navigation      |
+| Code / Mono   | Geist Mono        | 400          | Code snippets, technical values, data displays  |
+
+**Rationale**: Playfair Display provides stronger brand differentiation for a trust-focused platform — its serif character conveys authority and reliability. Inter is highly legible at all sizes and pairs well with serif headings, providing a clean modern feel for body content.
+
+**Note**: Geist + Geist Mono (the current production fonts) remain available as fallback and are used for code/monospace content. The typography change from Geist Sans to Inter for body text and Playfair Display for headings is implemented during Phase 2 of Slice 50.
+
+---
+
+# Business Portal Token Roles
+
+These additional token roles extend the base palette for the Business Portal sidebar and analytics surfaces. They apply regardless of which palette is active — the values below are the defaults for the navy/amber palette (Palette 6); other palettes should provide their own sidebar and chart values.
+
+
+| Token                  | Default (Palette 6) | Intended Target                                |
+| ---------------------- | ------------------- | ---------------------------------------------- |
+| `sidebar-bg`           | `#0F1F3A`           | Portal sidebar background                      |
+| `sidebar-text`         | `#FFFFFF`           | Sidebar navigation text                        |
+| `sidebar-text-muted`   | `#4D6899`           | Inactive sidebar links                         |
+| `sidebar-accent`       | `#1A2F52`           | Sidebar hover/active background                |
+| `sidebar-border`       | `#2A4266`           | Sidebar section dividers                       |
+| `sidebar-active-text`  | `#F59E0B`           | Active sidebar link text/indicator             |
+| `chart-1`              | `#0F1F3A`           | Primary chart series                           |
+| `chart-2`              | `#F59E0B`           | Secondary chart series                         |
+| `chart-3`              | `#3B5580`           | Tertiary chart series                          |
+| `chart-4`              | `#FBBF24`           | Quaternary chart series                        |
+| `chart-5`              | `#2A4266`           | Quinary chart series                           |
+| `chart-grid`           | `#E5E7EB`           | Chart grid lines                               |
+| `chart-axis-text`      | `#6B7280`           | Chart axis labels                              |
+| `chart-tooltip-bg`     | `#FFFFFF`           | Chart tooltip background                       |
+
+
+---
+
 # Final Recommended Theme Tokens
+
+The recommended palette (Palette 1, purple/teal) serves as the default theme. The multi-theme system (Palettes 1–6) remains available to users via the theme picker. Each palette provides the core token set; the Business Portal token roles above are layered on top.
 
 Use this if choosing one direction for the actual app.
 

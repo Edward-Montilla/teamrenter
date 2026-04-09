@@ -5,14 +5,32 @@
 
 import type { PropertySearchResponse } from "./types";
 
+export type PropertySearchOptions = {
+  neighbourhoodId?: string | null;
+  minScore?: number | null;
+  sort?: "trust" | "reviews" | "recent";
+};
+
 /**
  * Search properties by query.
  * Slice 06: backed by Supabase via /api/properties.
  */
-export async function searchProperties(query: string): Promise<PropertySearchResponse> {
+export async function searchProperties(
+  query: string,
+  options?: PropertySearchOptions,
+): Promise<PropertySearchResponse> {
   const params = new URLSearchParams();
   if (query.trim()) {
     params.set("q", query.trim());
+  }
+  if (options?.neighbourhoodId) {
+    params.set("neighbourhood", options.neighbourhoodId);
+  }
+  if (options?.minScore !== undefined && options?.minScore !== null) {
+    params.set("minScore", String(options.minScore));
+  }
+  if (options?.sort) {
+    params.set("sort", options.sort);
   }
 
   const res = await fetch(`/api/properties?${params.toString()}`, {

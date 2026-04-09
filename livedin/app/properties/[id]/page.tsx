@@ -5,7 +5,15 @@ import { Breadcrumbs } from "@/components/ui/Breadcrumbs";
 import { FeedbackPanel } from "@/components/ui/FeedbackPanel";
 import { getPropertyDetail } from "@/lib/property-detail";
 import type { PropertyDetailPublic } from "@/lib/types";
-import { pageContainerClass, primaryButtonClass, sectionCardClass, secondaryButtonClass } from "@/lib/ui";
+import { CategoryScoreBar } from "@/components/CategoryScoreBar";
+import { TrustScoreBadge } from "@/components/TrustScoreBadge";
+import {
+  h1Class,
+  pageContainerClass,
+  primaryButtonClass,
+  sectionCardClass,
+  secondaryButtonClass,
+} from "@/lib/ui";
 
 type Props = {
   params: Promise<{ id: string }>;
@@ -48,10 +56,6 @@ function formatShortLocation(p: PropertyDetailPublic["property"]): string {
   return [p.city, p.province].filter(Boolean).join(", ");
 }
 
-function formatScore(score: number): string {
-  return score.toFixed(1).replace(/\.0$/, "");
-}
-
 function formatUpdatedDate(value: string): string {
   return new Date(value).toLocaleDateString(undefined, {
     month: "short",
@@ -77,47 +81,6 @@ function ConfidenceLabel({ reviewCount }: { reviewCount: number }) {
   );
 }
 
-function ScoreDots({ score }: { score: number }) {
-  const filled = Math.round(score);
-  return (
-    <div className="flex gap-2" aria-hidden>
-      {Array.from({ length: 5 }, (_, index) => (
-        <span
-          key={index}
-          className={`h-2.5 w-8 rounded-full ${
-            index < filled
-              ? "bg-slate-800 dark:bg-slate-100"
-              : "bg-slate-200 dark:bg-slate-700"
-          }`}
-        />
-      ))}
-    </div>
-  );
-}
-
-function MetricBar({ label, value }: { label: string; value: number }) {
-  const width = `${(value / 5) * 100}%`;
-
-  return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-950">
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <p className="text-sm font-medium text-slate-700 dark:text-slate-300">{label}</p>
-          <p className="mt-3 text-2xl font-semibold text-slate-900 dark:text-slate-50">
-            {formatScore(value)}
-          </p>
-        </div>
-        <p className="text-sm text-slate-500 dark:text-slate-400">/ 5</p>
-      </div>
-      <div className="mt-4 h-2 rounded-full bg-slate-200 dark:bg-slate-800">
-        <div
-          className="h-2 rounded-full bg-slate-800 transition-[width] dark:bg-slate-100"
-          style={{ width }}
-        />
-      </div>
-    </div>
-  );
-}
 
 export default async function PropertyDetailPage({ params }: Props) {
   const { id } = await params;
@@ -156,7 +119,7 @@ export default async function PropertyDetailPage({ params }: Props) {
               <p className="text-xs font-medium uppercase tracking-[0.2em] text-slate-400">
                 Property detail
               </p>
-              <h1 className="mt-3 max-w-3xl text-3xl font-semibold tracking-tight text-slate-950 dark:text-slate-50 sm:text-4xl lg:text-5xl">
+              <h1 className={`${h1Class} mt-3 max-w-3xl tracking-tight text-slate-950 dark:text-slate-50 lg:text-5xl`}>
                 {property.display_name}
               </h1>
               <div className="mt-4 flex flex-wrap items-center gap-x-2 gap-y-1 text-lg text-slate-500 dark:text-slate-400">
@@ -165,13 +128,16 @@ export default async function PropertyDetailPage({ params }: Props) {
                 <span>{formatAddress(property)}</span>
               </div>
               <div className="mt-8 grid gap-4 sm:grid-cols-3">
-                <div className="rounded-3xl bg-slate-950 p-5 text-white dark:bg-slate-100 dark:text-slate-950">
-                  <p className="text-xs uppercase tracking-[0.2em] opacity-70">Trust score</p>
-                  <p className="mt-3 text-4xl font-semibold">
-                    {formatScore(aggregates.display_trustscore_0_5)}/5
+                <div className="flex flex-col items-center justify-center rounded-3xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-950">
+                  <p className="text-xs uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
+                    Trust score
                   </p>
-                  <div className="mt-4">
-                    <ScoreDots score={aggregates.display_trustscore_0_5} />
+                  <div className="mt-3">
+                    <TrustScoreBadge
+                      score={aggregates.display_trustscore_0_5}
+                      reviewCount={aggregates.review_count}
+                      size="lg"
+                    />
                   </div>
                 </div>
                 <div className="rounded-3xl border border-slate-200 p-5 dark:border-slate-800">
@@ -254,11 +220,12 @@ export default async function PropertyDetailPage({ params }: Props) {
 
               <div className="mt-8 grid gap-4 sm:grid-cols-2">
                 {METRIC_KEYS.map((key) => (
-                  <MetricBar
+                  <div
                     key={key}
-                    label={METRIC_LABELS[key]}
-                    value={aggregates[key]}
-                  />
+                    className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-950"
+                  >
+                    <CategoryScoreBar label={METRIC_LABELS[key]} score={aggregates[key]} />
+                  </div>
                 ))}
               </div>
 

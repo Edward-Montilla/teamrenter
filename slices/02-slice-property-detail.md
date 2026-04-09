@@ -1,7 +1,11 @@
 # Slice 02 — Property Detail (Public Read)
 
+> **Status: Complete.** All tasks in this slice are implemented and integrated. Mock data has been replaced by live Supabase reads (Slice 06). The original `display_*_0_6` types in the data contract below were superseded by `display_*_0_5` (migration `20260311123000_scale_public_scores_to_5.sql`); production uses the 0–5 half-star scale.
+>
+> **V2 note:** Slice 50 Phase 4 enhances this page with `TrustScoreBadge` and `CategoryScoreBar` components using the five canonical metrics. The existing property detail components carry forward.
+
 ## Goal (demo in 1–3 minutes)
-User opens a property page and sees TrustScore (0–6), metric breakdown (0–6), review count, and approved distilled insights if present; "no reviews" and "no insights" states render correctly.
+User opens a property page and sees TrustScore (0–5), metric breakdown (0–5), review count, and approved distilled insights if present; "no reviews" and "no insights" states render correctly.
 
 ## User story
 As a public visitor, I want to understand a property's trust signals before deciding to pursue it.
@@ -72,11 +76,11 @@ type DistilledInsightPublic = {
 - Public must never receive reviews.text_input or per-review raw text.
 
 ## Acceptance criteria checklist
-- [ ] Property page renders from mock data (`UI-PUB-02`, `AC-02`)
-- [ ] Shows correct "no reviews" state when review_count = 0 (`UI-PUB-03`, `AGG-03`, `AGG-04`)
-- [ ] Per-metric and overall display scores follow 0–6 mapping (`AGG-04`, `AGG-05`, `TST-05`)
-- [ ] Never displays raw user text; only approved distilled insights (`INS-04`, `NFR-PRIV-01`, `TST-06`)
-- [ ] "No insights yet" when no approved insight (`UI-PUB-03`)
+- [x] Property page renders from mock data (`UI-PUB-02`, `AC-02`)
+- [x] Shows correct "no reviews" state when review_count = 0 (`UI-PUB-03`, `AGG-03`, `AGG-04`)
+- [x] Per-metric and overall display scores follow 0–5 mapping (`AGG-04`, `AGG-05`, `TST-05`) — updated from original 0–6 spec
+- [x] Never displays raw user text; only approved distilled insights (`INS-04`, `NFR-PRIV-01`, `TST-06`)
+- [x] "No insights yet" when no approved insight (`UI-PUB-03`)
 
 ## Test notes (manual smoke steps)
 1. Open `/properties/[id]` with mock property that has reviews and approved insight; verify scores and insights panel.

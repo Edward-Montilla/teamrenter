@@ -1,5 +1,9 @@
 # Business Reporting SRS
 
+> **V2 Reconciliation Note:** This SRS was written before the PRD v2 expansion. The canonical requirements for business-facing features are now in `proj_docs/Software Requirements.md` (SRS v2.0), specifically `FR-BP-01` through `FR-BP-10` and acceptance criteria `AC-BP-01` through `AC-BP-10`. This document remains a useful detailed reference — its functional requirements align with the v2 SRS but use different identifiers and an `organizations` model superseded by `portfolio_properties` + `company_profiles` in Slice 50.
+>
+> **Mapping:** `platform_admin` → `admin` role | `business_user` → `landlord` role | `business_manager` → `team_members.role = 'admin'` within a landlord's portfolio.
+
 ## 1. Purpose
 This document defines the functional and non-functional requirements for business reporting and portfolio views derived from renter review data. The feature set is intended for internal admins first and then for development-company users with scoped access to their own properties.
 

@@ -1,5 +1,9 @@
 # Slice 16 — Mobile-First UX Polish + Screen Simplification
 
+> **Status: Complete (docs only).** This is a planning-only mobile UX slice. The mobile-first principles documented here inform all future responsive work.
+>
+> **V2 note:** Slice 50 Phase 6 implements the mobile hamburger menu, nav drawer, and touch-target audit specified here and in Slice 19. Phase 6 also applies these mobile-first principles to the portal sidebar collapse on mobile.
+
 ## Goal (demo in 1–3 minutes)
 
 The web app feels intentionally designed for mobile browsing and review submission: each screen emphasizes one primary action, the first screenful answers the user's key questions quickly, forms feel lighter, and critical actions are easier to tap, understand, and complete with one hand.

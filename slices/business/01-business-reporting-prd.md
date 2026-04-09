@@ -1,5 +1,15 @@
 # Business Reporting PRD
 
+> **V2 Reconciliation Note:** This document was written before the PRD v2 expansion (Slice 50). The Business Portal defined in Slice 50 Phase 5 overlaps significantly with this PRD's scope — both address landlord/company-facing portfolio views, property performance, benchmarks, and issue signals.
+>
+> **Key differences:**
+> - This PRD uses an `organizations` model; Slice 50 uses `portfolio_properties` + `company_profiles` + `team_members` for the same ownership mapping (see `proj_docs/Schema & ERD.md` Part 2).
+> - This PRD proposes `/business/*` routes; Slice 50 uses `/portal/*` routes.
+> - This PRD's user classes (`business_user`, `business_manager`) map to the `landlord` role + `team_members` role delegation in Slice 50.
+> - The data scoping principle is the same: company users see only their own portfolio's data, never raw `text_input`.
+>
+> **Resolution:** Slice 50 Phase 5 is the canonical implementation plan for business-facing features. This PRD remains useful as a requirements reference — the product surfaces, success metrics, and core principles align with the portal. The `organizations` table proposed here is superseded by `company_profiles` + `portfolio_properties`.
+
 ## Product name
 Business Reports and Portfolio Views
 

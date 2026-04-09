@@ -1,5 +1,9 @@
 # Slice 14 — Admin Access Request Path
 
+> **Status: Complete.** Admin access request flow is implemented with `admin_role_requests` table, eligibility gating, admin review tooling, and role promotion.
+>
+> **V2 note:** Slice 50 Phase 3 adds a `landlord` role. The access request pattern from this slice may be extended for landlord onboarding in the future, but landlord role assignment is currently scoped as an admin action (not self-service request) per the Tech Spec.
+
 ## Goal (demo in 1–3 minutes)
 
 Eligible signed-up users can visit a dedicated request path, submit an admin access request, and enter a review flow that may later promote their `profiles.role` to `admin`; no user can self-promote directly.
@@ -62,7 +66,7 @@ As an eligible team member or trusted operator, I want a clear path to request a
   - `eligible: boolean`
   - `hasActiveRequest: boolean`
   - `requestStatus: 'none' | 'pending' | 'approved' | 'rejected'`
-  - `currentRole: 'public' | 'verified' | 'admin'`
+  - `currentRole: 'public' | 'verified' | 'admin' | 'landlord'`
 
 ## RLS/Constraints notes
 
@@ -73,12 +77,12 @@ As an eligible team member or trusted operator, I want a clear path to request a
 
 ## Acceptance criteria checklist
 
-- [ ] Signed-in eligible users can open `/signup/request-admin` and submit a request
-- [ ] Ineligible users cannot use the path to create an admin request
-- [ ] Submitting a request does not immediately change `profiles.role`
-- [ ] Approved requests result in an explicit admin-driven role promotion to `profiles.role = 'admin'`
-- [ ] Duplicate active requests are blocked or handled by a documented resubmission rule
-- [ ] Review actions are attributable to an admin user and timestamped
+- [x] Signed-in eligible users can open `/signup/request-admin` and submit a request
+- [x] Ineligible users cannot use the path to create an admin request
+- [x] Submitting a request does not immediately change `profiles.role`
+- [x] Approved requests result in an explicit admin-driven role promotion to `profiles.role = 'admin'`
+- [x] Duplicate active requests are blocked or handled by a documented resubmission rule
+- [x] Review actions are attributable to an admin user and timestamped
 
 ## Test notes (manual smoke steps)
 
