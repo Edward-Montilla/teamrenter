@@ -87,6 +87,8 @@ export type PropertyDetailPublic = {
   aggregates: PropertyAggregatePublic;
   insights: DistilledInsightPublic | null;
   photos: PropertyPhotoPublic[];
+  /** Neighbourhood display name when linked (Slice 50). */
+  neighbourhood?: string | null;
 };
 
 // --- Slice 03: Review submission ---
@@ -241,7 +243,7 @@ export type AdminOverviewResponse = {
 
 // --- Slice 14: Admin access requests ---
 
-export type CurrentUserRole = "public" | "verified" | "admin";
+export type CurrentUserRole = "public" | "verified" | "admin" | "landlord";
 export type AdminRoleRequestState = "none" | "pending" | "approved" | "rejected";
 export type AdminRoleReviewStatus = Exclude<AdminRoleRequestState, "none" | "pending">;
 
@@ -380,4 +382,149 @@ export type AdminPropertyPhotoCreateInput = {
 export type AdminRoleRequestReviewInput = {
   status: AdminRoleReviewStatus;
   review_notes?: string;
+};
+
+// --- Slice 50: Neighbourhoods (Consumer UX) ---
+
+export type NeighbourhoodListItem = {
+  id: string;
+  name: string;
+  city: string;
+  province: string;
+  description: string | null;
+  property_count: number;
+  avg_trust_score: DisplayScore0_5;
+};
+
+export type NeighbourhoodDetail = NeighbourhoodListItem & {
+  properties: PropertyListItem[];
+};
+
+export type NeighbourhoodSearchResponse = {
+  items: NeighbourhoodListItem[];
+  total: number;
+};
+
+// --- Slice 50: User Shortlists (Consumer UX) ---
+
+export type UserShortlistItem = {
+  property_id: string;
+  display_name: string;
+  address_line1: string;
+  city: string;
+  trustscore_display_0_5: DisplayScore0_5;
+  added_at: string;
+};
+
+export type ShortlistToggleInput = {
+  property_id: string;
+};
+
+export type ShortlistToggleResponse = {
+  action: "added" | "removed";
+  property_id: string;
+};
+
+// --- Slice 50: Property Comparison (Consumer UX) ---
+
+export type ComparisonPropertyItem = PropertyDetailPublic & {
+  neighbourhood: string | null;
+};
+
+// --- Slice 50: Business Portal ---
+
+export type PortfolioPropertyItem = {
+  id: string;
+  display_name: string;
+  address_line1: string;
+  city: string;
+  province: string;
+  trustscore_display_0_5: DisplayScore0_5;
+  review_count: number;
+  vacancy_status: "occupied" | "vacant" | "unknown";
+  trend: "improving" | "stable" | "declining";
+};
+
+export type PortfolioOverviewResponse = {
+  properties: PortfolioPropertyItem[];
+  total: number;
+};
+
+export type BenchmarkData = {
+  scope_type: "city" | "neighbourhood";
+  scope_value: string;
+  avg_trust_score: number | null;
+  avg_management_responsiveness: number | null;
+  avg_maintenance_timeliness: number | null;
+  avg_listing_accuracy: number | null;
+  avg_fee_transparency: number | null;
+  avg_lease_clarity: number | null;
+  property_count: number;
+  review_count: number;
+  computed_at: string;
+};
+
+export type BenchmarkResponse = {
+  items: BenchmarkData[];
+};
+
+export type RenterSignal = {
+  property_id: string;
+  display_name: string;
+  signal_type: string;
+  signal_label: string;
+  confidence: number | null;
+  detected_at: string;
+};
+
+export type RenterSignalsResponse = {
+  signals: RenterSignal[];
+};
+
+export type ReviewResponseDraft = {
+  id: string;
+  review_id: string;
+  author_user_id: string;
+  body: string;
+  status: "pending" | "approved" | "rejected";
+  reviewed_by: string | null;
+  reviewed_at: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type ReviewResponseCreateInput = {
+  body: string;
+};
+
+export type TeamMemberItem = {
+  id: string;
+  owner_user_id: string;
+  member_user_id: string;
+  member_email: string;
+  role: "viewer" | "editor" | "admin";
+  accepted_at: string | null;
+  created_at: string;
+};
+
+export type TeamMemberInviteInput = {
+  email: string;
+  role: "viewer" | "editor" | "admin";
+};
+
+export type NotificationPreference = {
+  new_review_alert: boolean;
+  review_response_approved: boolean;
+  weekly_summary: boolean;
+  review_gap_alert: boolean;
+  team_activity_alert: boolean;
+};
+
+export type CompanyProfile = {
+  company_name: string;
+  description: string | null;
+  website_url: string | null;
+  contact_email: string | null;
+  contact_phone: string | null;
+  logo_r2_key: string | null;
 };

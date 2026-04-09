@@ -13,7 +13,8 @@ BEGIN
   WHERE lower(btrim(u.email)) = 'gmont153@mtroyal.ca';
 
   IF v_match_count = 0 THEN
-    RAISE EXCEPTION 'No auth.users record found for email gmont153@mtroyal.ca';
+    RAISE NOTICE 'No auth.users record found for email gmont153@mtroyal.ca — skipping (expected in local dev)';
+    RETURN;
   ELSIF v_match_count > 1 THEN
     RAISE EXCEPTION 'Multiple auth.users records found for email gmont153@mtroyal.ca';
   END IF;

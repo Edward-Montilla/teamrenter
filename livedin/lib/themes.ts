@@ -6,7 +6,8 @@ export type AppThemeKey =
   | "ink-blue-peach-pop"
   | "forest-charcoal"
   | "navy-digital-sky"
-  | "aubergine-rose";
+  | "aubergine-rose"
+  | "navy-amber";
 
 export type AppTheme = {
   key: AppThemeKey;
@@ -110,6 +111,24 @@ export const APP_THEMES: AppTheme[] = [
       secondaryAccent: "#7E6C77",
       neutralSupport: "#E5E7EB",
       mutedText: "#7E6C77",
+    },
+  },
+  {
+    key: "navy-amber",
+    name: "Navy + Amber",
+    description:
+      "Trust-first with warm amber energy — navy authority meets approachable warmth",
+    tokens: {
+      primaryText: "#0F1F38",
+      pageBg: "#F7F4EF",
+      surfaceCard: "#FFFFFF",
+      surfaceAlt: "#F7F4EF",
+      primaryAccent: "#E8913A",
+      primaryAccentText: "#FFFFFF",
+      softAccent: "#F7F4EF",
+      secondaryAccent: "#F59E0B",
+      neutralSupport: "#E2DDD6",
+      mutedText: "#717182",
     },
   },
 ];

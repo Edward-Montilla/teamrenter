@@ -18,6 +18,10 @@ INSERT INTO auth.users (
   email,
   encrypted_password,
   email_confirmed_at,
+  confirmation_token,
+  recovery_token,
+  email_change_token_new,
+  email_change,
   created_at,
   updated_at,
   raw_app_meta_data,
@@ -31,9 +35,10 @@ INSERT INTO auth.users (
     'public@example.com',
     crypt('seedpassword', gen_salt('bf')),
     null,
+    '', '', '', '',
     now(),
     now(),
-    '{}',
+    '{"provider":"email","providers":["email"]}',
     '{}'
   ),
   (
@@ -44,9 +49,10 @@ INSERT INTO auth.users (
     'verified@example.com',
     crypt('seedpassword', gen_salt('bf')),
     now(),
+    '', '', '', '',
     now(),
     now(),
-    '{}',
+    '{"provider":"email","providers":["email"]}',
     '{}'
   ),
   (
@@ -57,9 +63,10 @@ INSERT INTO auth.users (
     'admin@example.com',
     crypt('seedpassword', gen_salt('bf')),
     now(),
+    '', '', '', '',
     now(),
     now(),
-    '{}',
+    '{"provider":"email","providers":["email"]}',
     '{}'
   )
 ON CONFLICT (id) DO NOTHING;
@@ -300,3 +307,154 @@ INSERT INTO public.distilled_insights (
   now()
 )
 ON CONFLICT (property_id) DO NOTHING;
+
+-- =============================================================================
+-- Slice 50: Landlord auth user
+-- =============================================================================
+INSERT INTO auth.users (
+  id, instance_id, aud, role, email, encrypted_password,
+  email_confirmed_at, confirmation_token, recovery_token,
+  email_change_token_new, email_change,
+  created_at, updated_at,
+  raw_app_meta_data, raw_user_meta_data
+) VALUES (
+  '44444444-4444-4444-4444-444444444444',
+  '00000000-0000-0000-0000-000000000000',
+  'authenticated', 'authenticated',
+  'landlord@example.com',
+  crypt('seedpassword', gen_salt('bf')),
+  now(), '', '', '', '',
+  now(), now(),
+  '{"provider":"email","providers":["email"]}', '{}'
+)
+ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO auth.identities (
+  id, user_id, provider_id, provider, identity_data, created_at, updated_at
+) VALUES (
+  '44444444-4444-4444-4444-444444444444',
+  '44444444-4444-4444-4444-444444444444',
+  '44444444-4444-4444-4444-444444444444',
+  'email',
+  '{"sub":"44444444-4444-4444-4444-444444444444","email":"landlord@example.com"}'::jsonb,
+  now(), now()
+)
+ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO public.profiles (user_id, role, email_verified, created_at, updated_at)
+VALUES ('44444444-4444-4444-4444-444444444444', 'landlord', true, now(), now())
+ON CONFLICT (user_id) DO UPDATE SET role = 'landlord', email_verified = true, updated_at = now();
+
+-- =============================================================================
+-- Slice 50: Neighbourhoods
+-- =============================================================================
+INSERT INTO public.neighbourhoods (id, name, city, province, description, property_count, avg_trust_score)
+VALUES
+  ('cc000001-0001-4000-8000-000000000001', 'Downtown Core', 'Toronto', 'ON',
+   'Central business district with high-density rentals.', 2, 4.25),
+  ('cc000002-0002-4000-8000-000000000002', 'Midtown', 'Toronto', 'ON',
+   'Mixed residential and commercial area.', 1, 3.50),
+  ('cc000003-0003-4000-8000-000000000003', 'West End', 'Toronto', 'ON',
+   'Family-friendly neighbourhood with parks.', 0, null),
+  ('cc000004-0004-4000-8000-000000000004', 'Old Montreal', 'Montreal', 'QC',
+   'Historic district with cobblestone streets.', 0, null)
+ON CONFLICT (id) DO NOTHING;
+
+-- Link properties to neighbourhoods
+UPDATE public.properties SET neighbourhood_id = 'cc000001-0001-4000-8000-000000000001'
+WHERE id = 'a0000001-0001-4000-8000-000000000001';
+
+UPDATE public.properties SET neighbourhood_id = 'cc000001-0001-4000-8000-000000000001'
+WHERE id = 'a0000002-0002-4000-8000-000000000002';
+
+UPDATE public.properties SET neighbourhood_id = 'cc000002-0002-4000-8000-000000000002'
+WHERE id = 'a0000004-0004-4000-8000-000000000004';
+
+-- =============================================================================
+-- Slice 50: Portfolio properties (landlord owns 2 properties)
+-- =============================================================================
+INSERT INTO public.portfolio_properties (id, user_id, property_id, added_at)
+VALUES
+  ('dd000001-0001-4000-8000-000000000001',
+   '44444444-4444-4444-4444-444444444444',
+   'a0000001-0001-4000-8000-000000000001', now()),
+  ('dd000002-0002-4000-8000-000000000002',
+   '44444444-4444-4444-4444-444444444444',
+   'a0000004-0004-4000-8000-000000000004', now())
+ON CONFLICT (id) DO NOTHING;
+
+-- =============================================================================
+-- Slice 50: Team member (verified user is a viewer on landlord's team)
+-- =============================================================================
+INSERT INTO public.team_members (id, owner_user_id, member_user_id, role, invited_email, accepted_at)
+VALUES (
+  'ee000001-0001-4000-8000-000000000001',
+  '44444444-4444-4444-4444-444444444444',
+  '22222222-2222-2222-2222-222222222222',
+  'viewer',
+  'verified@example.com',
+  now()
+)
+ON CONFLICT (id) DO NOTHING;
+
+-- =============================================================================
+-- Slice 50: Company profile
+-- =============================================================================
+INSERT INTO public.company_profiles (user_id, company_name, description, website_url, contact_email)
+VALUES (
+  '44444444-4444-4444-4444-444444444444',
+  'Sunrise Property Group',
+  'Professional property management serving the Greater Toronto Area since 2015.',
+  'https://sunrise-properties.example.com',
+  'contact@sunrise-properties.example.com'
+)
+ON CONFLICT (user_id) DO NOTHING;
+
+-- =============================================================================
+-- Slice 50: Benchmark averages
+-- =============================================================================
+INSERT INTO public.benchmark_averages (id, scope_type, scope_value, avg_management_responsiveness, avg_maintenance_timeliness, avg_listing_accuracy, avg_fee_transparency, avg_lease_clarity, avg_trust_score, property_count, review_count, computed_at)
+VALUES
+  ('ff000001-0001-4000-8000-000000000001', 'city', 'Toronto', 4.20, 3.80, 4.00, 3.50, 4.10, 3.92, 3, 2, now()),
+  ('ff000002-0002-4000-8000-000000000002', 'neighbourhood', 'Downtown Core', 4.50, 4.25, 4.50, 3.50, 4.50, 4.25, 2, 2, now())
+ON CONFLICT (scope_type, scope_value) DO NOTHING;
+
+-- =============================================================================
+-- Slice 50: Notification preferences
+-- =============================================================================
+INSERT INTO public.notification_preferences (user_id, new_review_alert, review_response_approved, weekly_summary, review_gap_alert, team_activity_alert)
+VALUES ('44444444-4444-4444-4444-444444444444', true, true, true, true, true)
+ON CONFLICT (user_id) DO NOTHING;
+
+-- =============================================================================
+-- Slice 50: Review response drafts (one approved, one pending)
+-- =============================================================================
+INSERT INTO public.review_response_drafts (id, review_id, author_user_id, body, status, reviewed_by, reviewed_at)
+VALUES
+  ('ab000001-0001-4000-8000-000000000001',
+   'b0000001-0001-4000-8000-000000000001',
+   '44444444-4444-4444-4444-444444444444',
+   'Thank you for your feedback! We appreciate your kind words about our management team.',
+   'approved',
+   '33333333-3333-3333-3333-333333333333',
+   now()),
+  ('ab000002-0002-4000-8000-000000000002',
+   'b0000002-0002-4000-8000-000000000002',
+   '44444444-4444-4444-4444-444444444444',
+   'We are working on improving fee transparency. Thank you for the review.',
+   'pending',
+   null, null)
+ON CONFLICT (id) DO NOTHING;
+
+-- =============================================================================
+-- Slice 50: User shortlists (verified user shortlists 2 properties)
+-- =============================================================================
+INSERT INTO public.user_shortlists (id, user_id, property_id)
+VALUES
+  ('ac000001-0001-4000-8000-000000000001',
+   '22222222-2222-2222-2222-222222222222',
+   'a0000001-0001-4000-8000-000000000001'),
+  ('ac000002-0002-4000-8000-000000000002',
+   '22222222-2222-2222-2222-222222222222',
+   'a0000004-0004-4000-8000-000000000004')
+ON CONFLICT (id) DO NOTHING;

@@ -17,6 +17,8 @@ type PropertyRow = {
   postal_code: string;
   management_company: string | null;
   status: string;
+  neighbourhood_id: string | null;
+  neighbourhoods: { name: string } | null;
 };
 
 type AggregateRow = {
@@ -59,7 +61,9 @@ export async function getPropertyDetail(id: string): Promise<PropertyDetailPubli
       province,
       postal_code,
       management_company,
-      status
+      status,
+      neighbourhood_id,
+      neighbourhoods (name)
     `,
     )
     .eq("id", id)
@@ -163,6 +167,8 @@ export async function getPropertyDetail(id: string): Promise<PropertyDetailPubli
     }),
   );
 
+  const neighbourhoodName = property.neighbourhoods?.name ?? null;
+
   return {
     property: {
       id: property.id,
@@ -177,5 +183,6 @@ export async function getPropertyDetail(id: string): Promise<PropertyDetailPubli
     aggregates: aggregatesPublic,
     insights: insightPublic,
     photos,
+    neighbourhood: neighbourhoodName,
   };
 }

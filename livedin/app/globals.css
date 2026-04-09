@@ -14,6 +14,23 @@
   --theme-warning: #f59e0b;
   --theme-error: #ef4444;
   --theme-info: #38bdf8;
+
+  /* Portal sidebar + charts (overridable per theme) */
+  --sidebar-bg: #0f1f3a;
+  --sidebar-text: #ffffff;
+  --sidebar-text-muted: #4d6899;
+  --sidebar-accent: #1a2f52;
+  --sidebar-border: #2a4266;
+  --sidebar-active-text: #f59e0b;
+
+  --chart-1: #0f1f3a;
+  --chart-2: #f59e0b;
+  --chart-3: #3b5580;
+  --chart-4: #fbbf24;
+  --chart-5: #2a4266;
+  --chart-grid: #e5e7eb;
+  --chart-axis-text: #6b7280;
+  --chart-tooltip-bg: #ffffff;
 }
 
 [data-theme="recommended"] {
@@ -76,10 +93,23 @@
   --theme-muted: #7e6c77;
 }
 
+[data-theme="navy-amber"] {
+  --background: #f7f4ef;
+  --foreground: #0f1f38;
+  --theme-surface: #ffffff;
+  --theme-surface-alt: #f7f4ef;
+  --theme-primary: #e8913a;
+  --theme-primary-foreground: #ffffff;
+  --theme-secondary: #f59e0b;
+  --theme-border: #e2ddd6;
+  --theme-muted: #717182;
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
+  --font-sans: var(--font-inter);
+  --font-heading: var(--font-playfair);
   --font-mono: var(--font-geist-mono);
 }
 
@@ -92,7 +122,7 @@ html {
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+  font-family: var(--font-inter), "Inter", Arial, Helvetica, sans-serif;
 }
 
 :where(a, button, input, select, textarea, [tabindex]:not([tabindex="-1"])):focus-visible {
