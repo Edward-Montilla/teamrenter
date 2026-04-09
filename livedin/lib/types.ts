@@ -452,6 +452,46 @@ export type PortfolioOverviewResponse = {
   total: number;
 };
 
+export type PortalReviewItem = {
+  id: string;
+  property_id: string;
+  user_id: string;
+  status: ReviewStatus;
+  management_responsiveness: ReviewScore;
+  maintenance_timeliness: ReviewScore;
+  listing_accuracy: ReviewScore;
+  fee_transparency: ReviewScore;
+  lease_clarity: ReviewScore;
+  created_at: string;
+  updated_at: string;
+};
+
+export type PortalPropertyReviewsResponse = {
+  items: PortalReviewItem[];
+};
+
+export type PortfolioAnalytics = {
+  review_count: number;
+  avg_management_responsiveness: number | null;
+  avg_maintenance_timeliness: number | null;
+  avg_listing_accuracy: number | null;
+  avg_fee_transparency: number | null;
+  avg_lease_clarity: number | null;
+  avg_trustscore: number | null;
+  display_trustscore_0_5: DisplayScore0_5;
+  display_management_responsiveness_0_5: DisplayScore0_5;
+  display_maintenance_timeliness_0_5: DisplayScore0_5;
+  display_listing_accuracy_0_5: DisplayScore0_5;
+  display_fee_transparency_0_5: DisplayScore0_5;
+  display_lease_clarity_0_5: DisplayScore0_5;
+  last_updated: string;
+};
+
+export type PortfolioAnalyticsResponse = {
+  property_id: string;
+  aggregates: PortfolioAnalytics | null;
+};
+
 export type BenchmarkData = {
   scope_type: "city" | "neighbourhood";
   scope_value: string;
@@ -497,6 +537,21 @@ export type ReviewResponseDraft = {
 
 export type ReviewResponseCreateInput = {
   body: string;
+};
+
+export type PortalModerationItem = {
+  draft_id: string;
+  review_id: string;
+  property_id: string;
+  property_display_name: string;
+  draft_body: string;
+  draft_status: ReviewResponseDraft["status"];
+  drafted_at: string;
+  reviewed_at: string | null;
+};
+
+export type PortalModerationResponse = {
+  items: PortalModerationItem[];
 };
 
 export type TeamMemberItem = {

@@ -3,10 +3,17 @@
 import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
 import type {
   PortfolioOverviewResponse,
+  PortfolioAnalyticsResponse,
+  PortalPropertyReviewsResponse,
   BenchmarkResponse,
   RenterSignalsResponse,
   ReviewResponseDraft,
   ReviewResponseCreateInput,
+  PortalModerationResponse,
+  TeamMemberItem,
+  TeamMemberInviteInput,
+  CompanyProfile,
+  NotificationPreference,
   ShortlistToggleResponse,
   ShortlistToggleInput,
   UserShortlistItem,
@@ -62,13 +69,13 @@ export function fetchPortfolioProperties() {
 }
 
 export function fetchPortfolioReviews(propertyId: string) {
-  return portalFetch<{ items: unknown[] }>(
+  return portalFetch<PortalPropertyReviewsResponse>(
     `/api/portal/properties/${propertyId}/reviews`,
   );
 }
 
 export function fetchPortfolioAnalytics(propertyId: string) {
-  return portalFetch<{ property_id: string; aggregates: unknown }>(
+  return portalFetch<PortfolioAnalyticsResponse>(
     `/api/portal/properties/${propertyId}/analytics`,
   );
 }
@@ -89,6 +96,66 @@ export function submitReviewResponse(
     `/api/portal/reviews/${reviewId}/respond`,
     {
       method: "POST",
+      body: JSON.stringify(input),
+    },
+  );
+}
+
+export function fetchPortalModerationQueue() {
+  return portalFetch<PortalModerationResponse>("/api/portal/moderation");
+}
+
+export function fetchPortalTeam() {
+  return portalFetch<{ items: TeamMemberItem[] }>("/api/portal/team");
+}
+
+export function invitePortalTeamMember(input: TeamMemberInviteInput) {
+  return portalFetch<TeamMemberItem>("/api/portal/team", {
+    method: "POST",
+    body: JSON.stringify(input),
+  });
+}
+
+export function updatePortalTeamMemberRole(
+  id: string,
+  role: TeamMemberItem["role"],
+) {
+  return portalFetch<TeamMemberItem>(`/api/portal/team/${id}`, {
+    method: "PATCH",
+    body: JSON.stringify({ role }),
+  });
+}
+
+export function removePortalTeamMember(id: string) {
+  return portalFetch<{ ok: true }>(`/api/portal/team/${id}`, {
+    method: "DELETE",
+  });
+}
+
+export function fetchCompanyProfile() {
+  return portalFetch<CompanyProfile>("/api/portal/company-profile");
+}
+
+export function updateCompanyProfile(input: CompanyProfile) {
+  return portalFetch<CompanyProfile>("/api/portal/company-profile", {
+    method: "PUT",
+    body: JSON.stringify(input),
+  });
+}
+
+export function fetchNotificationPreferences() {
+  return portalFetch<NotificationPreference>(
+    "/api/portal/notification-preferences",
+  );
+}
+
+export function updateNotificationPreferences(
+  input: Partial<NotificationPreference>,
+) {
+  return portalFetch<NotificationPreference>(
+    "/api/portal/notification-preferences",
+    {
+      method: "PUT",
       body: JSON.stringify(input),
     },
   );

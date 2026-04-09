@@ -33,7 +33,7 @@ export async function GET(
 
   let reviewQuery = portal.supabase
     .from("reviews")
-    .select("id, property_id, user_id, status, management_responsiveness, maintenance_timeliness, listing_accuracy, fee_transparency, lease_clarity, text_input, created_at, updated_at")
+    .select("id, property_id, user_id, status, management_responsiveness, maintenance_timeliness, listing_accuracy, fee_transparency, lease_clarity, created_at, updated_at")
     .eq("property_id", propertyId)
     .order("created_at", { ascending: false });
 

@@ -209,6 +209,11 @@ flowchart LR
     apiPortalBenchmarks["GET /api/portal/benchmarks"]
     apiPortalSignals["GET /api/portal/signals"]
     apiPortalRespond["POST /api/portal/reviews/[id]/respond"]
+    apiPortalModeration["GET /api/portal/moderation"]
+    apiPortalTeam["GET, POST /api/portal/team"]
+    apiPortalTeamMember["PATCH, DELETE /api/portal/team/[id]"]
+    apiPortalProfile["GET, PUT /api/portal/company-profile"]
+    apiPortalPrefs["GET, PUT /api/portal/notification-preferences"]
   end
 
   subgraph AdminApi["Admin APIs"]
@@ -269,6 +274,11 @@ flowchart LR
   landlordApi --> apiPortalBenchmarks
   landlordApi --> apiPortalSignals
   landlordApi --> apiPortalRespond
+  landlordApi --> apiPortalModeration
+  landlordApi --> apiPortalTeam
+  landlordApi --> apiPortalTeamMember
+  landlordApi --> apiPortalProfile
+  landlordApi --> apiPortalPrefs
 
   adminApi --> apiProps
   adminApi --> apiProp
@@ -300,6 +310,11 @@ flowchart LR
   adminApi --> apiPortalBenchmarks
   adminApi --> apiPortalSignals
   adminApi --> apiPortalRespond
+  adminApi --> apiPortalModeration
+  adminApi --> apiPortalTeam
+  adminApi --> apiPortalTeamMember
+  adminApi --> apiPortalProfile
+  adminApi --> apiPortalPrefs
 ```
 
 ### API Matrix
@@ -321,6 +336,15 @@ flowchart LR
 | `GET /api/portal/benchmarks` | No | No | No | Yes | Yes | |
 | `GET /api/portal/signals` | No | No | No | Yes | Yes | |
 | `POST /api/portal/reviews/[id]/respond` | No | No | No | Yes | Yes | |
+| `GET /api/portal/moderation` | No | No | No | Yes | Yes | Response draft moderation queue (landlord-safe) |
+| `GET /api/portal/team` | No | No | No | Yes | Yes | List team members |
+| `POST /api/portal/team` | No | No | No | Yes | Yes | Landlord only for invites |
+| `PATCH /api/portal/team/[id]` | No | No | No | Yes | Yes | Landlord only for role changes |
+| `DELETE /api/portal/team/[id]` | No | No | No | Yes | Yes | Landlord only for removals |
+| `GET /api/portal/company-profile` | No | No | No | Yes | Yes | |
+| `PUT /api/portal/company-profile` | No | No | No | Yes | Yes | Landlord only for updates |
+| `GET /api/portal/notification-preferences` | No | No | No | Yes | Yes | |
+| `PUT /api/portal/notification-preferences` | No | No | No | Yes | Yes | Landlord only for updates |
 | `GET /api/admin/me` | No | No | No | Yes | No | Admin only |
 | `GET /api/admin/overview` | No | No | No | Yes | No | Admin only |
 | `GET /api/admin/access-requests` | No | No | No | Yes | No | Admin only |

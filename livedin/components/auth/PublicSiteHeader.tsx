@@ -109,10 +109,12 @@ function formatUserLabel(email: string): string {
 
 function NavLinks({
   isAdmin,
+  isPortalUser,
   showRequestAdmin,
   requestLabel,
 }: {
   isAdmin: boolean;
+  isPortalUser: boolean;
   showRequestAdmin: boolean;
   requestLabel: string;
 }) {
@@ -124,6 +126,11 @@ function NavLinks({
       <Link href="/write-review/new" className={NAV_LINK}>
         Leave a review
       </Link>
+      {isPortalUser && (
+        <Link href="/portal" className={NAV_LINK}>
+          Portal
+        </Link>
+      )}
       {showRequestAdmin && (
         <Link href="/signup/request-admin" className={NAV_LINK}>
           {requestLabel}
@@ -161,6 +168,7 @@ function UserActions({
   adminRequestStatus: AdminRoleRequestStatusResponse | null;
 }) {
   const isAdmin = profile?.role === "admin";
+  const isPortalUser = profile?.role === "admin" || profile?.role === "landlord";
   const showRequestAdmin = !isAdmin;
   const requestLabel = adminRequestStatus?.hasActiveRequest
     ? "Admin request"
@@ -180,6 +188,14 @@ function UserActions({
           Admin
         </Link>
       )}
+      {isPortalUser && (
+        <Link
+          href="/portal"
+          className={`md:hidden ${secondaryButtonClass}`}
+        >
+          Portal
+        </Link>
+      )}
       {showRequestAdmin && (
         <Link
           href="/signup/request-admin"
@@ -196,6 +212,7 @@ function UserActions({
 export function PublicSiteHeader() {
   const { loading, email, profile, adminRequestStatus } = useHeaderAuth();
   const isAdmin = profile?.role === "admin";
+  const isPortalUser = profile?.role === "admin" || profile?.role === "landlord";
   const showRequestAdmin = Boolean(email) && !isAdmin;
   const requestLabel = adminRequestStatus?.hasActiveRequest
     ? "Admin request"
@@ -212,6 +229,7 @@ export function PublicSiteHeader() {
           </Link>
           <NavLinks
             isAdmin={isAdmin}
+            isPortalUser={isPortalUser}
             showRequestAdmin={showRequestAdmin}
             requestLabel={requestLabel}
           />
