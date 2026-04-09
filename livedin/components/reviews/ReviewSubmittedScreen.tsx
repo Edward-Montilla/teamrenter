@@ -8,14 +8,29 @@ type ReviewSubmittedScreenProps = {
   reviewId: string;
   propertyId: string;
   variant?: "default" | "facelift";
+  stepLabel?: string;
+  primaryActionHref?: string;
+  primaryActionLabel?: string;
+  secondaryActionHref?: string;
+  secondaryActionLabel?: string;
 };
 
 export function ReviewSubmittedScreen({
   reviewId,
   propertyId,
   variant = "default",
+  stepLabel,
+  primaryActionHref,
+  primaryActionLabel,
+  secondaryActionHref,
+  secondaryActionLabel,
 }: ReviewSubmittedScreenProps) {
   const fx = variant === "facelift";
+  const resolvedStepLabel = stepLabel ?? "Step 3 of 3";
+  const resolvedPrimaryHref = primaryActionHref ?? `/properties/${propertyId}`;
+  const resolvedPrimaryLabel = primaryActionLabel ?? "View property listing";
+  const resolvedSecondaryHref = secondaryActionHref ?? "/";
+  const resolvedSecondaryLabel = secondaryActionLabel ?? "Return to search";
   return (
     <div className="space-y-6">
       <div
@@ -30,7 +45,7 @@ export function ReviewSubmittedScreen({
               : "text-sm font-medium uppercase tracking-[0.22em] text-zinc-500 dark:text-zinc-400"
           }
         >
-          Step 3 of 3
+          {resolvedStepLabel}
         </p>
         <h2
           className={
@@ -56,24 +71,24 @@ export function ReviewSubmittedScreen({
       />
       <div className="flex flex-wrap gap-3">
         <Link
-          href={`/properties/${propertyId}`}
+          href={resolvedPrimaryHref}
           className={
             fx
               ? "rounded-[12px] bg-[#E8913A] px-5 py-3 font-semibold text-white transition-colors hover:bg-[#d17f2f]"
               : primaryButtonClass
           }
         >
-          View property listing
+          {resolvedPrimaryLabel}
         </Link>
         <Link
-          href="/"
+          href={resolvedSecondaryHref}
           className={
             fx
               ? "rounded-[12px] border border-[#E2DDD6] bg-white px-5 py-3 font-semibold text-[#0F1F38] transition-colors hover:bg-[#F7F4EF]"
               : secondaryButtonClass
           }
         >
-          Return to search
+          {resolvedSecondaryLabel}
         </Link>
       </div>
     </div>

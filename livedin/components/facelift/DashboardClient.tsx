@@ -186,7 +186,7 @@ export function DashboardClient() {
               You can still submit reviews from any property page.
             </p>
             <Link
-              href="/submit-review/new"
+              href="/write-review/new"
               className="mt-6 inline-block font-semibold text-[#E8913A] hover:text-[#d17f2f]"
             >
               Write a review →

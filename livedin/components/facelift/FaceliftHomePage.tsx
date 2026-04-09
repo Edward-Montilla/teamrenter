@@ -172,7 +172,7 @@ export function FaceliftHomePage() {
             Share your experience and help others make better decisions
           </p>
           <Link
-            href="/submit-review/new"
+            href="/write-review/new"
             className="inline-block rounded-[16px] bg-[#E8913A] px-8 py-4 text-lg font-semibold text-white transition-colors hover:bg-[#d17f2f]"
           >
             Write a Review

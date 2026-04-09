@@ -121,7 +121,7 @@ function NavLinks({
       <Link href="/" className={NAV_LINK}>
         Browse properties
       </Link>
-      <Link href="/submit-review/new" className={NAV_LINK}>
+      <Link href="/write-review/new" className={NAV_LINK}>
         Leave a review
       </Link>
       {showRequestAdmin && (
@@ -141,7 +141,7 @@ function NavLinks({
 function GuestActions() {
   return (
     <>
-      <Link href="/submit-review/new" className={secondaryButtonClass}>
+      <Link href="/write-review/new" className={secondaryButtonClass}>
         Leave a review
       </Link>
       <Link href="/sign-in?redirect=%2F" className={primaryButtonClass}>

@@ -41,7 +41,7 @@ export function FaceliftHeader() {
               Neighbourhoods
             </Link>
             <Link
-              href="/submit-review/new"
+              href="/write-review/new"
               className="text-[#0F1F38] transition-colors hover:text-[#E8913A]"
             >
               Write a Review

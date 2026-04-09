@@ -222,7 +222,7 @@ export default async function PropertyDetailPage({ params }: Props) {
               </div>
 
               <Link
-                href={`/submit-review/${id}`}
+                href={`/write-review/${id}`}
                 className="mb-3 block w-full rounded-[12px] bg-[#E8913A] py-3 text-center font-semibold text-white transition-colors hover:bg-[#d17f2f]"
               >
                 Write a review

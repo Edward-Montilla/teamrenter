@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
+import { Suspense, useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { SearchBar } from "@/components/SearchBar";
@@ -97,17 +97,10 @@ function HomeInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const urlQ = searchParams.get("q") ?? "";
-  const urlSort = searchParams.get("sort") ?? "reviews";
-  const urlMin = searchParams.get("minScore");
-  const urlNeighbourhood = searchParams.get("neighbourhood") ?? "";
-
-  const [query, setQuery] = useState(urlQ);
-  const [sort, setSort] = useState<string>(
-    ["trust", "reviews", "recent"].includes(urlSort) ? urlSort : "reviews",
-  );
-  const [minScore, setMinScore] = useState<string>(urlMin ?? "");
-  const [neighbourhoodId, setNeighbourhoodId] = useState<string>(urlNeighbourhood);
+  const [query, setQuery] = useState("");
+  const [sort, setSort] = useState<string>("reviews");
+  const [minScore, setMinScore] = useState<string>("");
+  const [neighbourhoodId, setNeighbourhoodId] = useState<string>("");
 
   const [state, setState] = useState<UiListState>("loading");
   const [data, setData] = useState<PropertySearchResponse | null>(null);
@@ -191,7 +184,7 @@ function HomeInner() {
   }, []);
 
   useEffect(() => {
-    void refreshShortlist();
+    queueMicrotask(() => void refreshShortlist());
   }, [refreshShortlist]);
 
   useEffect(() => {
@@ -212,11 +205,6 @@ function HomeInner() {
     const mRaw = searchParams.get("minScore");
     const n = searchParams.get("neighbourhood") ?? "";
 
-    setQuery(q);
-    setSort(s);
-    setMinScore(mRaw ?? "");
-    setNeighbourhoodId(n);
-
     const minParsed =
       mRaw !== null && mRaw !== ""
         ? Math.min(5, Math.max(0, Number.parseInt(mRaw, 10)))
@@ -224,10 +212,16 @@ function HomeInner() {
     const minOpt =
       minParsed !== null && !Number.isNaN(minParsed) ? minParsed : null;
 
-    void runSearch(q, {
-      sort: s as "trust" | "reviews" | "recent",
-      minScore: minOpt,
-      neighbourhoodId: n || null,
+    queueMicrotask(() => {
+      setQuery(q);
+      setSort(s);
+      setMinScore(mRaw ?? "");
+      setNeighbourhoodId(n);
+      void runSearch(q, {
+        sort: s as "trust" | "reviews" | "recent",
+        minScore: minOpt,
+        neighbourhoodId: n || null,
+      });
     });
   }, [paramsKey, runSearch, searchParams]);
 
@@ -249,20 +243,16 @@ function HomeInner() {
   };
 
   const handleClearSearch = () => {
-    setQuery("");
     pushUrl({ q: "", sort, minScore, neighbourhood: neighbourhoodId });
-    void runSearch("", filterOpts());
   };
 
   const handleSearchSubmit = (q: string) => {
     setQuery(q);
     pushUrl({ q, sort, minScore, neighbourhood: neighbourhoodId });
-    void runSearch(q, filterOpts());
   };
 
   const applyFilters = () => {
     pushUrl({ q: query, sort, minScore, neighbourhood: neighbourhoodId });
-    void runSearch(query, filterOpts());
   };
 
   return (
@@ -292,7 +282,7 @@ function HomeInner() {
                 </div>
                 <div className="mt-4 flex flex-wrap gap-3">
                   <Link
-                    href="/submit-review/new"
+                    href="/write-review/new"
                     className={`${primaryButtonClass} inline-flex`}
                   >
                     Start a review

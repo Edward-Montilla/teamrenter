@@ -23,7 +23,7 @@ export function ReviewGateBanner({
   resendDisabled = false,
 }: ReviewGateBannerProps) {
   const signInHref = `/sign-in?redirect=${encodeURIComponent(
-    `/submit-review/${propertyId}`,
+    `/write-review/${propertyId}`,
   )}`;
 
   if (gateState === "unauthenticated") {
