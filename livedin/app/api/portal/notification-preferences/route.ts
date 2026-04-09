@@ -31,6 +31,17 @@ export async function GET(req: NextRequest) {
     );
   }
 
+  if (portal.user.role === "admin") {
+    const defaults: NotificationPreference = {
+      new_review_alert: true,
+      review_response_approved: true,
+      weekly_summary: false,
+      review_gap_alert: true,
+      team_activity_alert: true,
+    };
+    return NextResponse.json(defaults);
+  }
+
   if (portal.user.role !== "landlord") {
     return NextResponse.json(
       { message: "Only landlords have notification preferences here." },

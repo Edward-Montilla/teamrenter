@@ -60,7 +60,9 @@ function ComparisonContent() {
   }, []);
 
   useEffect(() => {
-    void load(ids);
+    queueMicrotask(() => {
+      void load(ids);
+    });
   }, [ids, load]);
 
   const handleRemove = (propertyId: string) => {

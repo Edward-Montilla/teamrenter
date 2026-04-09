@@ -10,6 +10,10 @@ import type {
   ShortlistToggleResponse,
   ShortlistToggleInput,
   UserShortlistItem,
+  TeamMemberItem,
+  TeamMemberInviteInput,
+  CompanyProfile,
+  NotificationPreference,
 } from "@/lib/types";
 
 async function getPortalAccessToken(): Promise<string> {
@@ -102,5 +106,51 @@ export function toggleShortlist(input: ShortlistToggleInput) {
   return portalFetch<ShortlistToggleResponse>("/api/user/shortlist", {
     method: "POST",
     body: JSON.stringify(input),
+  });
+}
+
+export function fetchPortalTeam() {
+  return portalFetch<{ items: TeamMemberItem[] }>("/api/portal/team");
+}
+
+export function invitePortalTeamMember(input: TeamMemberInviteInput) {
+  return portalFetch<TeamMemberItem>("/api/portal/team", {
+    method: "POST",
+    body: JSON.stringify(input),
+  });
+}
+
+export function updatePortalTeamMember(id: string, role: TeamMemberItem["role"]) {
+  return portalFetch<TeamMemberItem>(`/api/portal/team/${id}`, {
+    method: "PATCH",
+    body: JSON.stringify({ role }),
+  });
+}
+
+export function removePortalTeamMember(id: string) {
+  return portalFetch<{ ok: boolean }>(`/api/portal/team/${id}`, {
+    method: "DELETE",
+  });
+}
+
+export function fetchCompanyProfile() {
+  return portalFetch<CompanyProfile>("/api/portal/company-profile");
+}
+
+export function saveCompanyProfile(input: Partial<CompanyProfile> & { company_name: string }) {
+  return portalFetch<CompanyProfile>("/api/portal/company-profile", {
+    method: "PUT",
+    body: JSON.stringify(input),
+  });
+}
+
+export function fetchNotificationPreferences() {
+  return portalFetch<NotificationPreference>("/api/portal/notification-preferences");
+}
+
+export function saveNotificationPreferences(partial: Partial<NotificationPreference>) {
+  return portalFetch<NotificationPreference>("/api/portal/notification-preferences", {
+    method: "PUT",
+    body: JSON.stringify(partial),
   });
 }

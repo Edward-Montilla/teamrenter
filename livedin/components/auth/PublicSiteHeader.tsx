@@ -109,21 +109,40 @@ function formatUserLabel(email: string): string {
 
 function NavLinks({
   isAdmin,
+  isLandlord,
+  showDashboard,
   showRequestAdmin,
   requestLabel,
 }: {
   isAdmin: boolean;
+  isLandlord: boolean;
+  showDashboard: boolean;
   showRequestAdmin: boolean;
   requestLabel: string;
 }) {
+  const showPortal = isAdmin || isLandlord;
+
   return (
     <nav className="hidden items-center gap-4 text-sm text-zinc-600 dark:text-zinc-400 md:flex">
       <Link href="/" className={NAV_LINK}>
         Browse properties
       </Link>
+      <Link href="/neighbourhoods" className={NAV_LINK}>
+        Neighbourhoods
+      </Link>
       <Link href="/submit-review/new" className={NAV_LINK}>
         Leave a review
       </Link>
+      {showDashboard ? (
+        <Link href="/dashboard" className={NAV_LINK}>
+          Dashboard
+        </Link>
+      ) : null}
+      {showPortal ? (
+        <Link href="/portal" className={NAV_LINK}>
+          Portal
+        </Link>
+      ) : null}
       {showRequestAdmin && (
         <Link href="/signup/request-admin" className={NAV_LINK}>
           {requestLabel}
@@ -161,7 +180,10 @@ function UserActions({
   adminRequestStatus: AdminRoleRequestStatusResponse | null;
 }) {
   const isAdmin = profile?.role === "admin";
+  const isLandlord = profile?.role === "landlord";
   const showRequestAdmin = !isAdmin;
+  const showPortal = isAdmin || isLandlord;
+  const showDashboard = Boolean(profile?.email_verified);
   const requestLabel = adminRequestStatus?.hasActiveRequest
     ? "Admin request"
     : "Request admin access";
@@ -172,6 +194,19 @@ function UserActions({
         {formatUserLabel(email)}
         {profile?.email_verified ? " · verified" : ""}
       </span>
+      <Link href="/neighbourhoods" className={`md:hidden ${secondaryButtonClass}`}>
+        Neighbourhoods
+      </Link>
+      {showDashboard ? (
+        <Link href="/dashboard" className={`md:hidden ${secondaryButtonClass}`}>
+          Dashboard
+        </Link>
+      ) : null}
+      {showPortal ? (
+        <Link href="/portal" className={`md:hidden ${secondaryButtonClass}`}>
+          Portal
+        </Link>
+      ) : null}
       {isAdmin && (
         <Link
           href="/admin"
@@ -196,7 +231,9 @@ function UserActions({
 export function PublicSiteHeader() {
   const { loading, email, profile, adminRequestStatus } = useHeaderAuth();
   const isAdmin = profile?.role === "admin";
+  const isLandlord = profile?.role === "landlord";
   const showRequestAdmin = Boolean(email) && !isAdmin;
+  const showDashboard = Boolean(email) && Boolean(profile?.email_verified);
   const requestLabel = adminRequestStatus?.hasActiveRequest
     ? "Admin request"
     : "Request admin access";
@@ -212,6 +249,8 @@ export function PublicSiteHeader() {
           </Link>
           <NavLinks
             isAdmin={isAdmin}
+            isLandlord={isLandlord}
+            showDashboard={showDashboard}
             showRequestAdmin={showRequestAdmin}
             requestLabel={requestLabel}
           />
