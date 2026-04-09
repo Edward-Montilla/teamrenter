@@ -1,4 +1,6 @@
 @import "tailwindcss";
+@import "tw-animate-css";
+@import "../styles/facelift-theme.css";
 
 :root {
   --background: #f3f4f6;

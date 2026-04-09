@@ -1,11 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import type {
   ReviewCreateInput,
   ReviewGateState,
   ReviewableProperty,
 } from "@/lib/types";
+import { FaceliftReviewFormStep } from "@/components/facelift/FaceliftReviewFormStep";
+import { StepProgress } from "@/components/facelift/StepProgress";
 import { ReviewGateBanner } from "@/components/reviews/ReviewGateBanner";
 import { PropertySelectStep } from "@/components/reviews/PropertySelectStep";
 import { ReviewFormStep } from "@/components/reviews/ReviewFormStep";
@@ -16,6 +19,8 @@ import { cn, sectionCardClass } from "@/lib/ui";
 
 type ReviewSubmitFlowProps = {
   propertyId: string;
+  /** Facelift chrome + seven-slider form; errors also surface via Sonner. */
+  variant?: "default" | "facelift";
 };
 
 async function resolveGateState(): Promise<{
@@ -48,7 +53,14 @@ async function resolveGateState(): Promise<{
   };
 }
 
-export function ReviewSubmitFlow({ propertyId }: ReviewSubmitFlowProps) {
+export function ReviewSubmitFlow({
+  propertyId,
+  variant = "default",
+}: ReviewSubmitFlowProps) {
+  const facelift = variant === "facelift";
+  const shellClass = facelift
+    ? "mx-auto max-w-4xl rounded-[16px] border border-[#E2DDD6] bg-white p-6 sm:p-8"
+    : `${sectionCardClass} mx-auto max-w-4xl p-6 sm:p-8`;
   const [step, setStep] = useState<1 | 2 | "done">(1);
   const [selectedProperty, setSelectedProperty] =
     useState<ReviewableProperty | null>(null);
@@ -131,6 +143,9 @@ export function ReviewSubmitFlow({ propertyId }: ReviewSubmitFlowProps) {
         : "Something went wrong.";
 
     if (res.status === 201 && json.review_id) {
+      if (facelift) {
+        toast.success("Review submitted successfully.");
+      }
       setSubmittedReviewId(json.review_id);
       setStep("done");
       return;
@@ -138,25 +153,32 @@ export function ReviewSubmitFlow({ propertyId }: ReviewSubmitFlowProps) {
     if (res.status === 401) {
       setGateState("unauthenticated");
       setSubmitError(message);
+      if (facelift) toast.error(message);
       return;
     }
     if (res.status === 403) {
       setGateState("unverified");
       setSubmitError(message);
+      if (facelift) toast.error(message);
       return;
     }
     if (res.status === 409) {
       setGateState("already_reviewed");
       setSubmitError(message);
+      if (facelift) toast.error(message);
       return;
     }
     if (res.status === 429) {
       setGateState("limit_reached");
       setSubmitError(message);
+      if (facelift) toast.error(message);
       return;
     }
 
     setSubmitError(message || "Failed to save review. Please try again.");
+    if (facelift) {
+      toast.error(message || "Failed to save review. Please try again.");
+    }
   };
 
   const handleResendVerification = async () => {
@@ -221,7 +243,7 @@ export function ReviewSubmitFlow({ propertyId }: ReviewSubmitFlowProps) {
 
   if (gateState === "loading") {
     return (
-      <div className={`${sectionCardClass} mx-auto max-w-4xl p-6 sm:p-8`}>
+      <div className={shellClass}>
         <FeedbackPanel title="Checking your account" description="Loading your review permissions and current session." />
       </div>
     );
@@ -229,15 +251,44 @@ export function ReviewSubmitFlow({ propertyId }: ReviewSubmitFlowProps) {
 
   if (gateState !== "allowed") {
     return (
-      <div className={`${sectionCardClass} mx-auto max-w-4xl p-6 sm:p-8`}>
-        <div className="border-b border-zinc-200 pb-6 dark:border-zinc-800">
-          <p className="text-sm font-medium uppercase tracking-[0.22em] text-zinc-500 dark:text-zinc-400">
+      <div className={shellClass}>
+        <div
+          className={
+            facelift
+              ? "border-b border-[#E2DDD6] pb-6"
+              : "border-b border-zinc-200 pb-6 dark:border-zinc-800"
+          }
+        >
+          <p
+            className={
+              facelift
+                ? "text-sm font-medium uppercase tracking-[0.22em] text-[#717182]"
+                : "text-sm font-medium uppercase tracking-[0.22em] text-zinc-500 dark:text-zinc-400"
+            }
+          >
             Submit a review
           </p>
-          <h1 className="mt-3 text-3xl font-semibold tracking-tight text-foreground">
+          <h1
+            className={
+              facelift
+                ? "mt-3 text-3xl font-bold tracking-tight text-[#0F1F38]"
+                : "mt-3 text-3xl font-semibold tracking-tight text-foreground"
+            }
+            style={
+              facelift
+                ? { fontFamily: "var(--font-lora), ui-serif, Georgia, serif" }
+                : undefined
+            }
+          >
             You are almost ready to review this property
           </h1>
-          <p className="mt-3 max-w-2xl text-sm leading-7 text-zinc-600 dark:text-zinc-400">
+          <p
+            className={
+              facelift
+                ? "mt-3 max-w-2xl text-sm leading-7 text-[#717182]"
+                : "mt-3 max-w-2xl text-sm leading-7 text-zinc-600 dark:text-zinc-400"
+            }
+          >
             Review submission stays focused on one task at a time. Complete the gate below, then you can confirm the property and continue.
           </p>
         </div>
@@ -248,9 +299,13 @@ export function ReviewSubmitFlow({ propertyId }: ReviewSubmitFlowProps) {
               key={stepItem.id}
               className={cn(
                 "rounded-2xl border px-4 py-3 text-sm",
-                stepItem.active
-                  ? "border-zinc-950 bg-zinc-950 text-white dark:border-zinc-100 dark:bg-zinc-100 dark:text-zinc-950"
-                  : "border-zinc-200 bg-zinc-50 text-zinc-500 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400",
+                facelift
+                  ? stepItem.active
+                    ? "border-[#0F1F38] bg-[#0F1F38] text-white"
+                    : "border-[#E2DDD6] bg-[#F7F4EF] text-[#717182]"
+                  : stepItem.active
+                    ? "border-zinc-950 bg-zinc-950 text-white dark:border-zinc-100 dark:bg-zinc-100 dark:text-zinc-950"
+                    : "border-zinc-200 bg-zinc-50 text-zinc-500 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400",
               )}
             >
               <span className="font-medium">Step {stepItem.id}</span>
@@ -285,21 +340,64 @@ export function ReviewSubmitFlow({ propertyId }: ReviewSubmitFlowProps) {
 
   if (step === 1) {
     return (
-      <div className={`${sectionCardClass} mx-auto max-w-5xl p-6 sm:p-8`}>
-        <div className="border-b border-zinc-200 pb-6 dark:border-zinc-800">
-          <p className="text-sm font-medium uppercase tracking-[0.22em] text-zinc-500 dark:text-zinc-400">
+      <div
+        className={
+          facelift
+            ? "mx-auto max-w-5xl rounded-[16px] border border-[#E2DDD6] bg-white p-6 sm:p-8"
+            : `${sectionCardClass} mx-auto max-w-5xl p-6 sm:p-8`
+        }
+      >
+        {facelift ? (
+          <StepProgress
+            currentStep={1}
+            totalSteps={3}
+            steps={["Choose property", "Rate experience", "Confirmation"]}
+          />
+        ) : null}
+        <div
+          className={
+            facelift
+              ? "border-b border-[#E2DDD6] pb-6"
+              : "border-b border-zinc-200 pb-6 dark:border-zinc-800"
+          }
+        >
+          <p
+            className={
+              facelift
+                ? "text-sm font-medium uppercase tracking-[0.22em] text-[#717182]"
+                : "text-sm font-medium uppercase tracking-[0.22em] text-zinc-500 dark:text-zinc-400"
+            }
+          >
             Step 1 of 3
           </p>
-          <h1 className="mt-3 text-3xl font-semibold tracking-tight text-foreground">
+          <h1
+            className={
+              facelift
+                ? "mt-3 text-3xl font-bold tracking-tight text-[#0F1F38]"
+                : "mt-3 text-3xl font-semibold tracking-tight text-foreground"
+            }
+            style={
+              facelift
+                ? { fontFamily: "var(--font-lora), ui-serif, Georgia, serif" }
+                : undefined
+            }
+          >
             Confirm the property you want to review
           </h1>
-          <p className="mt-3 max-w-2xl text-sm leading-7 text-zinc-600 dark:text-zinc-400">
+          <p
+            className={
+              facelift
+                ? "mt-3 max-w-2xl text-sm leading-7 text-[#717182]"
+                : "mt-3 max-w-2xl text-sm leading-7 text-zinc-600 dark:text-zinc-400"
+            }
+          >
             Search by address or management company, choose the correct property, then continue to the review form.
           </p>
         </div>
         <PropertySelectStep
           initialPropertyId={propertyId}
           onContinue={handleContinueFromStep1}
+          variant={facelift ? "facelift" : "default"}
         />
       </div>
     );
@@ -307,23 +405,47 @@ export function ReviewSubmitFlow({ propertyId }: ReviewSubmitFlowProps) {
 
   if (step === 2 && selectedProperty) {
     return (
-      <div className={`${sectionCardClass} mx-auto max-w-4xl p-6 sm:p-8`}>
-        <ReviewFormStep
-          property={selectedProperty}
-          onSubmit={handleSubmitReview}
-          onBack={() => setStep(1)}
-          submitError={submitError}
-        />
+      <div className={shellClass}>
+        {facelift ? (
+          <>
+            <StepProgress
+              currentStep={2}
+              totalSteps={3}
+              steps={["Choose property", "Rate experience", "Confirmation"]}
+            />
+            <FaceliftReviewFormStep
+              property={selectedProperty}
+              onSubmit={handleSubmitReview}
+              onBack={() => setStep(1)}
+              submitError={submitError}
+            />
+          </>
+        ) : (
+          <ReviewFormStep
+            property={selectedProperty}
+            onSubmit={handleSubmitReview}
+            onBack={() => setStep(1)}
+            submitError={submitError}
+          />
+        )}
       </div>
     );
   }
 
   if (step === "done" && submittedReviewId && selectedProperty) {
     return (
-      <div className={`${sectionCardClass} mx-auto max-w-4xl p-6 sm:p-8`}>
+      <div className={shellClass}>
+        {facelift ? (
+          <StepProgress
+            currentStep={3}
+            totalSteps={3}
+            steps={["Choose property", "Rate experience", "Confirmation"]}
+          />
+        ) : null}
         <ReviewSubmittedScreen
           reviewId={submittedReviewId}
           propertyId={selectedProperty.id}
+          variant={facelift ? "facelift" : "default"}
         />
       </div>
     );

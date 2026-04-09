@@ -12,6 +12,8 @@ export type PropertyListItem = {
   management_company: string | null;
   trustscore_display_0_5: 0 | 1 | 2 | 3 | 4 | 5;
   review_count: number;
+  /** First photo by created_at; null when unset or PROPERTY_PHOTO_BASE_URL missing. */
+  primary_image_url: string | null;
 };
 
 export type PropertySearchResponse = {

@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
+import { getPropertyPhotoDisplayUrl } from "@/lib/property-photos";
 import { getSupabaseServerClient } from "@/lib/supabase-server";
 import type { PropertyListItem, PropertySearchResponse } from "@/lib/types";
 
@@ -12,6 +13,11 @@ type ListRow = {
   property_aggregates: Array<{
     review_count: number;
     display_trustscore_0_5: 0 | 1 | 2 | 3 | 4 | 5;
+  }> | null;
+  property_photos: Array<{
+    r2_bucket: string;
+    r2_key: string;
+    created_at: string;
   }> | null;
 };
 
@@ -37,6 +43,11 @@ export async function GET(req: NextRequest) {
       property_aggregates (
         review_count,
         display_trustscore_0_5
+      ),
+      property_photos (
+        r2_bucket,
+        r2_key,
+        created_at
       )
     `,
     )
@@ -73,6 +84,18 @@ export async function GET(req: NextRequest) {
     const aggregates = row.property_aggregates?.[0] ?? null;
     const reviewCount = aggregates?.review_count ?? 0;
     const trustScore = aggregates?.display_trustscore_0_5 ?? 0;
+    const photos = row.property_photos ?? [];
+    const sortedPhotos = [...photos].sort(
+      (a, b) =>
+        new Date(a.created_at).getTime() - new Date(b.created_at).getTime(),
+    );
+    const firstPhoto = sortedPhotos[0];
+    const primary_image_url = firstPhoto
+      ? getPropertyPhotoDisplayUrl({
+          r2_bucket: firstPhoto.r2_bucket,
+          r2_key: firstPhoto.r2_key,
+        })
+      : null;
 
     return {
       id: row.id,
@@ -83,6 +106,7 @@ export async function GET(req: NextRequest) {
       management_company: row.management_company,
       trustscore_display_0_5: trustScore,
       review_count: reviewCount,
+      primary_image_url,
     };
   });
 

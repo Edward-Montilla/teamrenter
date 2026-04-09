@@ -15,19 +15,26 @@ import {
 type SignInFormProps = {
   redirectTo: string;
   verified: boolean;
+  variant?: "default" | "facelift";
+  initialMode?: "sign-in" | "sign-up";
 };
 
 function normalizeRedirect(redirectTo: string): string {
   return redirectTo.startsWith("/") ? redirectTo : "/";
 }
 
-export function SignInForm({ redirectTo, verified }: SignInFormProps) {
+export function SignInForm({
+  redirectTo,
+  verified,
+  variant = "default",
+  initialMode = "sign-in",
+}: SignInFormProps) {
   const router = useRouter();
   const safeRedirect = useMemo(
     () => normalizeRedirect(redirectTo),
     [redirectTo],
   );
-  const [mode, setMode] = useState<"sign-in" | "sign-up">("sign-in");
+  const [mode, setMode] = useState<"sign-in" | "sign-up">(initialMode);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -36,6 +43,10 @@ export function SignInForm({ redirectTo, verified }: SignInFormProps) {
   const [message, setMessage] = useState<string | null>(
     verified ? "Email confirmed. Sign in to continue." : null,
   );
+
+  useEffect(() => {
+    setMode(initialMode);
+  }, [initialMode]);
 
   useEffect(() => {
     const supabase = getSupabaseBrowserClient();
@@ -157,6 +168,148 @@ export function SignInForm({ redirectTo, verified }: SignInFormProps) {
     mode === "sign-in" ? "Sign in to Livedin" : "Create your Livedin account";
   const submitLabel =
     mode === "sign-in" ? "Sign in" : "Create account";
+
+  if (variant === "facelift") {
+    return (
+      <div className="mx-auto w-full max-w-md">
+        <div className="mb-8 text-center">
+          <Link href="/" className="mb-6 inline-flex items-center gap-2">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#E8913A]">
+              <span
+                className="text-xl font-bold text-white"
+                style={{ fontFamily: "var(--font-lora), ui-serif, Georgia, serif" }}
+              >
+                L
+              </span>
+            </div>
+            <span
+              className="text-2xl font-bold text-[#0F1F38]"
+              style={{ fontFamily: "var(--font-lora), ui-serif, Georgia, serif" }}
+            >
+              LivedIn
+            </span>
+          </Link>
+          <h1
+            className="mb-2 text-3xl font-bold text-[#0F1F38]"
+            style={{ fontFamily: "var(--font-lora), ui-serif, Georgia, serif" }}
+          >
+            {mode === "sign-in" ? "Welcome back" : "Create an account"}
+          </h1>
+          <p className="text-[#717182]">
+            {mode === "sign-in"
+              ? "Sign in to submit reviews and manage your shortlist"
+              : "Verify your email to unlock review submission"}
+          </p>
+        </div>
+
+        <div className="rounded-[16px] border border-[#E2DDD6] bg-white p-8 shadow-sm">
+          <div className="mb-6 inline-flex w-full rounded-xl border border-[#E2DDD6] bg-[#F7F4EF] p-1">
+            <button
+              type="button"
+              onClick={() => setMode("sign-in")}
+              className={`flex-1 rounded-lg px-3 py-2 text-sm font-medium ${
+                mode === "sign-in"
+                  ? "bg-white text-[#0F1F38] shadow-sm"
+                  : "text-[#717182]"
+              }`}
+            >
+              Sign in
+            </button>
+            <button
+              type="button"
+              onClick={() => setMode("sign-up")}
+              className={`flex-1 rounded-lg px-3 py-2 text-sm font-medium ${
+                mode === "sign-up"
+                  ? "bg-white text-[#0F1F38] shadow-sm"
+                  : "text-[#717182]"
+              }`}
+            >
+              Create account
+            </button>
+          </div>
+
+          <div className="space-y-3">
+            <button
+              type="button"
+              onClick={() => void handleGoogleSignIn()}
+              disabled={submitting || oauthSubmitting}
+              className="w-full rounded-[12px] border border-[#E2DDD6] bg-white py-3 font-semibold text-[#0F1F38] transition-colors hover:bg-[#F7F4EF] disabled:opacity-50"
+            >
+              {oauthSubmitting ? "Redirecting to Google…" : "Continue with Google"}
+            </button>
+          </div>
+
+          <div className="my-6 flex items-center gap-3">
+            <div className="h-px flex-1 bg-[#E2DDD6]" />
+            <span className="text-xs uppercase tracking-[0.2em] text-[#717182]">Or email</span>
+            <div className="h-px flex-1 bg-[#E2DDD6]" />
+          </div>
+
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {message && (
+              <div className="rounded-[12px] border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-900">
+                {message}
+              </div>
+            )}
+            {error && (
+              <div className="rounded-[12px] border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
+                {error}
+              </div>
+            )}
+
+            <div>
+              <label htmlFor="email-fx" className="block text-sm font-semibold text-[#0F1F38]">
+                Email
+              </label>
+              <input
+                id="email-fx"
+                type="email"
+                required
+                autoComplete="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="mt-2 w-full rounded-[12px] border border-[#E2DDD6] px-4 py-3 text-[#0F1F38] outline-none focus:ring-2 focus:ring-[#E8913A]/40"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="password-fx" className="block text-sm font-semibold text-[#0F1F38]">
+                Password
+              </label>
+              <input
+                id="password-fx"
+                type="password"
+                required
+                minLength={8}
+                autoComplete={mode === "sign-in" ? "current-password" : "new-password"}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="mt-2 w-full rounded-[12px] border border-[#E2DDD6] px-4 py-3 text-[#0F1F38] outline-none focus:ring-2 focus:ring-[#E8913A]/40"
+              />
+            </div>
+
+            <button
+              type="submit"
+              disabled={submitting || oauthSubmitting}
+              className="w-full rounded-[12px] bg-[#E8913A] py-3 font-semibold text-white transition-colors hover:bg-[#d17f2f] disabled:opacity-50"
+            >
+              {submitting ? "Working…" : submitLabel}
+            </button>
+          </form>
+
+          <div className="mt-6 text-center text-sm text-[#717182]">
+            <Link href={safeRedirect} className="text-[#E8913A] hover:text-[#d17f2f]">
+              Skip for now
+            </Link>
+            <span className="mx-2">·</span>
+            <Link href="/" className="text-[#E8913A] hover:text-[#d17f2f]">
+              Home
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={`${sectionCardClass} mx-auto max-w-5xl overflow-hidden`}>
