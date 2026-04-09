@@ -14,8 +14,8 @@
  * | Safety                  | mean(maintenance, management)                          |
  * | Amenities               | mean(fee, lease)                                       |
  *
- * SUBMIT (seven 1–10 sliders → five ReviewCreateInput metrics):
- * | Stored metric               | Derived from sliders (same Facelift labels)              |
+ * SUBMIT (seven 0–5 category ratings → five ReviewCreateInput metrics):
+ * | Stored metric               | Derived from category ratings (same Facelift labels)      |
  * |-----------------------------|----------------------------------------------------------|
  * | management_responsiveness   | Landlord Responsiveness                                  |
  * | maintenance_timeliness    | Maintenance                                              |
@@ -87,27 +87,26 @@ export function aggregatesToSevenCategoryBars(
   }));
 }
 
-const SLIDER_MIN = 1;
-const SLIDER_MAX = 10;
+const STAR_MIN = 0;
+const STAR_MAX = 5;
 
-/** Map Facelift slider (1–10) to canonical ReviewScore (0–5, 0.5 steps). */
-export function slider10ToReviewScore(value: number): ReviewScore {
-  const clamped = Math.min(SLIDER_MAX, Math.max(SLIDER_MIN, value));
-  const scaled = ((clamped - SLIDER_MIN) / (SLIDER_MAX - SLIDER_MIN)) * 5;
-  const stepped = Math.round(scaled * 2) / 2;
+/** Map 0–5 star selection to canonical ReviewScore (0.5 increments). */
+export function starsToReviewScore(value: number): ReviewScore {
+  const clamped = Math.min(STAR_MAX, Math.max(STAR_MIN, value));
+  const stepped = Math.round(clamped * 2) / 2;
   return stepped as ReviewScore;
 }
 
 export type SevenSliderValues = Record<FaceliftCategoryLabel, number>;
 
 export const DEFAULT_SEVEN_SLIDER_VALUES: SevenSliderValues = {
-  "Landlord Responsiveness": 7,
-  Maintenance: 7,
-  "Value for Money": 7,
-  Cleanliness: 7,
-  Location: 7,
-  Safety: 7,
-  Amenities: 7,
+  "Landlord Responsiveness": 0,
+  Maintenance: 0,
+  "Value for Money": 0,
+  Cleanliness: 0,
+  Location: 0,
+  Safety: 0,
+  Amenities: 0,
 };
 
 function averageToReviewScore(...parts: number[]): ReviewScore {
@@ -117,7 +116,7 @@ function averageToReviewScore(...parts: number[]): ReviewScore {
   return clamped as ReviewScore;
 }
 
-/** Combine seven UI sliders into the five API payload fields. */
+/** Combine seven UI category ratings into the five API payload fields. */
 export function sevenSlidersToFiveMetrics(values: SevenSliderValues): {
   management_responsiveness: ReviewScore;
   maintenance_timeliness: ReviewScore;
@@ -126,13 +125,13 @@ export function sevenSlidersToFiveMetrics(values: SevenSliderValues): {
   lease_clarity: ReviewScore;
 } {
   const v = values;
-  const landlord = slider10ToReviewScore(v["Landlord Responsiveness"]);
-  const maint = slider10ToReviewScore(v.Maintenance);
-  const valueMoney = slider10ToReviewScore(v["Value for Money"]);
-  const clean = slider10ToReviewScore(v.Cleanliness);
-  const loc = slider10ToReviewScore(v.Location);
-  const safety = slider10ToReviewScore(v.Safety);
-  const amen = slider10ToReviewScore(v.Amenities);
+  const landlord = starsToReviewScore(v["Landlord Responsiveness"]);
+  const maint = starsToReviewScore(v.Maintenance);
+  const valueMoney = starsToReviewScore(v["Value for Money"]);
+  const clean = starsToReviewScore(v.Cleanliness);
+  const loc = starsToReviewScore(v.Location);
+  const safety = starsToReviewScore(v.Safety);
+  const amen = starsToReviewScore(v.Amenities);
 
   return {
     management_responsiveness: landlord,

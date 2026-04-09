@@ -23,6 +23,7 @@ import {
   sevenSlidersToFiveMetrics,
   type SevenSliderValues,
 } from "@/lib/facelift-seven-categories";
+import { CategoryStarRating } from "@/components/facelift/CategoryStarRating";
 import {
   TEXT_INPUT_MAX,
   validateReviewCreateInput,
@@ -31,7 +32,7 @@ import {
 
 type ReviewSubmitFlowProps = {
   propertyId: string;
-  /** Facelift chrome + seven-slider form; errors also surface via Sonner. */
+  /** Facelift chrome + seven-category star form; errors also surface via Sonner. */
   variant?: "default" | "facelift";
 };
 
@@ -584,37 +585,20 @@ export function ReviewSubmitFlow({
             </div>
 
             <section className="rounded-[16px] border border-[#E2DDD6] bg-white p-6">
-              <p className="text-sm text-[#717182]">1 = poor, 10 = excellent</p>
+              <p className="text-sm text-[#717182]">Click stars to rate each category from 0 to 5.</p>
               <div className="mt-6 space-y-6">
                 {FACELIFT_CATEGORY_LABELS.map((label) => (
-                  <div key={label}>
-                    <div className="mb-2 flex items-center justify-between">
-                      <label className="text-sm font-semibold text-[#0F1F38]" htmlFor={`sl-${label}`}>
-                        {label}
-                      </label>
-                      <span
-                        className="text-2xl font-semibold text-[#E8913A]"
-                        style={{ fontFamily: "var(--font-lora), ui-serif, Georgia, serif" }}
-                      >
-                        {fxSliders[label].toFixed(1)}
-                      </span>
-                    </div>
-                    <input
-                      id={`sl-${label}`}
-                      type="range"
-                      min={1}
-                      max={10}
-                      step={0.5}
-                      value={fxSliders[label]}
-                      onChange={(e) =>
-                        setFxSliders((prev) => ({
-                          ...prev,
-                          [label]: Number(e.target.value),
-                        }))
-                      }
-                      className="h-2 w-full cursor-pointer accent-[#E8913A]"
-                    />
-                  </div>
+                  <CategoryStarRating
+                    key={label}
+                    label={label}
+                    value={fxSliders[label]}
+                    onChange={(value) =>
+                      setFxSliders((prev) => ({
+                        ...prev,
+                        [label]: value,
+                      }))
+                    }
+                  />
                 ))}
               </div>
             </section>
